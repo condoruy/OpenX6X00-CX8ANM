@@ -682,7 +682,7 @@ static bool on_air_start(sstv_mode_t mode)
     sstv_btn_tx.label = "Halt TX";
     sstv_mode_button(true, on_air);
     status_text_show(true);
-    snprintf(s, sizeof(s), "Preparing %s TX...", sstv_mode_info(on_air)->label);
+    snprintf(s, sizeof(s), tr("Preparing %s TX..."), sstv_mode_info(on_air)->label);
     sstv_status(s);
     if (sstv_bar) {
         lv_bar_set_value(sstv_bar, 0, LV_ANIM_OFF);
@@ -869,7 +869,7 @@ static void menu_open(void)
     box_open("SSTV TX", HINT);
     menu = list_new(6);
     snprintf(reply, sizeof(reply), target[0] ? "REPLY TO %s" : "REPLY TO...", target);
-    snprintf(replay, sizeof(replay), target[0] ? "REPLAY TO %s" : "REPLAY TO...", target);
+    snprintf(replay, sizeof(replay), target[0] ? tr("REPLAY TO %s") : tr("REPLAY TO..."), target);
     lv_table_set_cell_value(menu, 0, 0, "CALL CQ");
     lv_table_set_cell_value(menu, 1, 0, reply);
     lv_table_set_cell_value(menu, 2, 0, replay);
@@ -1298,7 +1298,7 @@ void sstv_tx_tick(void)
         }
         if (keyed) {
             char s[96];
-            snprintf(s, sizeof(s), "Transmitting %s...", sstv_mode_info(on_air)->label);
+            snprintf(s, sizeof(s), tr("Transmitting %s..."), sstv_mode_info(on_air)->label);
             sstv_status(s);
         }
         return;
@@ -1322,12 +1322,12 @@ void sstv_tx_tick(void)
             last_mode = on_air;
             last_ok = true;
         }
-        snprintf(s, sizeof(s), "SSTV %s TX complete", sstv_mode_info(on_air)->label);
+        snprintf(s, sizeof(s), tr("SSTV %s TX complete"), sstv_mode_info(on_air)->label);
         msg_schedule_text_fmt("%s", s);
     } else if (result == -1) {
         msg_schedule_text_fmt("SSTV TX halted");
     } else {
-        snprintf(s, sizeof(s), "SSTV TX failed (%d)", result);
+        snprintf(s, sizeof(s), tr("SSTV TX failed (%d)"), result);
         msg_schedule_text_fmt("%s", s);
     }
     keyed = false;

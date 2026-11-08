@@ -498,7 +498,7 @@ static bool app_holds_radio(char *why, size_t n) {
 
     if (!app)
         return false;
-    snprintf(why, n, "%s is open, close it", app);
+    snprintf(why, n, tr("%s is open, close it"), app);
     return true;
 }
 
@@ -592,7 +592,7 @@ static const char *tx_off_freq(void) {
     missed = atomic_load(&missed_hz);
     if (missed) {
         if (missed != rx) {
-            snprintf(why, sizeof(why), "the radio could not go to Pat's %s MHz", mhz(a, sizeof(a), missed));
+            snprintf(why, sizeof(why), tr("the radio could not go to Pat's %s MHz"), mhz(a, sizeof(a), missed));
             return why;
         }
         atomic_compare_exchange_strong(&missed_hz, &missed, 0);    /* there after all */
@@ -604,21 +604,21 @@ static const char *tx_off_freq(void) {
     atomic_store(&ref_hz, ref);
     atomic_store(&ref_ms, now);     /* the modem keys, keyed or not: its connection goes on */
     if (rx != ref) {
-        snprintf(why, sizeof(why), "the radio left %s MHz", mhz(a, sizeof(a), ref));
+        snprintf(why, sizeof(why), tr("the radio left %s MHz"), mhz(a, sizeof(a), ref));
         return why;
     }
     if (xit) {
-        snprintf(why, sizeof(why), "XIT is set (%+d Hz)", (int)xit);
+        snprintf(why, sizeof(why), tr("XIT is set (%+d Hz)"), (int)xit);
         return why;
     }
     if (rit) {
-        snprintf(why, sizeof(why), "RIT is set (%+d Hz)", (int)rit);
+        snprintf(why, sizeof(why), tr("RIT is set (%+d Hz)"), (int)rit);
         return why;
     }
     if (tx != rx) {
         if (param_i_get(cfg_band_tx_shift))
             return "a TX shift is set on this band";
-        snprintf(why, sizeof(why), "split would send on %s, not %s", mhz(a, sizeof(a), tx), mhz(b, sizeof(b), rx));
+        snprintf(why, sizeof(why), tr("split would send on %s, not %s"), mhz(a, sizeof(a), tx), mhz(b, sizeof(b), rx));
         return why;
     }
     if ((no = cfg_tx_refusal(tx))) {
@@ -1261,17 +1261,17 @@ static void simplex_issue(char *why, size_t n, int32_t rx, int32_t tx, int32_t x
 
     why[0] = 0;
     if (xit)
-        snprintf(why, n, "XIT is set (%+d Hz)", (int)xit);
+        snprintf(why, n, tr("XIT is set (%+d Hz)"), (int)xit);
     else if (rit)
-        snprintf(why, n, "RIT is set (%+d Hz)", (int)rit);
+        snprintf(why, n, tr("RIT is set (%+d Hz)"), (int)rit);
     else if (tx != rx && shift)
-        snprintf(why, n, "a TX shift is set on this band");
+        snprintf(why, n, tr("a TX shift is set on this band"));
     else if (tx != rx)
-        snprintf(why, n, "split would send on %s, not %s", mhz(a, sizeof(a), tx), mhz(b, sizeof(b), rx));
+        snprintf(why, n, tr("split would send on %s, not %s"), mhz(a, sizeof(a), tx), mhz(b, sizeof(b), rx));
     else if ((no = cfg_tx_refusal(tx)))
         snprintf(why, n, "%s MHz: %s", mhz(a, sizeof(a), tx), no);
     else if (no_data)
-        snprintf(why, n, "no data from the base");
+        snprintf(why, n, tr("no data from the base"));
 }
 
 /* Seconds left of the hold after an SWR trip in a Winlink transmission, 0 none. Read before swr_trip_hz */
@@ -1300,9 +1300,9 @@ static const char *swr_hold_where(char *s, size_t size, int32_t trip) {
     char f[16];
 
     if (band >= 0)
-        snprintf(s, size, "on %s", cluster_band_name(band));
+        snprintf(s, size, tr("on %s"), cluster_band_name(band));
     else
-        snprintf(s, size, "near %s MHz", mhz(f, sizeof(f), trip));
+        snprintf(s, size, tr("near %s MHz"), mhz(f, sizeof(f), trip));
     return s;
 }
 
@@ -1328,7 +1328,7 @@ static const char *swr_held(int32_t hz) {
 
     if (!left || !swr_hold_covers(trip, hz))
         return NULL;
-    snprintf(why, sizeof(why), "high SWR %s, the hold ends in %d min", swr_hold_where(where, sizeof(where), trip),
+    snprintf(why, sizeof(why), tr("high SWR %s, the hold ends in %d min"), swr_hold_where(where, sizeof(where), trip),
              (left + 59) / 60);
     return why;
 }
@@ -1366,7 +1366,7 @@ static void radio_file_body(char *buf, size_t size, bool modem) {
              "cap_battery=%d\ncap_transverter=%d\napp=%s\nlocked=%d\non_air=%d\nswr_hold=%d\n"
              "refused=%s\nrefused_seq=%u\nrefused_at=%lld\nqsy=%d\nqsy_why=%s\nqsy_seq=%u\nqsy_at=%lld\n"
              "swr_hold_where=%s\nswr_hold_here=%d\n",
-             modem ? "connected" : "none", (int)rx, (int)tx, channels_mode_name(cparam_i_get(cfg_cur_mode)),
+             modem ? tr("connected") : "none", (int)rx, (int)tx, channels_mode_name(cparam_i_get(cfg_cur_mode)),
              param_i_get(cfg_band_split) ? 1 : 0, (int)shift, (int)rit, (int)xit, simplex,
              (int)cparam_i_get(cfg_cur_filter_low), (int)cparam_i_get(cfg_cur_filter_high),
              txf ? (int)param_i_get(cfg_tx_filter_low) : 0, txf ? (int)param_i_get(cfg_tx_filter_high) : 0,

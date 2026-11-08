@@ -736,13 +736,13 @@ static void rotary_cb(int32_t diff) {
 /* ---- buttons ---- */
 
 static const char *switch_label(char *buf, size_t size, const char *name, bool on) {
-    snprintf(buf, size, "%s:\n%s", name, on ? "Enabled" : "Disabled");
+    snprintf(buf, size, "%s:\n%s", name, on ? tr("Enabled") : tr("Disabled"));
     return buf;
 }
 
 static const char *show_label(void) {
     static char buf[32];
-    snprintf(buf, sizeof(buf), "Show:\n%s", param_i_get(cfg_ft8_show_all) ? "All" : "CQ");
+    snprintf(buf, sizeof(buf), "Show:\n%s", param_i_get(cfg_ft8_show_all) ? tr("All") : "CQ");
     return buf;
 }
 
@@ -1071,7 +1071,7 @@ static void freq_cb(button_data_t *btn) {
     lv_obj_set_style_bg_color(freq_list, TC(list), 0);
     lv_obj_set_style_border_color(freq_list, TC(text), 0);
     char line[64];
-    snprintf(line, sizeof(line), "%s frequencies - hold Freq to type", mode_name());
+    snprintf(line, sizeof(line), tr("%s frequencies - hold Freq to type"), mode_name());
     lv_obj_set_style_text_font(lv_list_add_text(freq_list, line), &sony_22, 0);
 
     lv_obj_t *cur = NULL;
@@ -1303,7 +1303,7 @@ static void list_pressed(const cell_data_t *cd) {
 
     cell_data_t row = {.cell_type = CELL_START_QSO};
 
-    snprintf(row.text, sizeof(row.text), "Start QSO with %s", cd->meta.call_de);
+    snprintf(row.text, sizeof(row.text), tr("Start QSO with %s"), cd->meta.call_de);
     row_post(&row);
     msg_schedule_text_fmt("Next TX: %s", next);
 }
@@ -1370,9 +1370,9 @@ static void hound_rx_text(const char *text, int snr, float freq_hz, bool odd, ui
 static const char *hound_state(void) {
     static char buf[40];
     switch (hound.stage) {
-        case HOUND_CALLING: snprintf(buf, sizeof(buf), "calling %s", hound.fox); break;
-        case HOUND_REPORT:  snprintf(buf, sizeof(buf), "R%+03d to %s", hound.sent, hound.fox); break;
-        default:            snprintf(buf, sizeof(buf), "select the Fox"); break;
+        case HOUND_CALLING: snprintf(buf, sizeof(buf), tr("calling %s"), hound.fox); break;
+        case HOUND_REPORT:  snprintf(buf, sizeof(buf), tr("R%+03d to %s"), hound.sent, hound.fox); break;
+        default:            snprintf(buf, sizeof(buf), tr("select the Fox")); break;
     }
     return buf;
 }

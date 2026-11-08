@@ -390,7 +390,7 @@ const char *dialog_channels_last_recalled_name(void) {    /* see dialog_channels
 
     if (!c) return "";
     if (c->name[0]) return c->name;
-    snprintf(numbered, sizeof(numbered), "CHANNEL %d", recalled + 1);
+    snprintf(numbered, sizeof(numbered), tr("CHANNEL %d"), recalled + 1);
     return numbered;
 }
 

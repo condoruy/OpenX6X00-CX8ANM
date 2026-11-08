@@ -264,6 +264,7 @@ void styles_init(void) {
 }
 
 void styles_load(const char *name) {
+    i18n_set_lang(params.language.x);   /* CX8ANM: el idioma, antes de armar la interfaz */
     theme_init(name);    /* an unknown name gives RF.Guru */
     fonts_apply(theme_shape.font >= 0 ? theme_shape.font : params.font.x);
     if (theme_shape.vision) {

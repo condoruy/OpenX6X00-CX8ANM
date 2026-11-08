@@ -486,41 +486,41 @@ static uint32_t link_status(char *text, size_t size, const char **word) {
 
     if (!params.callsign.x[0]) {
         *word = "nocall";
-        snprintf(text, size, "Set your callsign: Settings > General");
+        snprintf(text, size, tr("Set your callsign: Settings > General"));
         return theme_hex(TC_err);
     }
     if (!link_on) {
         *word = "off";
-        snprintf(text, size, "Cluster link off");
+        snprintf(text, size, tr("Cluster link off"));
         return COLOR_DIM;
     }
     if (!net_connected()) {
         *word = "nonet";
-        snprintf(text, size, "No network: WiFi or Ethernet");
+        snprintf(text, size, tr("No network: WiFi or Ethernet"));
         return theme_hex(TC_err);
     }
     switch (st) {
         case CLUSTER_CONNECTED:
             *word = "connected";
             if (strncmp(detail, "logged in as ", 13) == 0) {
-                snprintf(text, size, "Logged in as %s", detail + 13);
+                snprintf(text, size, tr("Logged in as %s"), detail + 13);
                 return theme_hex(TC_ok);
             }
-            snprintf(text, size, "%s - logging in...", wifi_get_status() == WIFI_CONNECTED ? "WiFi" : "Ethernet");
+            snprintf(text, size, tr("%s - logging in..."), wifi_get_status() == WIFI_CONNECTED ? "WiFi" : "Ethernet");
             return theme_hex(TC_warn);
         case CLUSTER_CONNECTING:
             *word = "connecting";
-            snprintf(text, size, "Connecting...");
+            snprintf(text, size, tr("Connecting..."));
             return theme_hex(TC_warn);
         case CLUSTER_FAILED:
             *word = "failed";
-            snprintf(text, size, "%s, %s", detail[0] ? detail : "Cluster error",
+            snprintf(text, size, "%s, %s", detail[0] ? detail : tr("Cluster error"),
                      strncmp(detail, "refused", 7) == 0 || strncmp(detail, "logged in", 9) == 0 ? "retry in 30 min"
-                                                                                               : "retrying");
+                                                                                               : tr("retrying"));
             return theme_hex(TC_err);
         default:
             *word = "stopped";
-            snprintf(text, size, "Stopped");
+            snprintf(text, size, tr("Stopped"));
             return COLOR_DIM;
     }
 }
@@ -936,7 +936,7 @@ static void band_all_cb(button_data_t *data) {
 static const char *band_label(void) {
     static char label[24];
     int         band = vfo_band();
-    snprintf(label, sizeof(label), "Band /\n%s", showing_all() ? "All" : cluster_band_name(band));
+    snprintf(label, sizeof(label), "Band /\n%s", showing_all() ? tr("All") : cluster_band_name(band));
     return label;
 }
 

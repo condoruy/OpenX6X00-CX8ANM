@@ -56,9 +56,9 @@ static void known_update(void) {
 
     if (!known_label) return;
     if (n == 0)
-        snprintf(s, sizeof(s), "Known birdies: none yet.");
+        snprintf(s, sizeof(s), tr("Known birdies: none yet."));
     else
-        snprintf(s, sizeof(s), "Known birdies: %d, %d on this band.", n,
+        snprintf(s, sizeof(s), tr("Known birdies: %d, %d on this band."), n,
                  birdie_count_in(cparam_i_get(cfg_fg_freq) - 500000, cparam_i_get(cfg_fg_freq) + 500000));
     lv_label_set_text(known_label, s);
 }

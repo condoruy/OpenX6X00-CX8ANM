@@ -123,7 +123,7 @@ const char *ext_tune_refusal(void) {
 
     switch (tune_refusal(&a)) {
         case TUNE_NO_TX:
-            snprintf(text, sizeof(text), "no TX on %s", no);
+            snprintf(text, sizeof(text), tr("no TX on %s"), no);
             return text;
         case TUNE_NO_DATA:
             return "no data from the base";

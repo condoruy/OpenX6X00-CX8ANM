@@ -111,6 +111,7 @@ typedef struct {
     uint8_t             line_out;
     params_bool_t       spmode;
     params_uint8_t      freq_accel;
+    params_uint8_t      language;           /* CX8ANM: idioma de la interfaz (i18n.h) */
     params_uint8_t      screen_rec_split;   /* file length: 60, 45, 30, 15, 5 min */
 
     /* main screen */

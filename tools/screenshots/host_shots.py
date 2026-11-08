@@ -101,6 +101,10 @@ def main():
     notice = os.path.join(build, "share", "image-required")
     if os.path.exists(notice):
         cmd += ["--ro-bind", empty, notice]   # no "new card image" note in the shots
+    miss = os.environ.get("X6100_I18N_MISSING")   # CX8ANM: textos sin traducción (src/i18n.cpp)
+    if miss:
+        os.makedirs(os.path.dirname(os.path.abspath(miss)), exist_ok=True)
+        cmd += ["--bind", os.path.dirname(os.path.abspath(miss)), os.path.dirname(os.path.abspath(miss))]
     cmd += ["--unshare-net", "--unshare-ipc", "--die-with-parent",
             "--info-fd", str(info_w), "/tmp/inside.sh", gui]
     proc = subprocess.Popen(cmd, pass_fds=(info_w,))

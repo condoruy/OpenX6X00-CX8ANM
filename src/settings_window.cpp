@@ -304,13 +304,22 @@ static lv_obj_t *font_dd;
 
 /* Settings goes with the rest of the screen, then opens again on Display, on the
  * dropdown that was changed (arg) */
+static lv_obj_t *lang_dd;
+
 static void theme_apply(void *arg) {
     bool font = arg != NULL;
 
     main_screen_set_theme(params.theme_name.x);
     main_screen_start_app(ACTION_APP_SETTINGS);
     tab_press(&btn_display);
-    lv_group_focus_obj(font ? font_dd : theme_dd);
+    lv_group_focus_obj(arg == (void *)2 ? lang_dd : font ? font_dd : theme_dd);
+}
+
+/* CX8ANM: idioma. La interfaz se vuelve a armar, como con el tema */
+static void lang_update_cb(lv_event_t * e) {
+    uint8_choice_cb(e);
+    params_flush();
+    lv_async_call(theme_apply, (void *)2);   /* not from inside the dropdown's own event */
 }
 
 static void font_update_cb(lv_event_t * e) {
@@ -323,11 +332,15 @@ static void font_update_cb(lv_event_t * e) {
     lv_async_call(theme_apply, (void *)1);   /* not from inside the dropdown's own event */
 }
 
-static void theme_update_cb(lv_event_t * e) {
-    char name[32];
+/* CX8ANM: el nombre por el índice, no por el texto (que va traducido: "Classic" -> "Clásico") */
+static char theme_names[16][32];
+static int  theme_count;
 
-    lv_dropdown_get_selected_str(lv_event_get_target(e), name, sizeof(name));
-    params_str_set(&params.theme_name, name);
+static void theme_update_cb(lv_event_t * e) {
+    uint16_t i = lv_dropdown_get_selected(lv_event_get_target(e));
+
+    if (i >= theme_count) return;
+    params_str_set(&params.theme_name, theme_names[i]);
     params_flush();
     cfg_api_flush_all();
     lv_async_call(theme_apply, NULL);   /* not from inside the dropdown's own event */
@@ -905,7 +918,7 @@ static uint8_t make_transverters(uint8_t row) {
         char label[32];
         int  t = x[0]->context_id();
 
-        snprintf(label, sizeof(label), "%i: from, to, shift (0 off)", x[0]->context_id() + 1);
+        snprintf(label, sizeof(label), tr("%i: from, to, shift (0 off)"), x[0]->context_id() + 1);
         wl_row_label(row, label);
         for (int i = 0; i < 3; i++) {
             lv_obj_t *sb = row_spin(row, 1 + 2 * i, 2, SMALL_2, x[i]->get() / 1000000L, lo[i], 500, 3);
@@ -916,7 +929,7 @@ static uint8_t make_transverters(uint8_t row) {
 
         int32_t tenths = lroundf(pwr[t]->get() * 10.0f);
 
-        snprintf(label, sizeof(label), "%i: TX power limit, W", t + 1);
+        snprintf(label, sizeof(label), tr("%i: TX power limit, W"), t + 1);
         wl_row_label(row, label);
         row_slider(row_cell(row, 4, 3, SMALL_3), tenths, 0, lroundf(BOARD_PWR_MAX * 10.0f), SMALL_3 - 120, xvrt_pwr_cb,
                    pwr[t], "%s", xvrt_pwr_text(tenths));
@@ -939,7 +952,7 @@ static uint8_t make_tx_shift(uint8_t row) {
     if (band.rc != SUCCESS || cfg_sm.band_use(band.value.start_freq, band.value.stop_freq) != BAND_USE_TX) {
         return row;
     }
-    snprintf(label, sizeof(label), "TX shift %s, kHz", band.value.name.c_str());
+    snprintf(label, sizeof(label), tr("TX shift %s, kHz"), band.value.name.c_str());
     wl_row_label(row, label);
     lv_obj_t *sb = row_spin(row, 1, 3, SMALL_3, cfg_sm.p_band_tx_shift.get() / 1000, -9999, 9999, 4);
     lv_obj_add_event_cb(sb, tx_shift_cb, LV_EVENT_VALUE_CHANGED, NULL);
@@ -1297,8 +1310,8 @@ static uint8_t make_screen_rec_split(uint8_t row) {
 
 /* The built-in themes and the files in /mnt/themes */
 static uint8_t make_theme(uint8_t row) {
-    char        names[16][32];
-    int         n = theme_list(names, 16);
+    char      (*names)[32] = theme_names;
+    int         n = theme_count = theme_list(theme_names, 16);
     std::string options;
     uint16_t    sel = 0;
 
@@ -2460,7 +2473,7 @@ static void rs_update() {
     if (ip)
         snprintf(text, sizeof(text), "%s, port %d", ip, remote_server_port());
     else
-        snprintf(text, sizeof(text), "%s.local/remote, port %d", name, remote_server_port());
+        snprintf(text, sizeof(text), tr("%s.local/remote, port %d"), name, remote_server_port());
     lv_label_set_text(rs.info, text);
     lv_obj_set_style_text_color(rs.info, ip ? TC(text) : TC(text_faint), 0);
 
@@ -2468,9 +2481,9 @@ static void rs_update() {
         char names[160];
         int  k = remote_server_sessions(names, sizeof(names));
         if (k)
-            snprintf(text, sizeof(text), "%d paired: %s", k, names);
+            snprintf(text, sizeof(text), tr("%d paired: %s"), k, names);
         else
-            snprintf(text, sizeof(text), "no browser paired yet");
+            snprintf(text, sizeof(text), tr("no browser paired yet"));
         lv_label_set_text(rs.sess, text);
         lv_obj_set_style_text_color(rs.sess, k ? TC(text) : TC(text_faint), 0);
     }
@@ -2482,7 +2495,7 @@ static void rs_pair_cb(lv_event_t *e) {
     remote_server_pair_code(code, sizeof(code));
     if (rs.pair) {
         char text[64];
-        snprintf(text, sizeof(text), "code %s, two minutes", code);
+        snprintf(text, sizeof(text), tr("code %s, two minutes"), code);
         lv_label_set_text(rs.pair, text);
     }
 }
@@ -3838,7 +3851,7 @@ static void smc_timer_cb(lv_timer_t *t) {
             smc_sum = 0;
             smc_min = 1e9f;
             smc_max = -1e9f;
-            snprintf(buf, sizeof(buf), "Measuring %d of %d, %s. Keep the signal steady.", smc_step + 1, SMC_STEPS, names[smc_step]);
+            snprintf(buf, sizeof(buf), tr("Measuring %d of %d, %s. Keep the signal steady."), smc_step + 1, SMC_STEPS, names[smc_step]);
             smc_note_set(buf);
         }
         return;
@@ -3853,7 +3866,7 @@ static void smc_timer_cb(lv_timer_t *t) {
 
     smc_read[smc_step] = smc_sum / SMC_SAMPLE;
     if (smc_max - smc_min > 3.0f) {
-        snprintf(buf, sizeof(buf), "Not steady: %.0f to %.0f dB with %s. Nothing changed.", smc_min, smc_max, names[smc_step]);
+        snprintf(buf, sizeof(buf), tr("Not steady: %.0f to %.0f dB with %s. Nothing changed."), smc_min, smc_max, names[smc_step]);
         smc_stop(buf);
         return;
     }
@@ -3904,18 +3917,18 @@ static void smc_timer_cb(lv_timer_t *t) {
     const char *name = set_on.c_str();
 
     if (att_top) {
-        snprintf(buf, sizeof(buf), "Done %s%s: PRE %i dB, ATT %i, the top, so %i or more.", on, name, pre, att, att);
+        snprintf(buf, sizeof(buf), tr("Done %s%s: PRE %i dB, ATT %i, the top, so %i or more."), on, name, pre, att, att);
     } else if (parts.size() > 1) {
-        snprintf(buf, sizeof(buf), "Done %s%s: PRE %i dB, ATT %i dB.", on, name, pre, att);
+        snprintf(buf, sizeof(buf), tr("Done %s%s: PRE %i dB, ATT %i dB."), on, name, pre, att);
     } else {
-        snprintf(buf, sizeof(buf), "Done %s%s: PRE %i dB, ATT %i dB, RF gain %i.%02i dB a step.", on, name, pre, att,
+        snprintf(buf, sizeof(buf), tr("Done %s%s: PRE %i dB, ATT %i dB, RF gain %i.%02i dB a step."), on, name, pre, att,
                  rfg / 100, rfg % 100);
     }
 #else
     if (att_top) {
-        snprintf(buf, sizeof(buf), "Done: preamp %i dB, attenuator %i, the top, so %i or more.", pre, att, att);
+        snprintf(buf, sizeof(buf), tr("Done: preamp %i dB, attenuator %i, the top, so %i or more."), pre, att, att);
     } else {
-        snprintf(buf, sizeof(buf), "Done: preamp %i dB, attenuator %i dB, RF gain %i.%02i dB a step.", pre, att,
+        snprintf(buf, sizeof(buf), tr("Done: preamp %i dB, attenuator %i dB, RF gain %i.%02i dB a step."), pre, att,
                  rfg / 100, rfg % 100);
     }
 #endif
@@ -4086,6 +4099,9 @@ static void make_display_page() {
     card_end(row);
 
     row = card_begin("INTERFACE");
+    wl_row_label(row, "Language");
+    lang_dd = row_choice(row++, 1, 6, SMALL_6, " English \n Español \n Deutsch \n Français \n Italiano ",
+                         params.language.x < LANG_COUNT ? params.language.x : 0, lang_update_cb, &params.language);
     row = make_mag(row);
     wl_row_label(row, "Icon menus");   /* APP, Modes and the rail as icons: the next time they open */
     bool_switch(row++, 1, 3, SMALL_3, &params.icon_menus);
@@ -4295,8 +4311,8 @@ static void ts_load(ts_status_t *st) {
     FILE *f = fopen(TS_STATUS, "r");
 
     *st = {};
-    strcpy(st->state, "off");
-    strcpy(st->text, "Off");
+    strcpy(st->state, tr("off"));
+    strcpy(st->text, tr("Off"));
     if (!f) {
         return;
     }
@@ -4759,8 +4775,8 @@ static void bc_timer_cb(lv_timer_t *t) {
 
     if (!f) return;
     if (fscanf(f, "%ld %ld", &got, &total) == 2) {
-        if (total > 0) snprintf(s, sizeof(s), "Downloading %.1f of %.1f MB", got / 1e6, total / 1e6);
-        else snprintf(s, sizeof(s), "Downloading %.1f MB", got / 1e6);
+        if (total > 0) snprintf(s, sizeof(s), tr("Downloading %.1f of %.1f MB"), got / 1e6, total / 1e6);
+        else snprintf(s, sizeof(s), tr("Downloading %.1f MB"), got / 1e6);
         bc_say(s);
     }
     fclose(f);
@@ -4786,12 +4802,12 @@ static void bc_done(const char *out, int status, void *user) {
     if (sscanf(out, "%7s %d %7s", kind, &stations, season) == 3 && !strcmp(kind, "ok")) {
         broadcast_db_init();
         bc_thousands(n, sizeof(n), stations);
-        snprintf(s, sizeof(s), "Broadcast list updated: %s stations, season %s.", n, season);
+        snprintf(s, sizeof(s), tr("Broadcast list updated: %s stations, season %s."), n, season);
     } else {
         sscanf(out, "%7s %15s", kind, reason);
         if (!strcmp(reason, "offline")) strcpy(s, "No internet connection. Connect the radio to WiFi or Ethernet.");
         else if (!strcmp(reason, "busy")) strcpy(s, "An update of the broadcast list is already running.");
-        else strcpy(s, "The download failed, the old list is still in use.");
+        else strcpy(s, tr("The download failed, the old list is still in use."));
     }
     if (bc_note) bc_say(s);
     else msg_update_text_fmt("%s", s);
@@ -4831,14 +4847,14 @@ static void upd_timer_cb(lv_timer_t *t) {
     if (!f) return;
     if (fscanf(f, "%15s %ld %ld", step, &got, &total) >= 1) {
         if (!strcmp(step, "download")) {
-            if (total > 0) snprintf(s, sizeof(s), "Downloading %.1f of %.1f MB", got / 1e6, total / 1e6);
-            else snprintf(s, sizeof(s), "Downloading %.1f MB", got / 1e6);
+            if (total > 0) snprintf(s, sizeof(s), tr("Downloading %.1f of %.1f MB"), got / 1e6, total / 1e6);
+            else snprintf(s, sizeof(s), tr("Downloading %.1f MB"), got / 1e6);
         } else if (!strcmp(step, "verify")) {
-            snprintf(s, sizeof(s), "Checking the files: %ld of %ld", got, total);
+            snprintf(s, sizeof(s), tr("Checking the files: %ld of %ld"), got, total);
         } else if (!strcmp(step, "install")) {
-            snprintf(s, sizeof(s), "Installing: %ld of %ld files", got, total);
+            snprintf(s, sizeof(s), tr("Installing: %ld of %ld files"), got, total);
         } else {
-            snprintf(s, sizeof(s), "Finishing...");
+            snprintf(s, sizeof(s), tr("Finishing..."));
         }
         upd_say(s);
     }
@@ -4878,22 +4894,22 @@ static void upd_check_done(const char *out, int status, void *user) {
     upd_busy = false;
     upd_latest[0] = 0;
     if (strncmp(out, "error", 5) == 0) {
-        snprintf(s, sizeof(s), "Check failed: %.70s", out + 6);
+        snprintf(s, sizeof(s), tr("Check failed: %.70s"), out + 6);
     } else if (strstr(out, "\"newer\": true") && upd_json_str(out, "latest", latest, sizeof(latest))) {
         char note[120] = "";
 
         snprintf(upd_latest, sizeof(upd_latest), "%s", latest);
         if (strstr(out, "\"image_needed\": true") && upd_json_str(out, "image_note", note, sizeof(note))) {
             /* the release also wants a newer card image for this radio (x6100-update reads its image-required) */
-            snprintf(s, sizeof(s), "v%s is out; its card image brings %s", latest, note[0] ? note : "more");
+            snprintf(s, sizeof(s), tr("v%s is out; its card image brings %s"), latest, note[0] ? note : "more");
         } else {
-            snprintf(s, sizeof(s), "v%s is available. Install downloads it and restarts the radio software.", latest);
+            snprintf(s, sizeof(s), tr("v%s is available. Install downloads it and restarts the radio software."), latest);
         }
         upd_btn_label("Install");
     } else if (upd_json_str(out, "latest", latest, sizeof(latest))) {
-        snprintf(s, sizeof(s), "Up to date: v%s is the latest release.", latest);
+        snprintf(s, sizeof(s), tr("Up to date: v%s is the latest release."), latest);
     } else {
-        snprintf(s, sizeof(s), "No release on GitHub yet.");
+        snprintf(s, sizeof(s), tr("No release on GitHub yet."));
     }
     if (upd_note) upd_say(s);
     else msg_update_text_fmt("%s", s);
@@ -4944,10 +4960,10 @@ static uint8_t make_update(uint8_t row) {
         if (!upd_timer) upd_timer = lv_timer_create(upd_timer_cb, 500, NULL);
     } else if (image_newer_wanted(note, sizeof(note))) {
         /* the running version wants a newer card image than the one on the card */
-        snprintf(t, sizeof(t), "New card image for this version: %s", note);
+        snprintf(t, sizeof(t), tr("New card image for this version: %s"), note);
         upd_say(t);
     } else {
-        snprintf(s, sizeof(s), "Check looks for a newer release on GitHub; installing takes a minute.");
+        snprintf(s, sizeof(s), tr("Check looks for a newer release on GitHub; installing takes a minute."));
         upd_say(s);
     }
     return row + 1;
@@ -4974,12 +4990,12 @@ static uint8_t make_broadcast_list(uint8_t row) {
     f = fopen(BC_INFO, "r");
     if (f && fscanf(f, "%7s %11s %d", season, day, &stations) == 3) {
         bc_thousands(n, sizeof(n), stations);
-        snprintf(s, sizeof(s), "In use: season %s, updated %s, %s stations.", season, day, n);
+        snprintf(s, sizeof(s), tr("In use: season %s, updated %s, %s stations."), season, day, n);
     } else if (stat(BOARD_DATA "/broadcast.csv", &st) == 0) {
         strftime(day, sizeof(day), "%Y-%m-%d", localtime(&st.st_mtime));
-        snprintf(s, sizeof(s), "In use: the list that came with the firmware, from %s.", day);
+        snprintf(s, sizeof(s), tr("In use: the list that came with the firmware, from %s."), day);
     } else {
-        strcpy(s, "In use: the list that came with the firmware.");
+        strcpy(s, tr("In use: the list that came with the firmware."));
     }
     if (f) fclose(f);
     bc_say(s);
@@ -5142,19 +5158,19 @@ static void make_info_page() {
     if (bat >= 3.0f) {
         snprintf(s, sizeof(s), "%.1f V  %i%%", bat, cap);
     } else {
-        snprintf(s, sizeof(s), "not fitted");
+        snprintf(s, sizeof(s), tr("not fitted"));
     }
     row = info_row(row, "Battery", s);
     if (ext >= 3.0f) {
-        snprintf(s, sizeof(s), chg ? "%.1f V  charging" : "%.1f V", ext);
+        snprintf(s, sizeof(s), chg ? tr("%.1f V  charging") : "%.1f V", ext);
     } else {
         snprintf(s, sizeof(s), "none");
     }
     row = info_row(row, "External", s);
     if (hours || charges) {
-        snprintf(s, sizeof(s), "learned from %i h on battery, %i charges", hours, charges);
+        snprintf(s, sizeof(s), tr("learned from %i h on battery, %i charges"), hours, charges);
     } else {
-        snprintf(s, sizeof(s), "starting values, learning");
+        snprintf(s, sizeof(s), tr("starting values, learning"));
     }
     row = info_row(row, "Time left", s);
     card_end(row);

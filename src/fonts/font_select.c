@@ -4,7 +4,9 @@
  * Sony's; Arial: tools/font_gen.py, about 0.8 x Sony's size so two-line button labels fit);
  * icon glyphs come from the untouched Sony copy through the fallback.
  * The pixel family (1bit): Terminus Font's bitmap sizes at 1 bpp (tools/fonts/bdf2lvgl.py), chosen by
- * cap and line height, so several Sony sizes share one; Latin-1 too. */
+ * cap and line height, so several Sony sizes share one; Latin-1 too.
+ * CX8ANM: letras con tilde, ñ, ¡ ¿ (español, alemán, francés, italiano): lat_<familia>_N, solo esos
+ * caracteres, entre la fuente y la copia de Sony: alt -> lat -> Sony. */
 #include <stdbool.h>
 #include "lvgl/lvgl.h"
 #include "font_select.h"
@@ -16,6 +18,8 @@
 SIZES(DECL)
 extern const lv_font_t pixel_12, pixel_14, pixel_16, pixel_18, pixel_20, pixel_22, pixel_24, pixel_28, pixel_32,
     pixel_44;
+#define DECL_LAT(n) extern const lv_font_t lat_sony_##n, lat_roboto_##n, lat_dejavu_##n, lat_arial_##n, lat_rcond_##n;
+SIZES(DECL_LAT)
 
 #define SONY(n) &sony_##n,
 #define ROBOTO(n) &roboto_##n,
@@ -27,6 +31,16 @@ static const lv_font_t *const roboto[] = { SIZES(ROBOTO) };
 static const lv_font_t *const dejavu[] = { SIZES(DEJAVU) };
 static const lv_font_t *const arial[] = { SIZES(ARIAL) };
 static const lv_font_t *const rcond[] = { SIZES(RCOND) };
+#define LAT_SONY(n) &lat_sony_##n,
+#define LAT_ROBOTO(n) &lat_roboto_##n,
+#define LAT_DEJAVU(n) &lat_dejavu_##n,
+#define LAT_ARIAL(n) &lat_arial_##n,
+#define LAT_RCOND(n) &lat_rcond_##n,
+static const lv_font_t *const lat_sony[] = { SIZES(LAT_SONY) };
+static const lv_font_t *const lat_roboto[] = { SIZES(LAT_ROBOTO) };
+static const lv_font_t *const lat_dejavu[] = { SIZES(LAT_DEJAVU) };
+static const lv_font_t *const lat_arial[] = { SIZES(LAT_ARIAL) };
+static const lv_font_t *const lat_rcond[] = { SIZES(LAT_RCOND) };
 /* sony_14 .. sony_60 */
 static const lv_font_t *const pixel[] = {
     &pixel_12, &pixel_12, &pixel_14, &pixel_16, &pixel_18, &pixel_20, &pixel_20, &pixel_22, &pixel_24,
@@ -37,6 +51,8 @@ _Static_assert(sizeof(pixel) / sizeof(pixel[0]) == N_FONTS, "a pixel font for ev
 
 static lv_font_t orig[N_FONTS];   /* Sony's, as built */
 static bool saved;
+static lv_font_t lat[N_FONTS];    /* CX8ANM: las letras con tilde de la fuente elegida */
+static bool lat_on;               /* false con la pixel, que ya trae Latin-1 */
 
 int buttons_h = 54;  /* = BUTTONS_H_MIN */
 
@@ -48,16 +64,32 @@ void fonts_apply(uint8_t choice) {
     }
     saved = true;
     buttons_h = 54;
+    lat_on = choice != FONT_PIXEL;
     if (choice != FONT_ROBOTO && choice != FONT_DEJAVU && choice != FONT_ARIAL && choice != FONT_RCOND &&
-        choice != FONT_PIXEL)
+        choice != FONT_PIXEL) {
+        for (unsigned i = 0; i < N_FONTS; i++) {
+            lat[i]            = *lat_sony[i];
+            lat[i].fallback   = NULL;
+            sony[i]->fallback = &lat[i];
+        }
         return;
+    }
     if (choice == FONT_DEJAVU) buttons_h = 62;
     const lv_font_t *const *alt = choice == FONT_ROBOTO ? roboto : choice == FONT_DEJAVU ? dejavu :
                                    choice == FONT_ARIAL ? arial : choice == FONT_PIXEL ? pixel : rcond;
 
+    const lv_font_t *const *alt_lat = choice == FONT_ROBOTO ? lat_roboto : choice == FONT_DEJAVU ? lat_dejavu :
+                                       choice == FONT_ARIAL ? lat_arial : lat_rcond;
+
     for (unsigned i = 0; i < N_FONTS; i++) {
         *sony[i] = *alt[i];
-        sony[i]->fallback = &orig[i];
+        if (lat_on) {
+            lat[i]            = *alt_lat[i];
+            lat[i].fallback   = &orig[i];
+            sony[i]->fallback = &lat[i];
+        } else {
+            sony[i]->fallback = &orig[i];
+        }
     }
 }
 
@@ -71,11 +103,12 @@ const lv_font_t *font_down(const lv_font_t *f, int steps) {
 /* VISION: every sony_N drawn `steps` sizes bigger (sony_20 as sony_26 with 3), up to sony_44; sony_60 stays.
  * Call after fonts_apply(), before the UI is built */
 void fonts_scale(int steps) {
-    static lv_font_t was[N_FONTS];
+    static lv_font_t was[N_FONTS], was_lat[N_FONTS], lat_scaled[N_FONTS];
 
     for (unsigned i = 0; i < N_FONTS; i++) {
         if (!saved) orig[i] = *sony[i];   /* without fonts_apply() first (the UI harness) */
-        was[i] = *sony[i];
+        was[i]     = *sony[i];
+        was_lat[i] = lat[i];
     }
     saved = true;
     for (unsigned i = 0; i + 1 < N_FONTS; i++) {
@@ -84,5 +117,10 @@ void fonts_scale(int steps) {
         /* what the bigger one lacks (the symbols: only Sony's 24 and 38 have them) from Sony's
          * size the code asked for: an empty box otherwise (the knobs' arrows) */
         sony[i]->fallback = &orig[i];
+        if (lat_on && was_lat[to].get_glyph_dsc) {   /* CX8ANM: las tildes del tamaño grande, después Sony */
+            lat_scaled[i]          = was_lat[to];
+            lat_scaled[i].fallback = &orig[i];
+            sony[i]->fallback      = &lat_scaled[i];
+        }
     }
 }

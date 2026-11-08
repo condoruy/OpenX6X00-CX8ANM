@@ -306,7 +306,7 @@ static void swl_show_current(void) {
                  "Language: %s     Target: %s\nITU: %s     Days: %s",
                  b->freq_khz, b->start_minute / 60, b->start_minute % 60, b->stop_minute / 60, b->stop_minute % 60,
                  b->language[0] ? b->language : "-", b->target[0] ? b->target : "-",
-                 b->itu[0] ? b->itu : "-", b->days[0] ? b->days : "Daily");
+                 b->itu[0] ? b->itu : "-", b->days[0] ? b->days : tr("Daily"));
         swl_text(count, b->station, info);
     }
     lv_obj_move_foreground(swl.panel);
@@ -377,7 +377,7 @@ static void swl_save_channel(void) {
     } else {
         char text[96];
 
-        snprintf(text, sizeof(text), name && *name ? "Saved channel %s" : "Saved channel", name);
+        snprintf(text, sizeof(text), name && *name ? tr("Saved channel %s") : tr("Saved channel"), name);
         channel_overlay_show(text);
     }
 }
@@ -596,7 +596,7 @@ void main_screen_start_app(press_action_t app_action) {
             break;
         }
     }
-    freq_strip_set_app(app_name(app_action));
+    freq_strip_set_app(tr_static(app_name(app_action)));   /* CX8ANM: idioma */
 }
 
 /* What a long press (or a hand mic F key) was given in Settings */

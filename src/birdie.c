@@ -208,7 +208,7 @@ static void progress(bool done, const char *fmt, ...) {
     va_list    ap;
 
     va_start(ap, fmt);
-    vsnprintf(p.text, sizeof(p.text), fmt, ap);
+    vsnprintf(p.text, sizeof(p.text), tr(fmt), ap);   /* CX8ANM: idioma */
     va_end(ap);
     scheduler_put(progress_post_cb, &p, sizeof(p));
 }
@@ -326,7 +326,7 @@ static void *scan_thread(void *arg) {
     radio_set_freq_dial();     /* the dial may have moved meanwhile: there, not where the scan started (#121) */
     list_save();
     atomic_store(&scanning, false);
-    const char *how = atomic_load(&stop_req) ? "Stopped" : "Done";
+    const char *how = atomic_load(&stop_req) ? tr("Stopped") : tr("Done");
 
     if (lost)   /* say so: a scan with the antenna on fills the list with stations */
         progress(true, "%s: %d found, %d known in all, saved. List full at %d: %d more not kept. Antenna off? "

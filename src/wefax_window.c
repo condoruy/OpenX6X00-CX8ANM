@@ -802,7 +802,7 @@ static void header_update(void)
     if (tx_running)
         snprintf(r, sizeof(r), "#%06x TX %i%%#", theme_hex(TC_tx), tx_progress / 10);
     else
-        snprintf(r, sizeof(r), "%s", decoder && wefax_decoder_get_mode(decoder) == WEFAX_MODE_CONT ? "RX Cont" : "RX Auto");
+        snprintf(r, sizeof(r), "%s", decoder && wefax_decoder_get_mode(decoder) == WEFAX_MODE_CONT ? tr("RX Cont") : tr("RX Auto"));
 
     if (strcmp(l, lv_label_get_text(frame.head_left)))
         lv_label_set_text(frame.head_left, l);

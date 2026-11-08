@@ -437,7 +437,7 @@ static bool dev_listed(bt_dev_t *d, const char *addr, const char *name, bool pai
     if (name) {
         snprintf(d->name, sizeof(d->name), "%s", name);
     } else {
-        snprintf(d->name, sizeof(d->name), d->input ? "Keyboard %s" : "%s", addr);
+        snprintf(d->name, sizeof(d->name), d->input ? tr("Keyboard %s") : "%s", addr);
     }
     return true;
 }
@@ -942,7 +942,7 @@ static void agent_call(GDBusConnection *c, const gchar *sender, const gchar *obj
             char pin[8];
 
             random_pin(pin, sizeof(pin));
-            snprintf(text, sizeof(text), "type %s and Enter on the keyboard", pin);
+            snprintf(text, sizeof(text), tr("type %s and Enter on the keyboard"), pin);
             set_activity(text);
             plog("agent: PIN %s for the keyboard", pin);
             g_dbus_method_invocation_return_value(inv, g_variant_new("(s)", pin));
@@ -953,7 +953,7 @@ static void agent_call(GDBusConnection *c, const gchar *sender, const gchar *obj
         const char *pin = NULL;
 
         g_variant_get(params, "(&o&s)", NULL, &pin);
-        snprintf(text, sizeof(text), "type %.8s and Enter on the keyboard", pin ? pin : "?");
+        snprintf(text, sizeof(text), tr("type %.8s and Enter on the keyboard"), pin ? pin : "?");
         set_activity(text);
         g_dbus_method_invocation_return_value(inv, NULL);
     } else if (strcmp(method, "DisplayPasskey") == 0) {
@@ -961,7 +961,7 @@ static void agent_call(GDBusConnection *c, const gchar *sender, const gchar *obj
         guint16 entered = 0;
 
         g_variant_get(params, "(&ouq)", NULL, &passkey, &entered);
-        snprintf(text, sizeof(text), "type %06u and Enter on the keyboard", (unsigned)passkey);
+        snprintf(text, sizeof(text), tr("type %06u and Enter on the keyboard"), (unsigned)passkey);
         set_activity(text);
         plog("agent: passkey %06u (%u typed)", (unsigned)passkey, (unsigned)entered);
         g_dbus_method_invocation_return_value(inv, NULL);

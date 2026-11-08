@@ -61,6 +61,7 @@ params_t params = {
     .line_out               = 10,
     .spmode                 = { .x = false,             .name = "spmode" },
     .freq_accel             = { .x = FREQ_ACCEL_LITE,   .name = "freq_accel" },
+    .language              = { .x = 1, .name="language"},   /* CX8ANM: LANG_ES */
     .screen_rec_split       = { .x = 0, .min = 0, .max = 4, .name = "screen_rec_split" },
 
     .cw_encoder_period      = 10,
@@ -310,6 +311,7 @@ static bool params_load() {
         if (params_load_float(&params.rec_gain_db_f, name, f)) continue;
 
         if (params_load_uint8(&params.charger, name, i)) continue;
+        if (params_load_uint8(&params.language, name, i)) continue;
         if (params_load_bool(&params.mag_freq, name, i)) continue;
         if (params_load_bool(&params.icon_menus, name, i)) continue;
         if (params_load_js8(&params, name, i)) continue;
@@ -458,6 +460,7 @@ static bool params_save() {
     params_save_float(&params.rec_gain_db_f);
 
     params_save_uint8(&params.freq_accel);
+    params_save_uint8(&params.language);
     params_save_uint8(&params.screen_rec_split);
 
     params_save_uint16(&params.ft8_tx_freq);

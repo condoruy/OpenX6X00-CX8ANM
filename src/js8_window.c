@@ -881,7 +881,7 @@ static void format_age(int64_t age_ms, char *out, size_t out_size)
     int64_t minutes = age_ms / 60000;
     if (minutes >= 60) snprintf(out, out_size, "%dh", (int)(minutes / 60));
     else if (minutes > 0) snprintf(out, out_size, "%dm", (int)minutes);
-    else snprintf(out, out_size, "now");
+    else snprintf(out, out_size, tr("now"));
 }
 
 /* Columns of a row in the Stations view. The font is proportional, so
@@ -912,8 +912,8 @@ static void station_fields(const js8_station_t *stn, int64_t now, station_fields
     if (stn->heard_me) {
         char ago[8];
         format_age(now - stn->heard_me_ms, ago, sizeof(ago));
-        if (!stn->has_reported_snr) snprintf(out->heard, sizeof(out->heard), "heard you (%s)", ago);
-        else snprintf(out->heard, sizeof(out->heard), "heard you %+03d (%s)", stn->reported_snr, ago);
+        if (!stn->has_reported_snr) snprintf(out->heard, sizeof(out->heard), tr("heard you (%s)"), ago);
+        else snprintf(out->heard, sizeof(out->heard), tr("heard you %+03d (%s)"), stn->reported_snr, ago);
     }
 
     const char *mine = station_qth();
@@ -1170,12 +1170,12 @@ static void on_message(const js8_rx_msg_t *msg, void *unused)
 /* The heartbeat part of the status line; returns its length. */
 static int hb_flags(char *out, size_t size, int64_t now_ms)
 {
-    if (!js8_speed_heartbeats(cur_speed())) return snprintf(out, size, "HB paused (Turbo)  ");
+    if (!js8_speed_heartbeats(cur_speed())) return snprintf(out, size, tr("HB paused (Turbo)  "));
     if (hb_next_ms <= now_ms) return snprintf(out, size, "HB %um  ", params.js8_hb_interval.x);
     time_t    when = (time_t)(hb_next_ms / 1000);
     struct tm t;
     gmtime_r(&when, &t);
-    return snprintf(out, size, "HB %um next %02d:%02d  ", params.js8_hb_interval.x, t.tm_hour, t.tm_min);
+    return snprintf(out, size, tr("HB %um next %02d:%02d  "), params.js8_hb_interval.x, t.tm_hour, t.tm_min);
 }
 
 /* The line at the top: whatever may transmit on its own comes first, then
@@ -1191,7 +1191,7 @@ static void update_status(void)
     size_t len = 0;
     flags[0]   = '\0';
     if ((params.js8_auto.x || params.js8_hb.x) && js8_auto_idle(autop, now_ms)) {
-        len += snprintf(flags + len, sizeof(flags) - len, "AUTO/HB PAUSED (idle)  ");
+        len += snprintf(flags + len, sizeof(flags) - len, tr("AUTO/HB PAUSED (idle)  "));
     } else {
         if (params.js8_auto.x) len += snprintf(flags + len, sizeof(flags) - len, "AUTO  ");
         if (params.js8_hb.x) len += hb_flags(flags + len, sizeof(flags) - len, now_ms);
@@ -1205,7 +1205,7 @@ static void update_status(void)
     char    drift[24];
     int64_t off = js8_drift_ms();
     drift[0]    = '\0';
-    if (off != 0) snprintf(drift, sizeof(drift), " drift %+.1fs", off / 1000.0);
+    if (off != 0) snprintf(drift, sizeof(drift), tr(" drift %+.1fs"), off / 1000.0);
 
     const char *wav = js8_rx_wav_active(rx) ? "TEST WAV  " : "";
     lv_label_set_text_fmt(status, "%s%s%s  %02d:%02d:%02dZ%s  total %u", flags, wav, where_label(), utc.tm_hour,
@@ -1619,10 +1619,10 @@ static void update_tx_bar(void)
     if (idle && (cq_adjusting || hb_adjusting)) {
         if (cq_adjusting)
             snprintf(line, sizeof(line),
-                     "Auto CQ %u min after each CQ: turn the knob (%d-%d), press CQ when done",
+                     tr("Auto CQ %u min after each CQ: turn the knob (%d-%d), press CQ when done"),
                      params.js8_cq_interval.x, CQ_MIN_INTERVAL, CQ_MAX_INTERVAL);
         else
-            snprintf(line, sizeof(line), "HB every %u min: turn the knob (5-30), press HB when done",
+            snprintf(line, sizeof(line), tr("HB every %u min: turn the knob (5-30), press HB when done"),
                      params.js8_hb_interval.x);
         lv_obj_set_style_bg_color(bar, bg, 0);
         lv_label_set_text(bar, line);
@@ -1631,7 +1631,7 @@ static void update_tx_bar(void)
 
     const char *speed = js8_speed_name(tx_status.speed);
     if (tx_status.state == JS8_TX_KEYING) {
-        snprintf(line, sizeof(line), "TX %4.0f Hz %s  sending %d/%d   %s", tx_status.offset_hz, speed,
+        snprintf(line, sizeof(line), tr("TX %4.0f Hz %s  sending %d/%d   %s"), tx_status.offset_hz, speed,
                  tx_status.frame, tx_status.frames, tx_status.text);
         bg = TC(tx_bg);
     } else if (tx_status.state == JS8_TX_WAITING) {
@@ -1639,13 +1639,13 @@ static void update_tx_bar(void)
          * message only loses its tail. */
         int wait_s = (int)((tx_status.next_ms - now_wall_ms() + 999) / 1000);
         snprintf(line, sizeof(line), "TX %4.0f Hz %s  %d/%d %s %d s   %s", tx_status.offset_hz, speed,
-                 tx_status.frame, tx_status.frames, tx_status.frame == 1 ? "starts in" : "next in",
+                 tx_status.frame, tx_status.frames, tx_status.frame == 1 ? tr("starts in") : tr("next in"),
                  wait_s > 0 ? wait_s : 0, tx_status.text);
     } else {
         uint16_t at = params.js8_tx_freq.x;
         snprintf(line, sizeof(line), "TX %4u Hz %s   ready%s%s%s%s", at, js8_speed_name(cur_speed()),
-                 params.callsign.x[0] ? "" : "  (set your callsign: Settings > General)",
-                 sel_call[0] ? "      selected: " : "", sel_call, auto_cq ? "      auto CQ" : "");
+                 params.callsign.x[0] ? "" : tr("  (set your callsign: Settings > General)"),
+                 sel_call[0] ? tr("      selected: ") : "", sel_call, auto_cq ? tr("      auto CQ") : "");
         bg = TC(list);
     }
     lv_obj_set_style_bg_color(bar, bg, 0);
@@ -2678,7 +2678,7 @@ static void hw_cpy_cb(button_data_t *b) {
     char  call[JS8_RX_CALL_LEN], text[JS8_RX_CALL_LEN + 12];
     float hz;
     if (!need_station(call, &hz)) return;
-    snprintf(text, sizeof(text), "%s HW CPY?", call); /* desktop's "how do you copy?" */
+    snprintf(text, sizeof(text), "%s HW CPY?", call); /* desktop's tr("how do you copy?") */
     apply_hold(hz);
     if (tx_queue(text)) speed_warn(); /* queued: their speed may not be ours */
 }
@@ -3119,8 +3119,8 @@ static void query_open(void) { /* (Query >) */
     int   db;
     bool  selected = selected_station(call, sizeof(call), &hz, &db);
 
-    if (selected) snprintf(title, sizeof(title), "To %s (%+d dB)", call, db);
-    else snprintf(title, sizeof(title), "No station selected");
+    if (selected) snprintf(title, sizeof(title), tr("To %s (%+d dB)"), call, db);
+    else snprintf(title, sizeof(title), tr("No station selected"));
     query_list = query_list_create(300, title);
 
     lv_obj_t *focus_first = NULL;
@@ -3306,7 +3306,7 @@ static void saved_open(int focus) {
         const char *msg = saved_msgs[slot];
         char        filled[2 * TX_TEXT_MAX], label[2 * TX_TEXT_MAX + 8];
         if (msg[0] == '\0') {
-            snprintf(label, sizeof(label), "%d  (empty)", slot + 1);
+            snprintf(label, sizeof(label), tr("%d  (empty)"), slot + 1);
         } else {
             macros_fill(msg, false, filled, sizeof(filled)); /* as desktop's menu shows them */
             snprintf(label, sizeof(label), "%d  %s", slot + 1, filled);
@@ -3410,7 +3410,7 @@ static void hb_pause(const char *reason) {
 
 static void qso_started(const char *peer) {
     char reason[JS8_RX_CALL_LEN + 12];
-    snprintf(reason, sizeof(reason), "QSO with %s", peer);
+    snprintf(reason, sizeof(reason), tr("QSO with %s"), peer);
     hb_pause(reason);
 }
 
@@ -3450,7 +3450,7 @@ static void offer_answer(const js8_auto_result_t *r) {
 static void handle_incoming(const js8_rx_msg_t *msg) {
     if (js8_starts_qso(msg)) { /* they answered us */
         char reason[JS8_RX_CALL_LEN + 12];
-        snprintf(reason, sizeof(reason), "%s answered", msg->from);
+        snprintf(reason, sizeof(reason), tr("%s answered"), msg->from);
         auto_cq_stop(reason);
         qso_started(msg->from);
     }
@@ -4260,20 +4260,20 @@ static void p3_spot_item_text(spot_item_t item, char *text, size_t room) {
     const char *ref = spot_sota ? last_sota : last_pota;
     text[0]         = '\0';
     if (item == SP_SEND) {
-        snprintf(text, room, "Send spot");
+        snprintf(text, room, tr("Send spot"));
     } else if (item == SP_REF) {
-        snprintf(text, room, "%s: %s", spot_sota ? "Summit" : "Park", ref[0] ? ref : "(type it)");
+        snprintf(text, room, "%s: %s", spot_sota ? tr("Summit") : tr("Park"), ref[0] ? ref : tr("(type it)"));
     } else if (item == SP_FREQ) {
         p3_mhz(p3_spot_hz(), mhz, sizeof(mhz));
-        snprintf(text, room, "Frequency: %s MHz (%s)", mhz, p3_spot_typed() ? "typed" : "JS8 dial");
+        snprintf(text, room, tr("Frequency: %s MHz (%s)"), mhz, p3_spot_typed() ? tr("typed") : tr("JS8 dial"));
     } else if (item == SP_MODE) {
-        snprintf(text, room, "Mode: %s", p3_spot_mode());
+        snprintf(text, room, tr("Mode: %s"), p3_spot_mode());
     } else if (item == SP_NOTE) {
         const char *note = p3_spot_note();
-        if (spot_note[0]) snprintf(text, room, "Comment: %s", note);
-        else snprintf(text, room, note[0] ? "Comment: %s (auto)" : "Comment: (none)", note);
+        if (spot_note[0]) snprintf(text, room, tr("Comment: %s"), note);
+        else snprintf(text, room, note[0] ? tr("Comment: %s (auto)") : tr("Comment: (none)"), note);
     } else if (item == SP_CLOSE) {
-        snprintf(text, room, "Close");
+        snprintf(text, room, tr("Close"));
     }
 }
 
@@ -4515,7 +4515,7 @@ static lv_obj_t *p3_log_item(log_item_t item, const char *text) {
 static void p3_log_reports_text(char *text, size_t room) {
     const char *sent = log_entry.rst_sent[0] ? log_entry.rst_sent : "-";
     const char *rcvd = log_entry.rst_rcvd[0] ? log_entry.rst_rcvd : "-";
-    snprintf(text, room, "Sent %s  Rcvd %s  %.3f MHz  %.0f W", sent, rcvd, log_entry.freq_hz / 1e6, log_entry.tx_pwr_w);
+    snprintf(text, room, tr("Sent %s  Rcvd %s  %.3f MHz  %.0f W"), sent, rcvd, log_entry.freq_hz / 1e6, log_entry.tx_pwr_w);
 }
 
 /* Something came from them while the popup is open, often their 73 after
@@ -4529,7 +4529,7 @@ static void log_refresh(void) { /* LVGL thread, after each message heard */
     lv_label_set_text(log_reports, text);
     if (log_grid_typed || !qso.grid[0] || !strcmp(qso.grid, log_entry.grid)) return;
     snprintf(log_entry.grid, sizeof(log_entry.grid), "%s", qso.grid);
-    snprintf(text, sizeof(text), "Grid: %s", log_entry.grid);
+    snprintf(text, sizeof(text), tr("Grid: %s"), log_entry.grid);
     lv_label_set_text(lv_obj_get_child(log_grid_btn, 0), text);
 }
 
@@ -4548,24 +4548,24 @@ static void log_list_open(log_item_t start) {
     log_list = p3_popup_new(560);
     p3_hhmm(log_entry.on_ms, t_on);
     p3_hhmm(log_entry.off_ms, t_off);
-    snprintf(text, sizeof(text), "Log %s  %s  %s-%s UTC", log_entry.call, js8_log_band(log_entry.freq_hz), t_on, t_off);
+    snprintf(text, sizeof(text), tr("Log %s  %s  %s-%s UTC"), log_entry.call, js8_log_band(log_entry.freq_hz), t_on, t_off);
     p3_popup_note(log_list, text);
     p3_log_reports_text(text, sizeof(text));
     log_reports = p3_popup_note(log_list, text);
 
     item[LOG_SAVE] = p3_log_item(LOG_SAVE, "Save to log");
     lv_obj_set_style_text_color(item[LOG_SAVE], TC(ok), 0);
-    snprintf(text, sizeof(text), "Grid: %s", log_entry.grid[0] ? log_entry.grid : "(none)");
+    snprintf(text, sizeof(text), tr("Grid: %s"), log_entry.grid[0] ? log_entry.grid : tr("(none)"));
     item[LOG_GRID] = log_grid_btn = p3_log_item(LOG_GRID, text);
-    snprintf(text, sizeof(text), "Name: %s", log_entry.name[0] ? log_entry.name : "(none)");
+    snprintf(text, sizeof(text), tr("Name: %s"), log_entry.name[0] ? log_entry.name : tr("(none)"));
     item[LOG_NAME] = p3_log_item(LOG_NAME, text);
-    snprintf(text, sizeof(text), "Comment: %s", log_entry.comment[0] ? log_entry.comment : "(none)");
+    snprintf(text, sizeof(text), tr("Comment: %s"), log_entry.comment[0] ? log_entry.comment : tr("(none)"));
     item[LOG_NOTE] = p3_log_item(LOG_NOTE, text);
     if (log_entry.pota_ref[0]) {
-        snprintf(text, sizeof(text), "Activating POTA %s", log_entry.pota_ref);
+        snprintf(text, sizeof(text), tr("Activating POTA %s"), log_entry.pota_ref);
         p3_popup_note(log_list, text);
     } else if (log_entry.sota_ref[0]) {
-        snprintf(text, sizeof(text), "Activating SOTA %s", log_entry.sota_ref);
+        snprintf(text, sizeof(text), tr("Activating SOTA %s"), log_entry.sota_ref);
         p3_popup_note(log_list, text);
     }
     item[LOG_CANCEL] = p3_log_item(LOG_CANCEL, "Cancel");
@@ -4680,8 +4680,8 @@ static void prompt_cb(button_data_t *b) {
 static const char *act_label_getter(void) { /* "POTA\nCA-1234", "SOTA\n...", or off */
     static char text[40];
     uint8_t     mode = params.js8_log_activation.x;
-    if (mode == 1) snprintf(text, sizeof(text), "POTA\n%s", last_pota[0] ? last_pota : "(hold: set)");
-    else if (mode == 2) snprintf(text, sizeof(text), "SOTA\n%s", last_sota[0] ? last_sota : "(hold: set)");
+    if (mode == 1) snprintf(text, sizeof(text), "POTA\n%s", last_pota[0] ? last_pota : tr("(hold: set)"));
+    else if (mode == 2) snprintf(text, sizeof(text), "SOTA\n%s", last_sota[0] ? last_sota : tr("(hold: set)"));
     else snprintf(text, sizeof(text), "Activ.:\nOff");
     return text;
 }
@@ -4745,8 +4745,8 @@ static void inbox_refresh_button(void) { buttons_mark(&btn_inbox, inbox && js8_i
 static const char *inbox_label_getter(void) { /* "Inbox", or "Inbox\n2 new" */
     static char text[24];
     int         fresh = js8_inbox_unread(inbox);
-    if (fresh == 0) return strcpy(text, "Inbox");
-    snprintf(text, sizeof(text), "Inbox\n%d new", fresh);
+    if (fresh == 0) return strcpy(text, tr("Inbox"));
+    snprintf(text, sizeof(text), tr("Inbox\n%d new"), fresh);
     return text;
 }
 
@@ -4953,12 +4953,12 @@ static lv_obj_t *p3_inbox_held_view(int id) {
     if (!js8_held_get(held, id, &m)) return NULL;
     p3_utc(m.utc_ms, "%d %b %H:%M UTC", when, sizeof(when));
     js8_path_display(m.path, by, sizeof by);
-    snprintf(text, sizeof(text), "For %s from %s  %s", m.to, by, when);
+    snprintf(text, sizeof(text), tr("For %s from %s  %s"), m.to, by, when);
     p3_popup_note(inbox_list, text);
     p3_popup_body(inbox_list, m.text);
-    if (m.group) snprintf(text, sizeof(text), "For any %s member to fetch for 2 days; fetched by %d", m.to, m.got);
-    else if (m.delivered) snprintf(text, sizeof(text), "Delivered to %s", m.to);
-    else snprintf(text, sizeof(text), "Waiting for %s to ask (QUERY MSGS)", m.to);
+    if (m.group) snprintf(text, sizeof(text), tr("For any %s member to fetch for 2 days; fetched by %d"), m.to, m.got);
+    else if (m.delivered) snprintf(text, sizeof(text), tr("Delivered to %s"), m.to);
+    else snprintf(text, sizeof(text), tr("Waiting for %s to ask (QUERY MSGS)"), m.to);
     p3_popup_note(inbox_list, text);
     lv_obj_t *del = p3_inbox_item("Delete", IB_DELETE);
     p3_inbox_back();
@@ -4982,28 +4982,28 @@ static lv_obj_t *p3_inbox_msg_view(int id) {
     const char *path = m.path[0] ? m.path : m.from;
     p3_utc(m.utc_ms, "%d %b %H:%M UTC", when, sizeof(when));
     js8_path_display(path, by, sizeof by);
-    if (m.to[0] == '@') snprintf(text, sizeof(text), "From %s to %s  %s", by, m.to, when);
-    else snprintf(text, sizeof(text), "From %s  %s", by, when);
+    if (m.to[0] == '@') snprintf(text, sizeof(text), tr("From %s to %s  %s"), by, m.to, when);
+    else snprintf(text, sizeof(text), tr("From %s  %s"), by, when);
     p3_popup_note(inbox_list, text);
     p3_popup_body(inbox_list, m.text);
 
     bool is_signed = js8_delivered_signature(m.text, sender, sizeof(sender), &next) && sender[0] != '@';
     if (strcmp(path, "APRS") == 0) {
         if (p3_aprs_sender(m.text, aprs_from, sizeof(aprs_from))) {
-            snprintf(text, sizeof(text), "Reply by APRS to %s", aprs_from);
+            snprintf(text, sizeof(text), tr("Reply by APRS to %s"), aprs_from);
             top = p3_inbox_item(text, IB_REPLY_APRS);
         }
     } else {
-        snprintf(text, sizeof(text), "Reply: MSG to %s", by);
+        snprintf(text, sizeof(text), tr("Reply: MSG to %s"), by);
         top = p3_inbox_item(text, IB_REPLY);
         if (is_signed && strcmp(sender, path) != 0) {
-            snprintf(text, sizeof(text), "Reply to %s via %s (MSG TO:)", sender, by);
+            snprintf(text, sizeof(text), tr("Reply to %s via %s (MSG TO:)"), sender, by);
             p3_inbox_item(text, IB_REPLY_VIA);
-            snprintf(text, sizeof(text), "Reply to %s", sender);
+            snprintf(text, sizeof(text), tr("Reply to %s"), sender);
             p3_inbox_item(text, IB_REPLY_ORIG);
         }
         if (next > 0) {
-            snprintf(text, sizeof(text), "Fetch the next: QUERY MSG %d", next);
+            snprintf(text, sizeof(text), tr("Fetch the next: QUERY MSG %d"), next);
             p3_inbox_item(text, IB_FETCH_NEXT);
         }
     }
@@ -5025,11 +5025,11 @@ static lv_obj_t *p3_inbox_list_view(void) {
 
     int n = js8_inbox_list(inbox, mine, INBOX_ROWS);
     total = js8_inbox_count(inbox);
-    snprintf(text, sizeof(text), "Inbox: %d message%s, %d new", total, total == 1 ? "" : "s", js8_inbox_unread(inbox));
+    snprintf(text, sizeof(text), tr("Inbox: %d message%s, %d new"), total, total == 1 ? "" : "s", js8_inbox_unread(inbox));
     p3_popup_note(inbox_list, text);
 
-    if (p3_selected(to, &audio_hz)) snprintf(text, sizeof(text), "New message to %s...", to);
-    else snprintf(text, sizeof(text), "New message...");
+    if (p3_selected(to, &audio_hz)) snprintf(text, sizeof(text), tr("New message to %s..."), to);
+    else snprintf(text, sizeof(text), tr("New message..."));
     top = p3_inbox_item(text, IB_NEW);
     lv_obj_set_style_text_color(top, TC(ok), 0);
 
@@ -5049,14 +5049,14 @@ static lv_obj_t *p3_inbox_list_view(void) {
     /* Held here for others (MSG TO:) until they ask. */
     int nh = js8_held_list(held, theirs, INBOX_ROWS);
     if (nh > 0) {
-        snprintf(text, sizeof(text), "Held for others: %d waiting", js8_held_waiting(held));
+        snprintf(text, sizeof(text), tr("Held for others: %d waiting"), js8_held_waiting(held));
         p3_popup_note(inbox_list, text);
     }
     for (const js8_held_msg_t *h = theirs; h < theirs + nh; h++) {
         char got[16] = "";
         js8_path_display(h->path, by, sizeof by);
-        if (h->group) snprintf(got, sizeof(got), " (%d got it)", h->got);
-        snprintf(text, sizeof(text), "%sfor %s%s from %s  %s", h->delivered ? "(sent) " : "", h->to, got, by, h->text);
+        if (h->group) snprintf(got, sizeof(got), tr(" (%d got it)"), h->got);
+        snprintf(text, sizeof(text), tr("%sfor %s%s from %s  %s"), h->delivered ? tr("(sent) ") : "", h->to, got, by, h->text);
         lv_obj_t *item = p3_inbox_item(text, INBOX_HELD + h->id);
         if (h->delivered) lv_obj_set_style_text_color(item, TC(text_mute), 0);
     }
@@ -5312,7 +5312,7 @@ static const struct alert_switch {
 
 static void p3_alert_item_text(int item, char *out, size_t size) {
     bool on = (params.js8_alerts.x & alert_items[item].flag) != 0;
-    snprintf(out, size, "%s: %s", alert_items[item].name, on ? "On" : "Off");
+    snprintf(out, size, "%s: %s", alert_items[item].name, on ? tr("On") : tr("Off"));
 }
 
 static void alerts_close(void) { p3_popup_shut(&alerts_list); }
@@ -5368,7 +5368,7 @@ static void alerts_show(void) { /* also back from typing the alert words */
         lv_obj_t *made = p3_alerts_add(k, text);
         if (top == NULL) top = made;
     }
-    snprintf(text, sizeof(text), "Alert words: %s", alert_words[0] ? alert_words : "(none)");
+    snprintf(text, sizeof(text), tr("Alert words: %s"), alert_words[0] ? alert_words : tr("(none)"));
     lv_obj_set_style_text_color(p3_alerts_add(AL_WORDS, text), TC(row_alert_text), 0);
     p3_alerts_add(AL_TEST, "Test beep");
     lv_obj_set_style_text_color(p3_alerts_add(AL_CLOSE, "Close"), TC(action), 0);
@@ -5549,15 +5549,15 @@ static void freq_show(void) { /* the Freq popup */
     char      text[64], khz[16];
     lv_obj_t *opt[FQ_CLOSE + 1];
     freq_list = p3_popup_new(560);
-    snprintf(text, sizeof(text), "Now: %s", where_label());
+    snprintf(text, sizeof(text), tr("Now: %s"), where_label());
     p3_popup_note(freq_list, text);
     opt[FQ_JS8]      = p3_freq_add(FQ_JS8, "JS8Call frequencies (7.078, 14.078...)");
     opt[FQ_GHOSTNET] = p3_freq_add(FQ_GHOSTNET, "GhostNet (3.575, 7.107, 14.107)");
     if (params.js8_custom_hz.x == 0) {
-        snprintf(text, sizeof(text), "Custom kHz...");
+        snprintf(text, sizeof(text), tr("Custom kHz..."));
     } else {
         format_khz(params.js8_custom_hz.x, khz, sizeof khz);
-        snprintf(text, sizeof(text), "Custom kHz... (last %s)", khz);
+        snprintf(text, sizeof(text), tr("Custom kHz... (last %s)"), khz);
     }
     opt[FQ_CUSTOM] = p3_freq_add(FQ_CUSTOM, text);
     opt[FQ_CLOSE]  = p3_freq_add(FQ_CLOSE, "Close");

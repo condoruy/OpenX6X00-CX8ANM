@@ -58,7 +58,7 @@ std::string idle_text(std::int64_t idle_ms) {
     if (secs >= 24 * 3600) std::snprintf(buf, sizeof(buf), "%lldD", (long long)(secs / (24 * 3600)));
     else if (secs >= 3600) std::snprintf(buf, sizeof(buf), "%lldH", (long long)(secs / 3600));
     else if (secs >= 60) std::snprintf(buf, sizeof(buf), "%lldM", (long long)(secs / 60));
-    else std::snprintf(buf, sizeof(buf), "0M"); // desktop: "now" -> "0M"
+    else std::snprintf(buf, sizeof(buf), "0M"); // desktop: tr("now") -> "0M"
     return buf;
 }
 

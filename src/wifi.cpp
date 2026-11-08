@@ -326,7 +326,7 @@ const char *wifi_ap_refusal(const wifi_ap_info_t *ap) {
     if (ap->unsupported) {
         static char buf[160];
 
-        snprintf(buf, sizeof(buf), "%s uses %s: the radio joins open and WPA2 networks", shown(ap->ssid), ap->unsupported);
+        snprintf(buf, sizeof(buf), tr("%s uses %s: the radio joins open and WPA2 networks"), shown(ap->ssid), ap->unsupported);
         return buf;
     }
     if (ap->wpa3_only) {

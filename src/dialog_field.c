@@ -1209,9 +1209,9 @@ static void prog_info_update(void) {
     if (st.have_ref && st.ref.type == 'S' && st.prog == 'S')
         snprintf(alt, sizeof(alt), "#%06x ALT#  %d m     #%06x PTS#  %d\n", theme_hex(TC_text_dim), st.ref.alt_m,
                  theme_hex(TC_text_dim), st.ref.points);
-    snprintf(buf, sizeof(buf), "%s%s\n%s\n#%06x Position from %s%s#", alt, have_pos ? grid : "-",
-             have_pos ? deg : "GPS, phone or locator needed", theme_hex(TC_text_dim), have_pos ? src : "-",
-             have_pos && age > 60 ? " (old)" : "");
+    snprintf(buf, sizeof(buf), tr("%s%s\n%s\n#%06x Position from %s%s#"), alt, have_pos ? grid : "-",
+             have_pos ? deg : tr("GPS, phone or locator needed"), theme_hex(TC_text_dim), have_pos ? src : "-",
+             have_pos && age > 60 ? tr(" (old)") : "");
     lv_label_set_text(info_lines, buf);
     lv_obj_set_style_bg_color(info_dot, TC(err), 0);
     lv_label_set_text(info_state, "NOT ACTIVE");
@@ -1309,7 +1309,7 @@ static void build_act(void) {
     lv_coord_t h = body_h - STATUS_H - 10;
     char       t[48];
 
-    snprintf(t, sizeof(t), "%s - ACTIVATION (%s)", prog_name(), shown_mode());
+    snprintf(t, sizeof(t), tr("%s - ACTIVATION (%s)"), prog_name(), shown_mode());
     head_set(prog_icon(), t);
 
     lv_obj_t *p = panel(body, 8, 6, 584, h);
@@ -1414,9 +1414,9 @@ static void bands_fill(void) {
 
     p = snprintf(line, sizeof(line), "RBN %s.  ", field_rbn_state());
     if (!n)
-        p += snprintf(line + p, sizeof(line) - p, "Nobody heard you in the last 10 min: Test beacon (CW)");
+        p += snprintf(line + p, sizeof(line) - p, tr("Nobody heard you in the last 10 min: Test beacon (CW)"));
     else
-        p += snprintf(line + p, sizeof(line) - p, "Heard by ");
+        p += snprintf(line + p, sizeof(line) - p, tr("Heard by "));
     for (int k = 0; k < n && p < (int)sizeof(line); k++)
         p += snprintf(line + p, sizeof(line) - p, "%s %+d dB  ", hits[k].skimmer, hits[k].snr);
     lv_label_set_text(status, line);
@@ -2073,7 +2073,7 @@ static bool set_ref(const char *in) {
         }
         r = (field_ref_t){.type = 'G'};
         snprintf(r.ref, sizeof(r.ref), "%s", tile);
-        snprintf(r.name, sizeof(r.name), "Typed in");
+        snprintf(r.name, sizeof(r.name), tr("Typed in"));
         qth_str_to_pos(tile, &r.lat, &r.lon);
         st.ref      = r;
         st.have_ref = true;
@@ -2144,7 +2144,7 @@ static void update_timer_cb(lv_timer_t *t) {
     fclose(f);
     if (!ok)
         return;
-    len = snprintf(text, sizeof(text), "Updating %s (%d/%d)", name, n, lists);
+    len = snprintf(text, sizeof(text), tr("Updating %s (%d/%d)"), name, n, lists);
     if (done > 0 && done == total)   /* downloaded: x6100-field reads it (SOTA: about 2 minutes) */
         len += snprintf(text + len, sizeof(text) - len, ": %.1f MB, reading it...", done / 1e6);
     else if (done > 0 && total > 0)
@@ -2152,7 +2152,7 @@ static void update_timer_cb(lv_timer_t *t) {
     else if (done > 0)
         len += snprintf(text + len, sizeof(text) - len, ": %.1f MB", done / 1e6);
     if (retry)
-        snprintf(text + len, sizeof(text) - len, ", retry %d of 5", retry);
+        snprintf(text + len, sizeof(text) - len, tr(", retry %d of 5"), retry);
     if (!strcmp(text, update_text))
         return;
     strcpy(update_text, text);
@@ -2237,11 +2237,11 @@ static const char *tb_no_tx(int band, int32_t *tx) {
     *tx = radio_tx_freq();
     f   = *tx < 0 ? -*tx : *tx;     /* a TX shift below 0 Hz */
     if (field_band_of(*tx) != band)     /* split or a TX shift: the other VFO, wherever it is */
-        snprintf(why, sizeof(why), "it sends on %.3f MHz (split or TX shift)", f / 1e6);
+        snprintf(why, sizeof(why), tr("it sends on %.3f MHz (split or TX shift)"), f / 1e6);
     else if (cfg_tx_refusal_text(*tx, no, sizeof(no)))     /* receive only, outside the amateur bands (#121) */
-        snprintf(why, sizeof(why), "no TX on %s", no);
+        snprintf(why, sizeof(why), tr("no TX on %s"), no);
     else if (radio_no_data())       /* none from the base (#152) */
-        snprintf(why, sizeof(why), "no data from the base");
+        snprintf(why, sizeof(why), tr("no data from the base"));
     else
         return NULL;
     return why;

@@ -213,15 +213,15 @@ static const char *sched_words(void) {
     bcn_sched_t s = sched_set();
 
     if (s.until == BCN_UNTIL_TIME && s.start_min < 0)
-        snprintf(buf, sizeof(buf), "Now, until %02i:%02i%s %s", s.end_min / 60, s.end_min % 60, end_day(s), zone());
+        snprintf(buf, sizeof(buf), tr("Now, until %02i:%02i%s %s"), s.end_min / 60, s.end_min % 60, end_day(s), zone());
     else if (s.until == BCN_UNTIL_TIME)
-        snprintf(buf, sizeof(buf), "From %02i:%02i to %02i:%02i%s %s", s.start_min / 60, s.start_min % 60,
+        snprintf(buf, sizeof(buf), tr("From %02i:%02i to %02i:%02i%s %s"), s.start_min / 60, s.start_min % 60,
                  s.end_min / 60, s.end_min % 60, end_day(s), zone());
     else {
         if (s.until == BCN_UNTIL_SENDS) snprintf(until, sizeof(until), "%i send%s", s.sends, s.sends == 1 ? "" : "s");
-        else snprintf(until, sizeof(until), "until stopped");
-        if (s.start_min < 0) snprintf(buf, sizeof(buf), "Now, %s", until);
-        else snprintf(buf, sizeof(buf), "From %02i:%02i %s, %s", s.start_min / 60, s.start_min % 60, zone(), until);
+        else snprintf(until, sizeof(until), tr("until stopped"));
+        if (s.start_min < 0) snprintf(buf, sizeof(buf), tr("Now, %s"), until);
+        else snprintf(buf, sizeof(buf), tr("From %02i:%02i %s, %s"), s.start_min / 60, s.start_min % 60, zone(), until);
     }
     return buf;
 }
@@ -365,7 +365,7 @@ static void update_status(void) {
             char        buf[32];
             bcn_sched_t s = sched_set();
 
-            snprintf(buf, sizeof(buf), "BEACON %i s", cw_encoder_pause_left());
+            snprintf(buf, sizeof(buf), tr("BEACON %i s"), cw_encoder_pause_left());
             set_state(buf, theme_hex(TC_chip), theme_hex(TC_warn));
             if (s.until == BCN_UNTIL_SENDS)
                 lv_label_set_text_fmt(hint, "%i of %i sent - TX or PTT: stop", cw_encoder_sends_done(), s.sends);
@@ -411,7 +411,7 @@ static void update_status(void) {
         if (beacon_on)
             snprintf(win, sizeof(win), "%s", sched_words());
         else if (band >= 0)
-            snprintf(win, sizeof(win), "Window %s-%s", mhz(lo, qrss_bands[band].win_lo_hz),
+            snprintf(win, sizeof(win), tr("Window %s-%s"), mhz(lo, qrss_bands[band].win_lo_hz),
                      mhz(hi, qrss_bands[band].win_hi_hz));
         lv_label_set_text_fmt(info_lbl, secs < 120.0f ? "About %.0f s in QRSS3\nBeacon: %s\n%s"
                                                       : "About %.0f min in QRSS3\nBeacon: %s\n%s",

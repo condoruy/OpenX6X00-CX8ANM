@@ -183,7 +183,7 @@ void controls_encoder_update(cfg_ctrl_t ctrl, int32_t diff, std::string &msg) {
     }
     switch (ctrl) {
         case CTRL_VOL:
-            snprintf(buf, size, "Volume: %i", radio_change_vol(diff));
+            snprintf(buf, size, tr("Volume: %i"), radio_change_vol(diff));
             break;
 
         case CTRL_SPECTRUM_FACTOR:      /* zoom x1 x2 x4 x8: a step doubles or halves it */
@@ -192,41 +192,41 @@ void controls_encoder_update(cfg_ctrl_t ctrl, int32_t diff, std::string &msg) {
                 cfg_sm.p_mode_zoom.set(diff > 0 ? i << diff : i >> -diff);
                 i = cfg_sm.p_mode_zoom.get();
             }
-            snprintf(buf, size, "Zoom: x%i", i);
+            snprintf(buf, size, tr("Zoom: x%i"), i);
             break;
 
         case CTRL_COMP:
-            snprintf(buf, size, "Compressor ratio: %s", params_comp_str_get(turn(cfg_sm.p_comp, diff, 1)));
+            snprintf(buf, size, tr("Compressor ratio: %s"), params_comp_str_get(turn(cfg_sm.p_comp, diff, 1)));
             break;
 
         case CTRL_KEY_MODE:     /* manual, auto left, auto right */
             i = cycle(cfg_sm.p_key_mode, radio_key_auto_right + 1, diff);
-            snprintf(buf, size, "Key mode: %s", params_key_mode_str_get((radio_key_mode_t)i));
+            snprintf(buf, size, tr("Key mode: %s"), params_key_mode_str_get((radio_key_mode_t)i));
             break;
 
         case CTRL_IAMBIC_MODE:  /* A, B */
             i = cycle(cfg_sm.p_iambic_mode, radio_iambic_b + 1, diff);
-            snprintf(buf, size, "Iambic mode: %s", params_iambic_mode_str_ger((radio_iambic_mode_t)i));
+            snprintf(buf, size, tr("Iambic mode: %s"), params_iambic_mode_str_ger((radio_iambic_mode_t)i));
             break;
 
         case CTRL_RTTY_RATE:
-            snprintf(buf, size, "RTTY rate: %0.2f", rtty_change_rate(diff));
+            snprintf(buf, size, tr("RTTY rate: %0.2f"), rtty_change_rate(diff));
             break;
 
         case CTRL_RTTY_SHIFT:
-            snprintf(buf, size, "RTTY shift: %i Hz", rtty_change_shift(diff));
+            snprintf(buf, size, tr("RTTY shift: %i Hz"), rtty_change_shift(diff));
             break;
 
         case CTRL_RTTY_CENTER:
-            snprintf(buf, size, "RTTY center: %i Hz", rtty_change_center(diff));
+            snprintf(buf, size, tr("RTTY center: %i Hz"), rtty_change_center(diff));
             break;
 
         case CTRL_RTTY_REVERSE:
-            snprintf(buf, size, "RTTY reverse: %s", rtty_change_reverse(diff) ? "On" : "Off");
+            snprintf(buf, size, tr("RTTY reverse: %s"), rtty_change_reverse(diff) ? tr("On") : tr("Off"));
             break;
 
         case CTRL_CLUSTER:
-            snprintf(buf, size, "Cluster: %s", cluster_column_move(diff));
+            snprintf(buf, size, tr("Cluster: %s"), cluster_column_move(diff));
             knobs_set_mfk_param(CTRL_CLUSTER);  /* no subject: refresh the knob label */
             break;
 
@@ -243,7 +243,7 @@ void controls_encoder_update(cfg_ctrl_t ctrl, int32_t diff, std::string &msg) {
                 cur = (cur + (diff > 0 ? 1 : 4)) % 5;
                 cluster_filter_save(presets[cur], f->bands, f->activity);
             }
-            snprintf(buf, size, "Cluster modes: %s", names[cur]);
+            snprintf(buf, size, tr("Cluster modes: %s"), names[cur]);
             knobs_set_mfk_param(CTRL_CLUSTER_MODES);
             break;
         }
@@ -268,7 +268,7 @@ void controls_encoder_update(cfg_ctrl_t ctrl, int32_t diff, std::string &msg) {
             if (diff) {
                 p.set(!p.get());
             }
-            snprintf(buf, size, "%s: %s", ctrl == CTRL_PRE ? "PRE" : "ATT", p.get() ? "On" : "Off");
+            snprintf(buf, size, "%s: %s", ctrl == CTRL_PRE ? "PRE" : "ATT", p.get() ? tr("On") : tr("Off"));
             break;
         }
 
@@ -278,12 +278,12 @@ void controls_encoder_update(cfg_ctrl_t ctrl, int32_t diff, std::string &msg) {
             if ((diff > 0 && i < 5000) || (diff < 0 && i > 10)) {
                 i = cfg_mode_change_freq_step(diff > 0);
             }
-            snprintf(buf, size, "Freq step: %i Hz", i);
+            snprintf(buf, size, tr("Freq step: %i Hz"), i);
             break;
 
         case CTRL_IF_SHIFT:
             if (if_shift_supported()) {
-                snprintf(buf, size, "IF shift: %i Hz", turn(cfg_sm.p_band_if_shift, diff, 100));
+                snprintf(buf, size, tr("IF shift: %i Hz"), turn(cfg_sm.p_band_if_shift, diff, 100));
             } else {
                 msg_update_text_fmt("IF shift is not supported");
             }

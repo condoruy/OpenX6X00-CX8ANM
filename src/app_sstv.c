@@ -352,7 +352,7 @@ static void show_listening(void)
 static void show_decoding(const char *name)
 {
     char s[96];
-    snprintf(s, sizeof(s), "Decoding %s", name ? name : "SSTV");
+    snprintf(s, sizeof(s), tr("Decoding %s"), name ? name : "SSTV");
     sstv_status(s);
     if (sstv_bar) lv_obj_clear_flag(sstv_bar, LV_OBJ_FLAG_HIDDEN);
     auto_button("Halt\nDecoding");
@@ -741,7 +741,7 @@ static void timer_cb(lv_timer_t *t)
         char s[192];
         man_lock_note = false;
         snprintf(s, sizeof(s),
-                 "SSTV Manual decoder is running\n\n%s line syncs found\n\nPress Stop Manual RX to render received picture",
+                 tr("SSTV Manual decoder is running\n\n%s line syncs found\n\nPress Stop Manual RX to render received picture"),
                  mode_label_of(man_sync.st.mode));
         if (man_rec) sstv_status(s);
     }
@@ -760,7 +760,7 @@ static void timer_cb(lv_timer_t *t)
         const sstv_mode_info_t *mi = sstv_mode_info(pic_mode);
         char                    s[160];
         saved_note = false;
-        snprintf(s, sizeof(s), "SSTV picture %s saved", saved_name);
+        snprintf(s, sizeof(s), tr("SSTV picture %s saved"), saved_name);
         msg_schedule_text_fmt("%s", s);
     }
     sstv_tx_tick();
@@ -773,7 +773,7 @@ static void timer_cb(lv_timer_t *t)
         char s[96];
         man_ready = false;
         man_dec = true;
-        snprintf(s, sizeof(s), "Decoding Cont %s", man_mode == SSTV_UNKNOWN ? "Auto" : mode_label_of(man_mode));
+        snprintf(s, sizeof(s), tr("Decoding Cont %s"), man_mode == SSTV_UNKNOWN ? tr("Auto") : mode_label_of(man_mode));
         sstv_status(s);
         if (sstv_bar) lv_obj_add_flag(sstv_bar, LV_OBJ_FLAG_HIDDEN);
         sstv_controls();
@@ -955,7 +955,7 @@ static void manual_cb(button_data_t *b)
                                "Press Stop Manual RX to render received picture");
     else
         snprintf(s, sizeof(s),
-                 "SSTV Manual decoder is running\n\nDecoding %s signal\n\nPress Stop Manual RX to render received picture",
+                 tr("SSTV Manual decoder is running\n\nDecoding %s signal\n\nPress Stop Manual RX to render received picture"),
                  mode_label_of(sstv_mode));
     sstv_status(s);
     if (sstv_bar) lv_obj_add_flag(sstv_bar, LV_OBJ_FLAG_HIDDEN);
