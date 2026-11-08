@@ -73,6 +73,14 @@ typedef enum {
     ACTION_APP_JTTY,    /* 123, appended after OLIVIA */
     ACTION_APP_CHANNELS, /* 124: the CHANNELS window, as the hand mic V/M key */
     ACTION_APP_BIRDIE,   /* 125: Birdie Cal */
+
+    /* CX8ANM: las apps de la edición, lejos de las que agregue OpenX6X00 */
+    ACTION_APP_METEO = 200,
+    ACTION_APP_IRADIO,
+    ACTION_APP_ZELLO,
+    ACTION_APP_FLIGHTS,
+    ACTION_APP_AERO,
+    ACTION_APP_CB,
 } press_action_t;
 
 typedef enum {
@@ -126,7 +134,11 @@ typedef struct {
     params_bool_t       waterfall_zoom;
     params_bool_t       mag_freq;
     params_bool_t       icon_menus;         /* APP, Modes and the Settings rail as icons */
-    params_bool_t       setup_done;         /* CX8ANM: el asistente del primer encendido se completó */
+    params_bool_t       setup_done;
+    params_bool_t       meteo_alerts;       /* CX8ANM: alertas de INUMET en pantalla */
+    params_bool_t       cb_knob;            /* CX8ANM: la perilla salta de canal en la CB */
+    params_uint8_t      cb_mode;            /* CX8ANM: modo de los canales CB (0 AM, 1 FM, 2 USB, 3 LSB) */
+    params_uint8_t      cb_band;            /* CX8ANM: banda CB (0 A .. 5 UK) */         /* CX8ANM: el asistente del primer encendido se completó */
     params_bool_t       mag_info;
     params_bool_t       mag_alc;
     clock_view_t        clock_view;

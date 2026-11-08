@@ -9,6 +9,14 @@
  *  the hand mic, the knobs and a USB keyboard do on it. The apps open over it.
  */
 
+#include "cb.h"
+#include "channel_list.h"
+#include "dialog_meteo.h"
+#include "dialog_iradio.h"
+#include "dialog_zello.h"
+#include "dialog_flights.h"
+#include "dialog_aero.h"
+#include "dialog_cb.h"
 #include "screen_main.h"
 
 #include "ft8/ft2.h"
@@ -487,6 +495,12 @@ static const char *app_name(press_action_t a) {
         case ACTION_APP_JTTY:       return "JTTY";
         case ACTION_APP_CHANNELS:   return "Channels";
         case ACTION_APP_BIRDIE:     return "Birdie Cal";
+        case ACTION_APP_METEO:      return "Weather";
+        case ACTION_APP_IRADIO:     return "Internet radio";
+        case ACTION_APP_ZELLO:      return "Zello";
+        case ACTION_APP_FLIGHTS:    return "Flights";
+        case ACTION_APP_AERO:       return "HF Air Band";
+        case ACTION_APP_CB:         return "CB";
         default:                   return NULL;    /* Modes menu: a menu, not an app */
     }
 }
@@ -576,6 +590,12 @@ void main_screen_start_app(press_action_t app_action) {
         {ACTION_APP_JS8, &dialog_js8},
         {ACTION_APP_CHANNELS, &dialog_channels},
         {ACTION_APP_BIRDIE, &dialog_birdie},
+        {ACTION_APP_METEO, &dialog_meteo},      /* CX8ANM */
+        {ACTION_APP_IRADIO, &dialog_iradio},
+        {ACTION_APP_ZELLO, &dialog_zello},
+        {ACTION_APP_FLIGHTS, &dialog_flights},
+        {ACTION_APP_AERO, &dialog_aero},
+        {ACTION_APP_CB, &dialog_cb},
     };
 
     if (app_action == ACTION_APP_RTTY) {
@@ -597,6 +617,23 @@ void main_screen_start_app(press_action_t app_action) {
         }
     }
     freq_strip_set_app(tr_static(app_name(app_action)));   /* CX8ANM: idioma */
+}
+
+/* CX8ANM: Guardar canal de la CB y de la banda aérea HF: la frecuencia y el modo de ahora, con el
+ * nombre del canal CB si es uno ("CB C-19") */
+void main_screen_save_channel(void) {
+    char name[24] = "";
+
+    if (!channels_add_current()) {
+        msg_update_text_fmt("Channel not saved");
+        return;
+    }
+    if (cb_name(cparam_i_get(cfg_fg_freq), name, sizeof(name))) {
+        channels_set_name(channels_count() - 1, name);
+        msg_update_text_fmt("Saved channel %s", name);
+    } else {
+        msg_update_text_fmt("Saved channel");
+    }
 }
 
 /* CX8ANM: una ventana que no es una app del menú (dialog_setup.c) */
@@ -954,6 +991,9 @@ static void front_key_cb(lv_event_t *e) {
             break;
 
         case KEYPAD_PTT:
+            /* CX8ANM: con Zello abierto, el PTT del costado habla por Zello y no sale al aire */
+            if (ev->state == KEYPAD_PRESS && dialog_zello_ptt(true)) break;
+            if ((ev->state == KEYPAD_RELEASE || ev->state == KEYPAD_LONG_RELEASE) && dialog_zello_ptt(false)) break;
             ptt_key(ev->state);
             break;
 
@@ -1220,6 +1260,28 @@ static void freq_shift(int16_t diff, uint16_t dt) {
         return;
     }
     snap_hold = 0;
+
+    /* CX8ANM: en la CB, con la perilla en canales, salta de canal en canal (dialog_cb.c) */
+    if (params.cb_knob.x && cb_in_range(old)) {
+        char    name[24];
+        int     ob = -1, nb = -1;
+        int32_t to = cb_step(old, diff > 0 ? 1 : -1);
+        if (to != old) {
+            cb_channel_of(old, &ob, NULL);
+            cb_channel_of(to, &nb, NULL);
+            cparam_i_set(cfg_fg_freq, to);
+            if (nb != ob && nb >= 0) {
+                params_uint8_set(&params.cb_band, nb);
+                /* la UK es solo en FM: al entrar pasa a FM, como al elegirla en la app de CB */
+                if (nb == CB_BAND_UK && radio_get_state() == RADIO_RX) {
+                    params_uint8_set(&params.cb_mode, 1);
+                    cparam_i_set(cfg_cur_mode, radio_mode_nfm);
+                }
+            }
+            if (cb_name(to, name, sizeof(name))) channel_overlay_show(name);
+        }
+        return;
+    }
 
     int32_t df   = diff * param_i_get(cfg_mode_freq_step) * freq_accel(dt);
     int32_t freq = align_int(old + df, abs(df));

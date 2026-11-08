@@ -47,6 +47,10 @@ params_t params = {
     .mag_freq               = { .x = false,  .name = "mag_freq" },
     .icon_menus             = { .x = true,   .name = "icon_menus" },
     .setup_done             = { .x = false,  .name = "setup_done" },
+    .meteo_alerts           = { .x = true,   .name = "meteo_alerts" },
+    .cb_knob                = { .x = true,   .name = "cb_knob" },
+    .cb_mode                = { .x = 0,      .name = "cb_mode" },
+    .cb_band                = { .x = 2,      .name = "cb_band" },
     .mag_info               = { .x = false, .name = "mag_info" },
     .mag_alc                = { .x = true,  .name = "mag_alc" },
     .clock_view             = CLOCK_TIME_POWER,
@@ -317,6 +321,10 @@ static bool params_load() {
         if (params_load_bool(&params.mag_freq, name, i)) continue;
         if (params_load_bool(&params.icon_menus, name, i)) continue;
         if (params_load_bool(&params.setup_done, name, i)) continue;
+        if (params_load_bool(&params.meteo_alerts, name, i)) continue;
+        if (params_load_bool(&params.cb_knob, name, i)) continue;
+        if (params_load_uint8(&params.cb_mode, name, i)) continue;
+        if (params_load_uint8(&params.cb_band, name, i)) continue;
         if (params_load_js8(&params, name, i)) continue;
         if (params_load_cw_beacon(&params, name, i)) continue;
         if (params_load_bool(&params.sstv_denoise, name, i)) continue;
@@ -473,6 +481,10 @@ static bool params_save() {
     params_save_bool(&params.mag_freq);
     params_save_bool(&params.icon_menus);
     params_save_bool(&params.setup_done);
+    params_save_bool(&params.meteo_alerts);
+    params_save_bool(&params.cb_knob);
+    params_save_uint8(&params.cb_mode);
+    params_save_uint8(&params.cb_band);
     params_save_js8(&params);
     params_save_cw_beacon(&params);
     params_save_bool(&params.sstv_denoise);

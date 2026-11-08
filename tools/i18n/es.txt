@@ -2274,3 +2274,14 @@ NO POS	SIN POS
 Linear	Lineal
 POWER	ALIMENTACIÓN
 %s.local/remote, port %d	%s.local/remote, puerto %d
+Channel not saved	Canal no guardado
+Forecast, alerts	Pronóstico, alertas
+Internet radio	Radio Internet
+Stations, ATC	Emisoras, ATC
+Voice channels	Canales de voz
+Aircraft overhead	Aviones encima
+Oceanic, VOLMET	Oceánica, VOLMET
+Channels by band	Canales por banda
+Auto (Region 1)	Auto (Región 1)
+Auto (Region 2)	Auto (Región 2)
+Auto (Region 3)	Auto (Región 3)

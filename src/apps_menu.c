@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-#define COLS   4
+#define COLS   5   /* CX8ANM: 4 en OpenX6X00; con las apps de la edición, 5 por fila */
 #define GAP    4
 #define PAD    6
 #define BOX_W  760
@@ -34,7 +34,7 @@
 #define HEAD_H 38
 #define HINT_H 26
 #define BOX_Y  (TOP_BAR_STD_H + 4)
-#define ICON   36
+#define ICON   24   /* CX8ANM: 36 con 4 por fila */
 
 typedef enum { OPEN_APP, OPEN_SCREEN_REC, OPEN_WALKIE } open_t;
 
@@ -56,6 +56,13 @@ static const struct {
     {"Screen Rec", "Screen and audio", "screenrec", OPEN_SCREEN_REC, 0},
     {"Walkie", "Portrait screen", "walkie", OPEN_WALKIE, 0},
     {"Birdie Cal", "Find birdies, antenna off", "birdie", OPEN_APP, ACTION_APP_BIRDIE},
+    /* CX8ANM */
+    {"Weather", "Forecast, alerts", "meteo", OPEN_APP, ACTION_APP_METEO},
+    {"Internet radio", "Stations, ATC", "iradio", OPEN_APP, ACTION_APP_IRADIO},
+    {"Zello", "Voice channels", "zello", OPEN_APP, ACTION_APP_ZELLO},
+    {"Flights", "Aircraft overhead", "flights", OPEN_APP, ACTION_APP_FLIGHTS},
+    {"HF Air Band", "Oceanic, VOLMET", "aero", OPEN_APP, ACTION_APP_AERO},
+    {"CB", "Channels by band", "cb", OPEN_APP, ACTION_APP_CB},
     {"Settings", "All settings", "settings", OPEN_APP, ACTION_APP_SETTINGS},
 };
 
@@ -204,21 +211,23 @@ static void construct_cb(lv_obj_t *parent) {
             img = lv_label_create(t);
             lv_label_set_text(img, "");
         }
-        lv_obj_set_pos(img, 10, (TILE_H - ICON) / 2);
+        lv_obj_set_pos(img, 8, (TILE_H - ICON) / 2);
 
         /* The name, then the line in two rows of a smaller font: beside the icon the tile is
          * narrow (117 px) and the lines wrap; with one row's height the second was cut off */
+        /* CX8ANM: cinco por fila: el nombre en hasta dos renglones al lado del ícono; la línea de
+         * descripción no entra (queda vacía, para que el orden de los hijos siga igual) */
         lv_obj_t *name = lv_label_create(t);
-        lv_obj_set_style_text_font(name, &sony_22, 0);
+        lv_obj_set_style_text_font(name, &sony_20, 0);
         lv_label_set_text(name, apps[i].name);
-        lv_obj_set_pos(name, 10 + ICON + 10, 5);
+        lv_label_set_long_mode(name, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(name, TILE_W - ICON - 22);
+        lv_obj_set_style_text_line_space(name, -2, 0);
+        lv_obj_align(name, LV_ALIGN_LEFT_MID, 8 + ICON + 8, 0);
 
         lv_obj_t *sub = lv_label_create(t);
-        lv_obj_set_style_text_font(sub, &sony_16, 0);
-        lv_label_set_text(sub, apps[i].sub);
-        lv_obj_set_size(sub, TILE_W - ICON - 30, 36);
-        lv_label_set_long_mode(sub, LV_LABEL_LONG_DOT);
-        lv_obj_set_pos(sub, 10 + ICON + 10, 29);
+        lv_label_set_text(sub, "");
+        lv_obj_add_flag(sub, LV_OBJ_FLAG_HIDDEN);
     }
 
     lv_obj_t *hint = lv_label_create(box);

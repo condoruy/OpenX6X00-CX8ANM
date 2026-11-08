@@ -4113,5 +4113,333 @@ def restore_backup():
         backup_lock.release()
 
 
+# ========== CX8ANM: Radio por Internet, Vuelos y Zello ==========
+
+# ---------- Radio por Internet: las favoritas de la app (src/dialog_iradio.c) ----------
+# /mnt/iradio/favorites.tsv: nombre <TAB> dirección <TAB> formato <TAB> kbps <TAB> país, una por línea
+
+IRADIO_FAV_MAX = 150
+
+
+IRADIO_FILES = {"fav": "favorites.tsv", "atc": "atc.tsv"}   # atc: emisoras de banda aérea que carga cada uno
+
+
+def iradio_file(kind="fav"):
+    return os.path.join(settings.FILEBROWSER_PATH or "/mnt", "iradio", IRADIO_FILES[kind])
+
+
+def read_iradio(kind="fav"):
+    out = []
+    try:
+        with open(iradio_file(kind), encoding="utf-8", errors="replace") as f:
+            for line in f:
+                p = line.rstrip("\r\n").split("\t")
+                if len(p) >= 2 and p[0] and p[1].startswith(("http://", "https://")):
+                    p += [""] * (5 - len(p))
+                    out.append({"name": p[0], "url": p[1], "codec": p[2], "kbps": p[3], "cc": p[4]})
+    except OSError:
+        pass
+    return out
+
+
+def write_iradio(items, kind="fav"):
+    path = iradio_file(kind)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        for s in items:
+            f.write("\t".join([s["name"], s["url"], s["codec"], s["kbps"], s["cc"]]) + "\n")
+    os.replace(tmp, path)
+    os.sync()
+
+
+def iradio_entry():
+    data = bottle.request.json if isinstance(bottle.request.json, dict) else {}
+    clean = lambda v, n: " ".join(str(v or "").replace("\t", " ").split())[:n]
+    s = {"name": clean(data.get("name"), 60), "url": clean(data.get("url"), 250).replace(" ", "%20"),
+         "codec": clean(data.get("codec"), 8).upper(), "kbps": clean(data.get("kbps"), 6), "cc": clean(data.get("cc"), 2).upper()}
+    if not s["url"].lower().startswith(("http://", "https://")):
+        raise ValueError("La dirección tiene que empezar con http:// o https://")
+    if not s["name"]:
+        raise ValueError("Falta el nombre de la emisora")
+    if s["kbps"] and not s["kbps"].isdigit():
+        raise ValueError("Los kbps son un número (por ejemplo 128)")
+    return s
+
+
+@app.route('/iradio')
+def iradio_page():
+    return bottle.template('iradio')
+
+
+@app.get('/api/<kind:re:iradio|iradio-atc>')
+def get_iradio(kind):
+    k = "atc" if kind.endswith("atc") else "fav"
+    return {"stations": read_iradio(k), "max": IRADIO_FAV_MAX}
+
+
+@app.post('/api/<kind:re:iradio|iradio-atc>')
+def add_iradio(kind):
+    k = "atc" if kind.endswith("atc") else "fav"
+    try:
+        s = iradio_entry()
+        items = read_iradio(k)
+        if any(x["url"] == s["url"] for x in items):
+            raise ValueError("Esa dirección ya está en la lista")
+        if len(items) >= IRADIO_FAV_MAX:
+            raise ValueError("Ya hay %d emisoras: quite alguna" % IRADIO_FAV_MAX)
+        items.append(s)
+        write_iradio(items, k)
+    except ValueError as ex:
+        return api_error(400, str(ex))
+    except OSError as ex:
+        return api_error(500, f"No se pudo guardar: {ex}")
+    return get_iradio(kind)
+
+
+@app.post('/api/<kind:re:iradio|iradio-atc>/import')
+def import_iradio(kind):
+    """Varias emisoras de un archivo de texto: una por línea, nombre <TAB> dirección <TAB> formato <TAB> kbps <TAB> país
+    (también separadas por ; o |). Se agregan las que no están; las líneas que no sirven se informan."""
+    k = "atc" if kind.endswith("atc") else "fav"
+    data = bottle.request.json if isinstance(bottle.request.json, dict) else {}
+    text = str(data.get("text") or "")[:200000]
+    items = read_iradio(k)
+    have = {x["url"] for x in items}
+    added, skipped, bad = 0, 0, []
+    clean = lambda v, n: " ".join(str(v or "").split())[:n]
+    for n, line in enumerate(text.splitlines(), 1):
+        line = line.strip().lstrip("\ufeff")
+        if not line or line.startswith("#"):
+            continue
+        sep = "\t" if "\t" in line else (";" if ";" in line else ("|" if "|" in line else None))
+        p = [x.strip() for x in (line.split(sep) if sep else [line])]
+        if p and p[0].lower() in ("nombre", "name"):
+            continue                     # encabezado
+        if len(p) == 1 and p[0].lower().startswith(("http://", "https://")):
+            p = [p[0].rsplit("/", 1)[-1] or p[0], p[0]]
+        p += [""] * (5 - len(p))
+        s = {"name": clean(p[0], 60), "url": clean(p[1], 250).replace(" ", "%20"), "codec": clean(p[2], 8).upper(),
+             "kbps": clean(p[3], 6), "cc": clean(p[4], 2).upper()}
+        if not s["name"] or not s["url"].lower().startswith(("http://", "https://")) or (s["kbps"] and not s["kbps"].isdigit()):
+            bad.append(n)
+            continue
+        if s["url"] in have:
+            skipped += 1
+            continue
+        if len(items) >= IRADIO_FAV_MAX:
+            bad.append(n)
+            continue
+        items.append(s)
+        have.add(s["url"])
+        added += 1
+    try:
+        if added:
+            write_iradio(items, k)
+    except OSError as ex:
+        return api_error(500, f"No se pudo guardar: {ex}")
+    r = get_iradio(kind)
+    r.update({"added": added, "skipped": skipped, "bad": bad[:20]})
+    return r
+
+
+@app.get('/api/<kind:re:iradio|iradio-atc>/export')
+def export_iradio(kind):
+    k = "atc" if kind.endswith("atc") else "fav"
+    lines = ["\t".join([s["name"], s["url"], s["codec"], s["kbps"], s["cc"]]) for s in read_iradio(k)]
+    bottle.response.content_type = "text/plain; charset=utf-8"
+    bottle.response.set_header("Content-Disposition", 'attachment; filename="%s"' % ("banda-aerea.txt" if k == "atc" else "favoritas.txt"))
+    return "\n".join(lines) + ("\n" if lines else "")
+
+
+@app.put('/api/<kind:re:iradio|iradio-atc>/<i:int>')
+def set_iradio(kind, i):
+    k = "atc" if kind.endswith("atc") else "fav"
+    try:
+        s = iradio_entry()
+        items = read_iradio(k)
+        if not 0 <= i < len(items):
+            raise ValueError("Esa emisora ya no está (recargue la página)")
+        items[i] = s
+        write_iradio(items, k)
+    except ValueError as ex:
+        return api_error(400, str(ex))
+    except OSError as ex:
+        return api_error(500, f"No se pudo guardar: {ex}")
+    return get_iradio(kind)
+
+
+@app.delete('/api/<kind:re:iradio|iradio-atc>/<i:int>')
+def delete_iradio(kind, i):
+    k = "atc" if kind.endswith("atc") else "fav"
+    try:
+        items = read_iradio(k)
+        if 0 <= i < len(items):
+            del items[i]
+            write_iradio(items, k)
+    except OSError as ex:
+        return api_error(500, f"No se pudo guardar: {ex}")
+    return get_iradio(kind)
+
+
+# ---------- Vuelos (rootfs/usr/sbin/x6100-flights) ----------
+# Los mismos datos que la app Vuelos de la radio, para verlos en un mapa.
+
+FLIGHTS_CMD = "/usr/sbin/x6100-flights"
+FLIGHTS_FILE = "/tmp/x6100-flights-web.json"   # aparte del de la radio
+
+
+def grid_center(grid):
+    """Centro de un locator Maidenhead de 4 o 6 caracteres, o None"""
+    g = (grid or "").strip().upper()
+    if len(g) < 4 or not ("A" <= g[0] <= "R" and "A" <= g[1] <= "R" and g[2:4].isdigit()):
+        return None
+    lon = (ord(g[0]) - 65) * 20 - 180 + int(g[2]) * 2
+    lat = (ord(g[1]) - 65) * 10 - 90 + int(g[3])
+    if len(g) >= 6 and "A" <= g[4] <= "X" and "A" <= g[5] <= "X":
+        lon += (ord(g[4]) - 65) / 12 + 1 / 24
+        lat += (ord(g[5]) - 65) / 24 + 1 / 48
+    else:
+        lon += 1
+        lat += 0.5
+    return round(lat, 5), round(lon, 5)
+
+
+@app.route('/vuelos')
+def flights_page():
+    return bottle.template('vuelos')
+
+
+@app.get('/api/flights/home')
+def flights_home():
+    qth = read_param("qth")
+    c = grid_center(qth)
+    return {"qth": qth, "lat": c[0] if c else None, "lon": c[1] if c else None}
+
+
+@app.get('/api/flights')
+def flights_get():
+    q = bottle.request.query
+    try:
+        lat, lon, km = float(q.get("lat")), float(q.get("lon")), float(q.get("km", 100))
+    except (TypeError, ValueError):
+        bottle.response.status = 400
+        return {"msg": "Falta la posición"}
+    try:
+        r = subprocess.run([FLIGHTS_CMD, "update", "%.4f" % lat, "%.4f" % lon, "%d" % km],
+                           capture_output=True, text=True, timeout=40,
+                           env=dict(os.environ, X6100_FLIGHTS_OUT=FLIGHTS_FILE))
+        line = (r.stdout or "").strip().splitlines()[-1:] or [""]
+    except (OSError, subprocess.SubprocessError) as e:
+        line = ["error %s" % e]
+    if not line[0].startswith("ok"):
+        bottle.response.status = 502
+        return {"msg": line[0][6:] if line[0].startswith("error ") else "Sin datos (¿hay internet?)"}
+    with open(FLIGHTS_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+
+# ---------- Zello (x6100-zello, src/dialog_zello.c) ----------
+# /mnt/zello.conf: USER, PASS, ISSUER, CHANNEL, CHANNELS (separados por |); /mnt/zello.key: la Private Key (PEM).
+# La clave y la llave nunca se devuelven a la página: solo si están cargadas.
+
+def zello_paths():
+    root = settings.FILEBROWSER_PATH or "/mnt"
+    return os.path.join(root, "zello.conf"), os.path.join(root, "zello.key")
+
+
+def read_zello():
+    conf, _ = zello_paths()
+    c = {"USER": "", "PASS": "", "ISSUER": "", "CHANNEL": "", "CHANNELS": ""}
+    try:
+        with open(conf, encoding="utf-8") as f:
+            for line in f:
+                line = line.rstrip("\r\n")
+                if "=" in line and not line.startswith("#"):
+                    k, v = line.split("=", 1)
+                    v = v.strip()
+                    if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+                        v = v[1:-1]
+                    c[k.strip().upper()] = v
+    except OSError:
+        pass
+    return c
+
+
+def zello_public():
+    c = read_zello()
+    _, key = zello_paths()
+    return {"user": c["USER"], "pass_set": bool(c["PASS"]), "issuer": c["ISSUER"], "key_set": os.path.isfile(key),
+            "channels": [x for x in c["CHANNELS"].split("|") if x], "channel": c["CHANNEL"]}
+
+
+@app.route('/zello')
+def zello_page():
+    return bottle.template('zello')
+
+
+@app.get('/api/zello')
+def get_zello():
+    return zello_public()
+
+
+@app.post('/api/zello')
+def set_zello():
+    data = bottle.request.json if isinstance(bottle.request.json, dict) else {}
+    c = read_zello()
+    one = lambda v, n: " ".join(str(v or "").replace("\n", " ").replace("|", " ").replace('"', "").split())[:n]
+    try:
+        if "user" in data:
+            c["USER"] = one(data.get("user"), 64)
+        if data.get("password"):
+            c["PASS"] = str(data["password"]).replace("\n", "").replace('"', "")[:128]
+        if "issuer" in data:
+            c["ISSUER"] = one(data.get("issuer"), 300).replace(" ", "")
+        if "channels" in data:
+            chans = []
+            for x in data.get("channels") or []:
+                x = one(x, 60)
+                if x and x not in chans:
+                    chans.append(x)
+            if len(chans) > 20:
+                raise ValueError("Hasta 20 canales")
+            c["CHANNELS"] = "|".join(chans)
+            if c["CHANNEL"] not in chans:
+                c["CHANNEL"] = chans[0] if chans else ""
+        conf, key = zello_paths()
+        if data.get("private_key"):
+            pem = str(data["private_key"]).strip().replace("\r\n", "\n")
+            if "-----BEGIN" not in pem or "PRIVATE KEY-----" not in pem:
+                raise ValueError("La Private Key tiene que incluir las líneas BEGIN y END")
+            tmp = key + ".tmp"
+            with open(tmp, "w") as f:
+                f.write(pem + "\n")
+            os.chmod(tmp, 0o600)
+            os.replace(tmp, key)
+        tmp = conf + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            for k in ("USER", "PASS", "ISSUER", "CHANNEL", "CHANNELS"):
+                f.write('%s="%s"\n' % (k, c[k]))
+        os.chmod(tmp, 0o600)
+        os.replace(tmp, conf)
+        os.sync()
+    except ValueError as ex:
+        return api_error(400, str(ex))
+    except OSError as ex:
+        return api_error(500, f"No se pudo guardar: {ex}")
+    return zello_public()
+
+
+@app.post('/api/zello/test')
+def test_zello():
+    try:
+        r = subprocess.run(["/usr/sbin/x6100-zello", "test"], capture_output=True, text=True, timeout=40)
+        out = (r.stdout.strip().splitlines() or ["error sin respuesta"])[-1]
+    except (OSError, subprocess.SubprocessError) as ex:
+        out = "error " + str(ex)
+    return {"ok": out.startswith("ok"), "msg": out[3:] if out.startswith("ok") else out[6:] if out.startswith("error") else out}
+
+
+
 # The Bands, Digital modes, Time and Files pages, static files: config_pages.py adds their routes to app
 from . import config_pages   # noqa: E402,F401  (last: it imports app and api_error from here)

@@ -1,0 +1,132 @@
+% rebase('base.html', title='Radio por Internet')
+<h2><svg class="i"><use href="#i-speaker"/></svg>Radio por Internet</h2>
+<p class="sub">Las emisoras favoritas de APP &rarr; Radio Internet. Agregá una con su nombre y la dirección del audio
+(la que termina en .mp3, .aac, .pls o .m3u, o la que da la página de la emisora para "escuchar en otro reproductor").
+La radio las muestra la próxima vez que pasás por Favoritas con la tecla Lista.</p>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-speaker"/></svg></span><div><h3>Favoritas</h3><p id="count"></p></div><div class="dp-x"><button id="add" class="primary"><svg class="i"><use href="#i-plus"/></svg>Agregar</button></div></div>
+<div class="dp-body tbl">
+<div class="table-wrap">
+<table id="stations">
+  <thead>
+    <tr><th>Nombre</th><th>Dirección</th><th>Formato</th><th>kbps</th><th>País</th><th></th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+</div>
+<div class="actions"><span class="status" id="status"></span></div>
+</div>
+</section>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-speaker"/></svg></span><div><h3>Banda aérea (control de tránsito aéreo)</h3><p id="atc-count"></p></div><div class="dp-x"><button id="atc-add" class="primary"><svg class="i"><use href="#i-plus"/></svg>Agregar</button></div></div>
+<div class="dp-body tbl">
+<p class="sub" style="margin: 0 0 8px">Tus emisoras de torre, aproximación o ATIS. Aparecen primero en la lista Banda aérea de la radio, antes que las del directorio.
+Pegá la dirección del audio que da el sitio de la emisora (por ejemplo, el enlace .pls para escuchar en otro reproductor). Respetá las condiciones de uso de cada sitio.</p>
+<div class="table-wrap">
+<table id="atc">
+  <thead>
+    <tr><th>Nombre</th><th>Dirección</th><th>Formato</th><th>kbps</th><th>País</th><th></th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+</div>
+<div class="actions"><button id="atc-import"><svg class="i"><use href="#i-plus"/></svg>Importar archivo</button> <a id="atc-export" href="/api/iradio-atc/export" download>Exportar</a> <input type="file" id="atc-file" accept=".txt,.tsv,.csv,text/plain" hidden> <span class="status" id="atc-status"></span></div>
+<p class="sub" style="margin: 6px 0 0">Archivo de texto: una emisora por línea, <b>nombre, dirección, formato, kbps y país</b> separados por tabulador o por punto y coma. Las que ya están no se repiten.</p>
+</div>
+</section>
+
+<script>
+var lists = {
+  fav: {api: "/api/iradio", table: "#stations", count: "#count", status: "#status", add: "#add"},
+  atc: {api: "/api/iradio-atc", table: "#atc", count: "#atc-count", status: "#atc-status", add: "#atc-add"}
+};
+
+var showStatus = function(L, text, error=false) {
+  const el = $(L.status);
+  el.toggleClass("error", error);
+  el.html('<span class="dot"></span>').append(document.createTextNode(text));
+}
+
+var button = function(cls, icon, title) {
+  return $("<button class='action'>").addClass(cls).attr("title", title).append($("<i>").addClass(icon));
+}
+
+var call = function(L, type, url, payload) {
+  $.ajax({
+    url: url,
+    type: type,
+    data: payload ? JSON.stringify(payload) : undefined,
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: function(r) { render(L, r); showStatus(L, "Guardado"); },
+    error: function(xhr) { showStatus(L, xhr.responseJSON ? xhr.responseJSON.msg : "No se pudo guardar", true); }
+  });
+}
+
+var input = function(cls, value, max, ph, width) {
+  return $("<input autocomplete='off'>").addClass(cls).attr("maxlength", max).attr("placeholder", ph)
+    .val(value || "").css("width", width);
+}
+
+// i es null para una nueva, todavía sin guardar
+var stationRow = function(L, s, i) {
+  const row = $("<tr>");
+  const name = input("name", s.name, 60, L === lists.atc ? "Carrasco Torre" : "Radio Ejemplo", "100%");
+  const url = input("url", s.url, 250, "https://...", "100%");
+  const codec = input("codec", s.codec, 8, "MP3", "5em");
+  const kbps = input("kbps", s.kbps, 6, L === lists.atc ? "16" : "128", "4em");
+  const cc = input("cc", s.cc, 2, "UY", "3em");
+  row.append($("<td>").css("min-width", "12em").append(name), $("<td>").css("width", "60%").append(url),
+             $("<td>").append(codec), $("<td>").append(kbps), $("<td>").append(cc));
+  const actions = $("<td class='action-cell'>").appendTo(row);
+  actions.append(button("save", "si-disk", "Guardar").on("click", function() {
+    const d = {name: name.val(), url: url.val().trim(), codec: codec.val(), kbps: kbps.val(), cc: cc.val()};
+    if (i === null) call(L, "POST", L.api, d);
+    else call(L, "PUT", L.api + "/" + i, d);
+  }));
+  actions.append(" ", button("remove", "si-trash", "Quitar").on("click", function() {
+    if (i === null) row.remove();
+    else call(L, "DELETE", L.api + "/" + i);
+  }));
+  return row;
+}
+
+var render = function(L, data) {
+  const body = $(L.table + ">tbody").empty();
+  data.stations.forEach(function(s, i) { body.append(stationRow(L, s, i)); });
+  $(L.count).text(data.stations.length + " de " + data.max);
+}
+
+Object.values(lists).forEach(function(L) {
+  $(L.add).on("click", function() {
+    const row = stationRow(L, {}, null);
+    $(L.table + ">tbody").append(row);
+    row.find("input.name").focus();
+  });
+  $.get(L.api, {}, function(d) { render(L, d); });
+});
+
+$("#atc-import").on("click", function() { $("#atc-file").val("").trigger("click"); });
+$("#atc-file").on("change", function() {
+  const f = this.files && this.files[0];
+  if (!f) return;
+  const rd = new FileReader();
+  rd.onload = function() {
+    $.ajax({
+      url: "/api/iradio-atc/import", type: "POST", data: JSON.stringify({text: rd.result}),
+      contentType: "application/json; charset=utf-8", dataType: "json",
+      success: function(r) {
+        render(lists.atc, r);
+        let t = r.added + " agregadas";
+        if (r.skipped) t += ", " + r.skipped + " ya estaban";
+        if (r.bad && r.bad.length) t += ", líneas con error: " + r.bad.join(", ");
+        showStatus(lists.atc, t, r.bad && r.bad.length > 0 && !r.added);
+      },
+      error: function(xhr) { showStatus(lists.atc, xhr.responseJSON ? xhr.responseJSON.msg : "No se pudo importar", true); }
+    });
+  };
+  rd.readAsText(f, "utf-8");
+});
+</script>

@@ -219,6 +219,51 @@ def i_navtex(p):     # lines of text
         p.line([(30, y), (70 if y != 64 else 56, y)], w=p.w // 2 + 1)
 
 
+# ---- CX8ANM: las apps de la edición ---------------------------------------------------------
+
+def i_meteo(p):      # a sun behind a cloud
+    p.ring(38, 36, 14)
+    for a in range(0, 360, 60):
+        x, y = 38 + 22 * math.cos(math.radians(a)), 36 + 22 * math.sin(math.radians(a))
+        if a not in (0, 60):
+            p.dot(x, y, 3.5)
+    p.line([(30, 78), (78, 78)])
+    p.ring(44, 66, 13, start=150, end=300)
+    p.ring(64, 60, 16, start=200, end=360)
+    p.ring(78, 70, 9, start=270, end=90)
+
+def i_iradio(p):     # a radio with an antenna and waves
+    p.box(10, 40, 90, 86, r=8)
+    p.ring(36, 63, 11)
+    for y in (56, 70):
+        p.line([(58, y), (78, y)], w=p.w // 2 + 1)
+    p.line([(30, 40), (70, 12)], w=p.w // 2 + 1)
+    p.ring(74, 12, 8, w=p.w // 2 + 1, start=200, end=340)
+
+def i_zello(p):      # a walkie-talkie speech bubble: talk over the internet
+    p.box(10, 14, 90, 64, r=14)
+    p.line([(30, 64), (24, 86), (48, 64)])
+    p.line([(30, 40), (70, 40)], w=p.w // 2 + 1)
+
+def i_flights(p):    # an airplane seen from above
+    p.poly([(50, 6), (56, 14), (56, 40), (92, 60), (92, 68), (56, 56), (56, 80), (68, 90), (68, 95),
+            (50, 90), (32, 95), (32, 90), (44, 80), (44, 56), (8, 68), (8, 60), (44, 40), (44, 14)])
+
+def i_aero(p):       # an airplane with radio waves: the HF air band
+    p.poly([(30, 30), (36, 34), (36, 52), (58, 64), (58, 70), (36, 62), (36, 76), (44, 84), (44, 88),
+            (30, 84), (16, 88), (16, 84), (24, 76), (24, 62), (2, 70), (2, 64), (24, 52), (24, 34)])
+    for r in (16, 28):
+        p.ring(66, 36, r, w=p.w // 2 + 1, start=-60, end=60)
+
+def i_cb(p):         # a CB mobile rig with its microphone
+    p.box(6, 30, 70, 64, r=6)
+    p.ring(24, 47, 8)
+    p.line([(42, 42), (60, 42)], w=p.w // 2 + 1)
+    p.line([(42, 52), (60, 52)], w=p.w // 2 + 1)
+    p.line([(70, 47), (82, 56), (82, 70)], w=p.w // 2 + 1)
+    p.box(74, 70, 92, 92, r=6)
+
+
 ICONS = {n[2:]: f for n, f in globals().items() if n.startswith("i_") and callable(f)}
 
 

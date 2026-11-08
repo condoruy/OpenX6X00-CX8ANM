@@ -9,6 +9,7 @@
  *  order they need each other, then the GUI loop.
  */
 
+#include "meteo_alerts.h"
 #include "dialog_setup.h"
 #include "dialog_field.h"
 #include "msg_box.h"
@@ -371,6 +372,7 @@ int main(void) {
 
     lv_scr_load(screen);
     walkie_init(screen);      /* its screen instead, when on */
+    meteo_alerts_init();      /* CX8ANM: alertas de INUMET con WiFi */
     if (dialog_setup_first_start()) {
         /* CX8ANM: primer encendido: idioma, licencia, región y país antes que nada */
     } else if (!walkie_on() && param_i_get(cfg_field_boot)) {

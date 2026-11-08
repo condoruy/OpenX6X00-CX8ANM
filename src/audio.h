@@ -31,6 +31,7 @@ typedef enum {
 void audio_init();
 void audio_mixer_setup(radio_base_ver_t base_ver);
 int audio_play(int16_t *buf, size_t samples);
+int audio_play_until(int16_t *buf, size_t samples, volatile bool *run, int timeout_ms);   /* CX8ANM */
 void audio_play_wait();
 void audio_play_flush();
 
