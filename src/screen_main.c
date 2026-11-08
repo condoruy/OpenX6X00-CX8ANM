@@ -599,6 +599,12 @@ void main_screen_start_app(press_action_t app_action) {
     freq_strip_set_app(tr_static(app_name(app_action)));   /* CX8ANM: idioma */
 }
 
+/* CX8ANM: una ventana que no es una app del menú (dialog_setup.c) */
+void main_screen_open_dialog(void *d) {
+    close_apps();
+    dialog_construct((dialog_t *)d, obj);
+}
+
 /* What a long press (or a hand mic F key) was given in Settings */
 void main_screen_action(press_action_t action) {
     switch (action) {

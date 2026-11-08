@@ -126,6 +126,7 @@ typedef struct {
     params_bool_t       waterfall_zoom;
     params_bool_t       mag_freq;
     params_bool_t       icon_menus;         /* APP, Modes and the Settings rail as icons */
+    params_bool_t       setup_done;         /* CX8ANM: el asistente del primer encendido se completó */
     params_bool_t       mag_info;
     params_bool_t       mag_alc;
     clock_view_t        clock_view;
@@ -200,6 +201,7 @@ typedef struct {
     params_float_t      rec_gain_db_f;
 
     params_str_t        qth;
+    params_str_t        country;            /* CX8ANM: país (ISO 3166, "UY") */
     params_str_t        callsign;
 
     /* WiFi / BT */

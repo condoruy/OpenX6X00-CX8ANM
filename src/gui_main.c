@@ -9,6 +9,7 @@
  *  order they need each other, then the GUI loop.
  */
 
+#include "dialog_setup.h"
 #include "dialog_field.h"
 #include "msg_box.h"
 #include "board.h"
@@ -370,7 +371,9 @@ int main(void) {
 
     lv_scr_load(screen);
     walkie_init(screen);      /* its screen instead, when on */
-    if (!walkie_on() && param_i_get(cfg_field_boot)) {
+    if (dialog_setup_first_start()) {
+        /* CX8ANM: primer encendido: idioma, licencia, región y país antes que nada */
+    } else if (!walkie_on() && param_i_get(cfg_field_boot)) {
         main_screen_start_app(ACTION_APP_FIELD);
     }
     /* Not when this version could not use the settings file (params/db.c): the update is then taken back */

@@ -46,6 +46,7 @@ params_t params = {
     .waterfall_zoom         = { .x = true,  .name = "waterfall_zoom" },
     .mag_freq               = { .x = false,  .name = "mag_freq" },
     .icon_menus             = { .x = true,   .name = "icon_menus" },
+    .setup_done             = { .x = false,  .name = "setup_done" },
     .mag_info               = { .x = false, .name = "mag_info" },
     .mag_alc                = { .x = true,  .name = "mag_alc" },
     .clock_view             = CLOCK_TIME_POWER,
@@ -127,6 +128,7 @@ params_t params = {
     .rec_gain_db_f          = { .x = 0.0f, .name = "rec_gain_db_f"},
 
     .qth                    = { .x = "",  .max_len = 6, .name = "qth" },
+    .country                = { .x = "",  .max_len = 2, .name = "country" },
     .callsign               = { .x = "",  .max_len = 12, .name = "callsign" },
 
     .wifi_enabled           = { .x = false, .name="wifi_enabled" },
@@ -314,6 +316,7 @@ static bool params_load() {
         if (params_load_uint8(&params.language, name, i)) continue;
         if (params_load_bool(&params.mag_freq, name, i)) continue;
         if (params_load_bool(&params.icon_menus, name, i)) continue;
+        if (params_load_bool(&params.setup_done, name, i)) continue;
         if (params_load_js8(&params, name, i)) continue;
         if (params_load_cw_beacon(&params, name, i)) continue;
         if (params_load_bool(&params.sstv_denoise, name, i)) continue;
@@ -339,6 +342,7 @@ static bool params_load() {
         if (params_load_uint16(&params.ft8_tx_freq, name, i)) continue;
 
         if (params_load_str(&params.qth, name, t)) continue;
+        if (params_load_str(&params.country, name, t)) continue;
 
         if (params_load_str(&params.callsign, name, t)) continue;
         if (params_load_str(&params.theme_name, name, t)) continue;
@@ -468,6 +472,7 @@ static bool params_save() {
     params_save_uint8(&params.charger);
     params_save_bool(&params.mag_freq);
     params_save_bool(&params.icon_menus);
+    params_save_bool(&params.setup_done);
     params_save_js8(&params);
     params_save_cw_beacon(&params);
     params_save_bool(&params.sstv_denoise);
@@ -488,6 +493,7 @@ static bool params_save() {
     params_save_str(&params.ft8_cq_modifier);
 
     params_save_str(&params.qth);
+    params_save_str(&params.country);
     params_save_str(&params.callsign);
     params_save_str(&params.theme_name);
     params_save_bool(&params.wifi_enabled);

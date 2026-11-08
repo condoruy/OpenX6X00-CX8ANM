@@ -6,6 +6,8 @@
  *  Copyright (c) 2022-2023 Belousov Oleg aka R1CBU
  */
 
+#include "countries.h"
+#include "dialog_setup.h"
 #include "image_level.h"
 #include "settings_window.h"
 #include "board.h"
@@ -3019,6 +3021,27 @@ static void st_delete_cb(lv_event_t *e) {
     }
 }
 
+/* CX8ANM: país y el asistente del primer encendido otra vez (dialog_setup.c) */
+static void setup_open_cb(lv_event_t *e) {
+    setup_mode_t m = (setup_mode_t)(intptr_t)lv_obj_get_user_data(lv_event_get_current_target(e));
+    lv_async_call([](void *arg) { dialog_setup_open((setup_mode_t)(intptr_t)arg); }, (void *)(intptr_t)m);
+}
+
+static uint8_t make_setup_row(uint8_t row, const char *label, const char *val, setup_mode_t m) {
+    wl_row_label(row, label);
+
+    lv_obj_t *obj = wl_button(row, val[0] ? val : "-", setup_open_cb);
+    lv_obj_set_size(obj, 150, ROW_H - 4);
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_CENTER, row, 1);
+    lv_obj_set_user_data(obj, (void *)(intptr_t)m);
+    lv_obj_t *l = lv_obj_get_child(obj, 0);
+    lv_label_set_long_mode(l, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(l, 140);
+    lv_obj_set_style_text_align(l, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_center(l);
+    return row + 1;
+}
+
 static uint8_t make_station_row(uint8_t row, const char *label, const char *val, int which) {
     wl_row_label(row, label);
 
@@ -3046,6 +3069,8 @@ static uint8_t make_station(uint8_t row) {
     row = make_station_row(row, "Callsign", params.callsign.x, ST_CALLSIGN);
     row = make_station_row(row, "QTH locator", params.qth.x, ST_QTH);
     row = make_band_region(row);
+    row = make_setup_row(row, "Country", country_name_cc(params.country.x), SETUP_COUNTRY);
+    row = make_setup_row(row, "First-start assistant", tr("Open..."), SETUP_ALL);
     /* The switches in the card's own second column: make_param_switch places them in the
      * seven-column template, past the end of this two-column one */
     /* A and B each on their own band: the VFO key brings the other one's band back */

@@ -50,6 +50,8 @@ bool main_screen_buttons_wake(void);
 
 /* Apps and the actions a long press or a hand mic F key can be given */
 void main_screen_start_app(press_action_t app);
+/* CX8ANM: abre una ventana que no es una app del menú (el asistente del primer encendido) */
+void main_screen_open_dialog(void *d);   /* dialog_t * */
 void main_screen_close_app(void);
 void main_screen_action(press_action_t action);
 
