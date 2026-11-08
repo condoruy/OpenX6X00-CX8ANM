@@ -33,8 +33,6 @@ jobs:
 
     env:
       X6CI_IMAGES: ${{ matrix.tree }}/build/images
-      X6CI_IMG: ${{ matrix.out }}-${{ github.ref_name }}-sdcard.img
-      X6CI_BUNDLE: ${{ matrix.out }}-${{ github.ref_name }}-update.tar.gz
 
     steps:
     # A full buildroot build needs more room than the runner leaves free:
@@ -118,6 +116,11 @@ jobs:
     # named the bundle after the version in src/main.h)
     - name: Name the image and the bundle
       run: |
+        # CX8ANM: los nombres llevan la versión de src/main.h (v1.1.0), no la rama
+        V=$(sed -n 's/.*define VERSION.* v\([0-9.]*\).*/\1/p' x6100_gui/src/main.h)
+        echo "CX8ANM_VERSION=$V" >> "$GITHUB_ENV"
+        X6CI_IMG=${{ matrix.out }}-v$V-sdcard.img; X6CI_BUNDLE=${{ matrix.out }}-v$V-update.tar.gz
+        echo "X6CI_IMG=$X6CI_IMG" >> "$GITHUB_ENV"; echo "X6CI_BUNDLE=$X6CI_BUNDLE" >> "$GITHUB_ENV"
         cd $X6CI_IMAGES
         mv ${{ matrix.out }}-local-sdcard.img $X6CI_IMG
         zip $X6CI_IMG.zip $X6CI_IMG
@@ -143,8 +146,18 @@ jobs:
     # On a tag: GitHub release with the image and the update bundle (what radios look for)
     - name: Release
       uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
+      # CX8ANM: cada compilación de main se publica como v<versión> (lo que buscan las radios)
+      if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
       with:
+        tag_name: v${{ env.CX8ANM_VERSION }}
+        name: OpenX6X00-CX8ANM v${{ env.CX8ANM_VERSION }}
+        make_latest: true
+        body: |
+          OpenX6X00-CX8ANM para Xiegu X6100 y X6200: basado en OpenX6X00 (https://github.com/Guru-RF/OpenX6X00),
+          con las apps y el idioma español de la edición CX8ANM.
+          Imagen para grabar con balenaEtcher: OpenX6X00-CX8ANM-<radio>-v${{ env.CX8ANM_VERSION }}-sdcard.img.zip
+          Desde la radio: Ajustes > Info > Actualizar (paquete firmado -update.tar.gz).
+          Sin garantía; se usa bajo tu propia responsabilidad. Licencia: LGPL-2.1 (interfaz) / GPLv3 (imagen).
         files: |
           ${{ env.X6CI_IMAGES }}/${{ env.X6CI_IMG }}.zip
           ${{ env.X6CI_IMAGES }}/${{ env.X6CI_BUNDLE }}
