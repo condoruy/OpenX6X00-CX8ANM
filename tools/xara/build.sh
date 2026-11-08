@@ -119,6 +119,18 @@ fi
     && [ -d "$RUST/lib/rustlib/$TARGET/lib" ] \
     || { echo "tools/xara/build.sh: $RUST is not Rust $RUST_VER with $TARGET"; exit 1; }
 
+# CX8ANM: upstream borró el release v0.1.3 (rehízo su historia) y sus archivos dan 404. Sin ellos, el binario
+# que esta misma compilación hizo para v1.1.0 (desde esos archivos verificados, con nuestros parches), guardado
+# en prebuilt/ con su licencia (MIT) y avisos
+if [ $HOST = 0 ] && [ -x "$HERE/prebuilt/xara" ] && ! curl -sfIL --max-time 30 -o /dev/null "$XARA_URL/xara-$XARA_VER.tar.xz"; then
+    echo "== XARA $XARA_VER: el release ya no está; se usa tools/xara/prebuilt (armv7, v1.1.0)"
+    mkdir -p "$(dirname "$OUT")"
+    cp "$HERE/prebuilt/xara" "$OUT"
+    rm -rf "$(dirname "$OUT")/doc"
+    cp -r "$HERE/prebuilt/doc" "$(dirname "$OUT")/doc"
+    echo "$OUT" >&3
+    exit 0
+fi
 fetch "$XARA_URL/xara-$XARA_VER.tar.xz" "$DL/xara-$XARA_VER.tar.xz" $XARA_SRC_SHA256
 fetch "$XARA_URL/xara-$XARA_VER-vendor.tar.xz" "$DL/xara-$XARA_VER-vendor.tar.xz" $XARA_VENDOR_SHA256
 
