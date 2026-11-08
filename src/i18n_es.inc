@@ -2156,3 +2156,7 @@
 { "Auto (Region 1)", "Auto (Región 1)" },
 { "Auto (Region 2)", "Auto (Región 2)" },
 { "Auto (Region 3)", "Auto (Región 3)" },
+{ "Birdie Cal", "Birdies" },
+{ "Marks:\nOff", "Marcas:\nNO" },
+{ "Marks:\nOn", "Marcas:\nSÍ" },
+{ "Marks:\n+ notch", "Marcas:\n+ notch" },
