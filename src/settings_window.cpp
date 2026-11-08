@@ -5116,7 +5116,8 @@ static void make_info_page() {
     row = card_begin("FIRMWARE");
     row = info_row(row, "Version", strrchr(VERSION, ' ') + 1);
     row = info_row(row, "Project", "OpenX6X00 by RF.Guru");
-    row = info_row(row, "Source", "github.com/Guru-RF/OpenX6X00");
+    row = info_row(row, "Source", "github.com/condoruy/OpenX6X00-CX8ANM");
+    row = info_row(row, "Based on", "OpenX6X00 by RF.Guru (github.com/Guru-RF/OpenX6X00)");
     row = info_row(row, "Baseband", radio_base_ver_str());
 #ifdef BOARD_X6200
     char bias[48];

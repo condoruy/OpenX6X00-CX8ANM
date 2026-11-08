@@ -22,8 +22,8 @@ set -eo pipefail
 # packages x6200-gui and aether-x6200-control, its board X6200
 MODEL=${MODEL:-x6100}
 case $MODEL in
-    x6100) M=X6100; BRDEF=AetherX6100Buildroot; GUI_PKG=x6100-gui; GUI_VAR=X6100_GUI; OUT=OpenX6X00-x6100 ;;
-    x6200) M=X6200; BRDEF=AetherX6200Buildroot; GUI_PKG=x6200-gui; GUI_VAR=X6200_GUI; OUT=OpenX6X00-x6200 ;;
+    x6100) M=X6100; BRDEF=AetherX6100Buildroot; GUI_PKG=x6100-gui; GUI_VAR=X6100_GUI; OUT=OpenX6X00-CX8ANM-x6100 ;;
+    x6200) M=X6200; BRDEF=AetherX6200Buildroot; GUI_PKG=x6200-gui; GUI_VAR=X6200_GUI; OUT=OpenX6X00-CX8ANM-x6200 ;;
     *) echo "MODEL must be x6100 or x6200, not '$MODEL'"; exit 1 ;;
 esac
 GUI=${GUI_DIR:-/work/OpenX6X00}

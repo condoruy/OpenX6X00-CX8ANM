@@ -38,7 +38,7 @@ import time
 import urllib.error
 import urllib.request
 
-REPO = os.environ.get("X6100_UPDATE_REPO", "Guru-RF/OpenX6X00")
+REPO = os.environ.get("X6100_UPDATE_REPO", "condoruy/OpenX6X00-CX8ANM")   # CX8ANM: su propio canal
 API = f"https://api.github.com/repos/{REPO}/releases/latest"
 PUB = "/usr/share/x6100/update.pub"
 VERSION_FILE = "/usr/share/x6100/app-version"

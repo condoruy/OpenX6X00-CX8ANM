@@ -11,7 +11,7 @@
 #include "knob_device.h"
 #include "mfk_device.h"
 
-#define VERSION "OpenX6X00 - v0.3.8"
+#define VERSION "OpenX6X00-CX8ANM - v1.1.0"
 
 /* The VOL knob and the MFK, opened at start */
 extern rotary_t     *vol;

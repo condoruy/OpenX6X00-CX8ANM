@@ -95,7 +95,7 @@ $("#check").on("click", function() {
     showStatus("#status", c.newer ? "v" + c.latest + " is available" : "Up to date");
     if (c.newer && c.image_needed) {
       /* the release also has a new card image for this radio: the update brings the rest */
-      $("#image").empty().append($("<a>").attr("href", c.image_url || "https://github.com/Guru-RF/OpenX6X00/releases/latest").text("v" + c.latest + " image"));
+      $("#image").empty().append($("<a>").attr("href", c.image_url || "https://github.com/condoruy/OpenX6X00-CX8ANM/releases/latest").text("v" + c.latest + " image"));
       $("#imgnote").text("v" + c.latest + " also has a new card image, bringing " + (c.image_note || "more") + ". Install updates the radio software now; write the image when convenient (settings and logs stay)");
     }
   }).fail(fail);
