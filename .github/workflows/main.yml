@@ -124,7 +124,7 @@ jobs:
         cd $X6CI_IMAGES
         mv ${{ matrix.out }}-local-sdcard.img $X6CI_IMG
         zip $X6CI_IMG.zip $X6CI_IMG
-        mv ${{ matrix.out }}-v*-update.tar.gz $X6CI_BUNDLE
+        [ -e $X6CI_BUNDLE ] || mv ${{ matrix.out }}-v*-update.tar.gz $X6CI_BUNDLE
         ls -la $X6CI_IMG.zip $X6CI_BUNDLE
 
     # Always keep the image and the bundle as workflow artifacts: branch runs have no
