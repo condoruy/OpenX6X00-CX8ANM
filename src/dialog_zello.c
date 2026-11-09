@@ -33,6 +33,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 #define CONF_FILE   "/mnt/zello.conf"
@@ -51,6 +52,21 @@ static volatile bool  run_on;           /* conectado (o conectándose) */
 static volatile bool  run_alive;        /* el hilo todavía no terminó */
 static volatile pid_t run_pid;
 static bool           restart_pending;
+static volatile bool  auto_restart;     /* el hilo terminó sin que nadie lo pidiera: se vuelve a conectar */
+static int            auto_tries;
+
+/* Diagnóstico: una línea en /mnt/app_logs/zello.txt, el mismo archivo que escribe x6100-zello */
+static void zlog(const char *what) {
+    FILE *f = fopen("/mnt/app_logs/zello.txt", "a");
+    if (!f) return;
+    time_t    t = time(NULL);
+    struct tm tm;
+    char      ts[32];
+    localtime_r(&t, &tm);
+    strftime(ts, sizeof(ts), "%Y-%m-%d %H:%M:%S", &tm);
+    fprintf(f, "%s GUI: %s\n", ts, what);
+    fclose(f);
+}
 
 static volatile bool  run_bt;           /* el audio va a los auriculares Bluetooth */
 static volatile bool  tx_on;            /* hablando por Zello */
@@ -184,7 +200,10 @@ static void *run_fn(void *arg) {
     while (run_on) {
         ssize_t r = read(fds[0], (char *)in + have, sizeof(in) - have);
         if (r < 0 && errno == EINTR) continue;
-        if (r <= 0) break;
+        if (r <= 0) {
+            if (run_on) zlog(r < 0 ? "error leyendo el audio de x6100-zello" : "x6100-zello terminó");
+            break;
+        }
         have += r;
         size_t n = have / 2, o = 0;
         /* interpolación lineal entre la última muestra del bloque anterior y las nuevas */
@@ -199,11 +218,13 @@ static void *run_fn(void *arg) {
         }
         pos -= n;
         prev = in[n - 1];
-        if (o && audio_play_until(out, o, &run_on, 3000) == -2) break;
+        /* El parlante no tomó el audio en 3 s: se descarta ese pedazo y se sigue (antes se cortaba todo) */
+        if (o && audio_play_until(out, o, &run_on, 3000) == -2) zlog("el parlante no tomó el audio en 3 s: pedazo descartado");
         if (have & 1) ((char *)in)[0] = ((char *)in)[have - 1];
         have &= 1;
     }
     run_pid = 0;
+    auto_restart = run_on;        /* nadie pidió cortar: x6100-zello terminó solo */
     end_child(pid);
     close(fds[0]);
 
@@ -227,11 +248,22 @@ static void stop_run(void) {
     if (pid > 0) kill(-pid, SIGTERM);
 }
 
+static void auto_relaunch(lv_timer_t *t) {
+    (void)t;
+    if (dialog.run && !run_alive) launch();
+}
+
 static void run_ended(void *arg) {
     (void)arg;
     if (restart_pending && !run_alive && dialog.run) {
         restart_pending = false;
         launch();
+    } else if (auto_restart && !run_alive && dialog.run && auto_tries < 20) {
+        auto_restart = false;
+        auto_tries++;
+        zlog("se vuelve a conectar");
+        lv_timer_t *t = lv_timer_create(auto_relaunch, 2000, NULL);
+        lv_timer_set_repeat_count(t, 1);
     }
     if (dialog.run) show_all();
 }
@@ -254,6 +286,7 @@ static void launch(void) {
 
 static void connect_to(const char *channel) {
     snprintf(cur_channel, sizeof(cur_channel), "%s", channel);
+    auto_tries = 0;
     if (run_alive) {
         stop_run();
         restart_pending = true;
