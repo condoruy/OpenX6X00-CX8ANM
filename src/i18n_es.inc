@@ -2160,3 +2160,4 @@
 { "Marks:\nOff", "Marcas:\nNO" },
 { "Marks:\nOn", "Marcas:\nSÍ" },
 { "Marks:\n+ notch", "Marcas:\n+ notch" },
+{ "Fill by level", "Relleno por nivel" },

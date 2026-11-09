@@ -228,6 +228,19 @@ static bool fill_grad(void) {
            !theme_shape.mono;                                                                           /* 1bit: bars */
 }
 
+/* CX8ANM: the fill painted by level, each pixel in the waterfall's colour for its height (low at the
+ * bottom, strong signals at the top), like an SDR's spectrum; the trace drawn over it */
+static bool fill_level(void) {
+    return params.spectrum_filled.x && param_i_get(cfg_spectrum_fill_level) && wf_palette && !theme_shape.mono;
+}
+
+/* The waterfall's colour at y of a strip h high (0 the top) */
+static inline uint32_t level_color(int y, int h) {
+    int v = h > 1 ? (h - 1 - y) * 255 / (h - 1) : 255;
+
+    return wf_palette[LV_CLAMP(0, v, 255)];
+}
+
 /* ---- LVGL drawing: the walkie's bandscope, the main spectrum without planes, the markers ---- */
 
 static lv_coord_t level_y(float db, float min, float max, lv_coord_t top, lv_coord_t h) {
@@ -259,7 +272,8 @@ static void tone_lines(lv_draw_ctx_t *ctx, const lv_draw_line_dsc_t *dsc, lv_coo
 static void trace_draw(lv_draw_ctx_t *ctx, lv_obj_t *o, lv_coord_t shift, const lv_draw_line_dsc_t *body) {
     lv_coord_t         x0 = o->coords.x1 + shift, top = o->coords.y1;
     lv_coord_t         w = lv_obj_get_width(o), h = lv_obj_get_height(o);
-    bool               filled = params.spectrum_filled.x, grad = fill_grad(), over = fill_own() || grad;
+    bool               filled = params.spectrum_filled.x, lvl = fill_level(), grad = !lvl && fill_grad(),
+                       over = fill_own() || grad || lvl;
     bool               peaks = params.spectrum_peak.x && !data_tx;
     /* From the foot of the first point: from the left corner, a shifted trace (Fixed mode) had a
      * slope across the side tuned away from */
@@ -301,6 +315,18 @@ static void trace_draw(lv_draw_ctx_t *ctx, lv_obj_t *o, lv_coord_t shift, const 
         if (!filled) {
             lv_draw_line(ctx, body, &p, &prev);
             prev = p;
+        } else if (lvl) {
+            /* bands of 3 px, each in its level's colour */
+            lv_draw_line_dsc_t lvl_dsc;
+
+            lv_draw_line_dsc_init(&lvl_dsc);
+            lvl_dsc.width = 1;
+            for (lv_coord_t y = p.y; y < top + h; y += 3) {
+                lv_point_t a = {x, y}, b = {x, LV_MIN(y + 3, top + h)};
+
+                lvl_dsc.color = lv_color_hex(level_color(y - top, h));
+                lv_draw_line(ctx, &lvl_dsc, &a, &b);
+            }
         } else if (grad) {
             lv_area_t col = {x, p.y, x, top + h};
 
@@ -552,7 +578,7 @@ static void markers_check(void) {
 static void fill_columns(float min, float max, lv_coord_t shift) {
     lv_color_t fc = fill_color(), pc = TC(panel);
     uint32_t   flat = fc.full | 0xff000000u;
-    bool       grad = fill_grad();
+    bool       lvl = fill_level(), grad = !lvl && fill_grad();
     int32_t    h = strip_h;
 
     for (int i = 0; i < POINTS; i++) {
@@ -566,7 +592,9 @@ static void fill_columns(float min, float max, lv_coord_t shift) {
 
         top = LV_MAX(top, 0);
         for (int y = top; y < h; y++) {
-            col[y] = grad ? lv_color_mix(fc, pc, (h - y) * 255 / (h - top)).full | 0xff000000u : flat;
+            col[y] = lvl    ? level_color(y, h) | 0xff000000u
+                     : grad ? lv_color_mix(fc, pc, (h - y) * 255 / (h - top)).full | 0xff000000u
+                            : flat;
         }
     }
 }
@@ -608,7 +636,7 @@ static void direct_render(void) {
     if (params.spectrum_filled.x) {
         fill_columns(min, max, shift);
     }
-    if (!params.spectrum_filled.x || fill_own() || fill_grad()) {
+    if (!params.spectrum_filled.x || fill_own() || fill_grad() || fill_level()) {
         polyline(trace_db, 0, POINTS, min, max, shift, line, false);
     }
     pthread_mutex_unlock(&data_mux);

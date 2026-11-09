@@ -222,6 +222,9 @@ class SettingsManager {
     // The fill fading from its colour at the trace to the background at the bottom (0 = solid)
     Parameter<int32_t> p_spectrum_fill_gradient{"spectrum_fill_gradient", false, 0, 1,
         StorageType::GLOBAL, pending_writes_, &global_params_};
+    // CX8ANM: the fill painted by level with the waterfall's colours, low at the bottom (0 = off)
+    Parameter<int32_t> p_spectrum_fill_level{"spectrum_fill_level", false, 0, 1,
+        StorageType::GLOBAL, pending_writes_, &global_params_};
     // S-meter colours: 0 the theme, 1 the scale (green, yellow, red along it), 2 the level (all lit bars)
     Parameter<int32_t> p_smeter_color{"smeter_color", 0, 0, 2,
         StorageType::GLOBAL, pending_writes_, &global_params_};

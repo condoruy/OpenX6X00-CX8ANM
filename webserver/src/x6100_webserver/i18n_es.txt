@@ -1090,3 +1090,5 @@ That macro is gone, reload the page	Esa macro ya no está, recargá la página
 The URL starts with http:// or https://, no spaces	La URL empieza con http:// o https://, sin espacios
 The backup shown is not the one on the radio any more: choose the file again	La copia mostrada ya no es la que está en la radio: elegí el archivo de nuevo
 Can't save: channels.json is nested too deep for the page	No se puede guardar: channels.json tiene demasiados niveles para la página
+Fill by level	Relleno por nivel
+The fill in the waterfall's colours by signal level, weak at the bottom and strong at the top, like an SDR	El relleno con los colores de la cascada según el nivel de señal, débil abajo y fuerte arriba, como en un SDR
