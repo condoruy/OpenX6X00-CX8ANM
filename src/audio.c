@@ -217,25 +217,37 @@ static pa_stream *cur_stm(void) {
 }
 
 /* CX8ANM (Radio por Internet, Zello): como audio_play, pero se rinde si *run se apaga o pasa timeout_ms */
+/* CX8ANM: written in pieces of at most PLAY_PIECE samples: the stream never has room for a much bigger
+ * write (its buffer holds about 2048), so one would wait forever (Zello's 44.1 kHz blocks of ~2800 did) */
+#define PLAY_PIECE 1024
+
 int audio_play_until(int16_t *samples_buf, size_t samples, volatile bool *run, int timeout_ms) {
-    pa_stream *stm    = cur_stm();
-    int        waited = 0;
+    int res = 0;
 
-    while (true) {
-        size_t size;
+    while (samples) {
+        size_t     n      = samples > PLAY_PIECE ? PLAY_PIECE : samples;
+        pa_stream *stm    = cur_stm();
+        int        waited = 0;
 
-        if (!*run) return -1;
+        while (true) {
+            size_t size;
+
+            if (!*run) return -1;
+            pa_threaded_mainloop_lock(mloop);
+            size = pa_stream_writable_size(stm);
+            pa_threaded_mainloop_unlock(mloop);
+            if (size != (size_t)-1 && size >= n * 2) break;
+            if (waited >= timeout_ms) return -2;
+            usleep(2000);
+            waited += 2;
+        }
         pa_threaded_mainloop_lock(mloop);
-        size = pa_stream_writable_size(stm);
+        res = pa_stream_write(stm, samples_buf, n * 2, NULL, 0, PA_SEEK_RELATIVE);
         pa_threaded_mainloop_unlock(mloop);
-        if (size != (size_t)-1 && size >= samples * 2) break;
-        if (waited >= timeout_ms) return -2;
-        usleep(2000);
-        waited += 2;
+        if (res < 0) return res;
+        samples_buf += n;
+        samples -= n;
     }
-    pa_threaded_mainloop_lock(mloop);
-    int res = pa_stream_write(stm, samples_buf, samples * 2, NULL, 0, PA_SEEK_RELATIVE);
-    pa_threaded_mainloop_unlock(mloop);
     return res;
 }
 
