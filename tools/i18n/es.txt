@@ -1467,6 +1467,13 @@ Last 24 h	Últimas 24 h
 Tomorrow	Mañana
 No forecast yet	Todavía no hay pronóstico
 (your department)	(tu departamento)
+No weather alerts for	Sin alertas para
+forecast	pronóstico
+YELLOW NOTICE	AVISO AMARILLO
+ORANGE NOTICE	AVISO NARANJA
+RED NOTICE	AVISO ROJO
+(your area)	(tu zona)
+no weather warnings in force	sin advertencias vigentes
 No weather warnings in force from INUMET	INUMET no tiene advertencias vigentes
 Getting the weather...	Consultando el tiempo...
 No data: Update (needs WiFi)	Sin datos: Actualizar (necesita WiFi)

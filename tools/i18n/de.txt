@@ -1357,6 +1357,13 @@ Last 24 h	Letzte 24 h
 Tomorrow	Morgen
 No forecast yet	Noch keine Vorhersage
 (your department)	(dein Departement)
+No weather alerts for	Keine Wetterwarnungen für
+forecast	Vorhersage
+YELLOW NOTICE	GELBER HINWEIS
+ORANGE NOTICE	ORANGER HINWEIS
+RED NOTICE	ROTER HINWEIS
+(your area)	(deine Gegend)
+no weather warnings in force	keine gültigen Warnungen
 No weather warnings in force from INUMET	Keine gültigen INUMET-Warnungen
 Getting the weather...	Hole das Wetter...
 No data: Update (needs WiFi)	Keine Daten: Aktualisieren (braucht WLAN)

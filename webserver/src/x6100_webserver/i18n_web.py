@@ -193,7 +193,10 @@ class Spanish:
 
         def sr(status, headers, exc_info=None):
             ctype = next((v for k, v in headers if k.lower() == 'content-type'), '')
-            kind = self._kind(path, ctype) if status.startswith('200') else None
+            kind = self._kind(path, ctype)
+            # pages and scripts only when they are the real thing; the error messages (JSON) of any answer
+            if kind and kind != 'json' and not status.startswith('200'):
+                kind = None
             if kind:
                 held.update(status=status, headers=headers, exc_info=exc_info, kind=kind)
                 return chunks.append

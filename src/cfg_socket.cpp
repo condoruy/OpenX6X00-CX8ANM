@@ -9,6 +9,9 @@
  *    {"cmd":"eth_get"}                                -> {"t":"eth", ...}
  *    {"cmd":"eth_set","dhcp":0|1,"ip":..,"mask":..,"gw":..,"dns":..}
  *    {"cmd":"band_use","lo":hz,"hi":hz}               -> {"t":"band_use","use":0|1|2} (none, receive, transmit)
+ *    {"cmd":"meteo_pos"}                              -> {"t":"meteo_pos","lat":..,"lon":..,"from":"gps|qth|country|default",
+ *                                                         "cc":"UY","qth":"GF15wc"} (CX8ANM: la posición de Meteo)
+ *    {"cmd":"meteo_set","cc":"AR","qth":"FF78vo"}     -> {"t":"ok"}: el país (como el asistente) y el locator QTH
  *  The values are checked here and applied on the LVGL thread through the scheduler, as the
  *  Settings pages apply them.
  *
@@ -20,6 +23,9 @@
 #include "cfg/settings_manager.h"
 #include "cfg/settings_manager_api.h"
 #include "wifi.h"
+#include "countries.h"
+#include "meteo_alerts.h"
+#include "station.h"
 
 #include <cstdio>
 #include <cstring>
@@ -35,6 +41,8 @@ extern "C" {
     #include "screen_main.h"
     #include "theme.h"
     #include "walkie.h"
+    #include "qth/qth.h"
+    void country_apply(const char *cc);     /* dialog_setup.h */
 
     #include "lvgl/lvgl.h"
     #include <errno.h>
@@ -43,6 +51,7 @@ extern "C" {
     #include <sys/stat.h>
     #include <sys/un.h>
     #include <unistd.h>
+    #include <strings.h>
 }
 
 #define SOCK_PATH "/tmp/x6100_cfg.sock"
@@ -313,6 +322,54 @@ static const char *band_use_get(cJSON *req, char *out, size_t size, int *l) {
     return NULL;
 }
 
+/* CX8ANM: la posición que usa Meteo (GPS, locator QTH, capital del país), para la página web del tiempo */
+static int meteo_pos_get(char *out, size_t size) {
+    double      lat, lon;
+    const char *from = meteo_position_src(&lat, &lon);
+    char        cc[4] = "", qth[12] = "";
+
+    snprintf(cc, sizeof(cc), "%.2s", params.country.x);
+    snprintf(qth, sizeof(qth), "%.10s", params.qth.x);
+    for (char *p = qth; *p; p++)
+        if (*p == '"' || *p == '\\') *p = '?';
+    for (char *p = cc; *p; p++)
+        if (*p == '"' || *p == '\\') *p = '?';
+    return snprintf(out, size, "{\"t\":\"meteo_pos\",\"lat\":%.5f,\"lon\":%.5f,\"from\":\"%s\",\"cc\":\"%s\",\"qth\":\"%s\"}\n",
+                    lat, lon, from, cc, qth);
+}
+
+typedef struct {
+    char cc[4];
+    char qth[8];
+} meteo_set_t;
+
+static const char *meteo_set(cJSON *req, meteo_set_t *m) {
+    cJSON *cc  = cJSON_GetObjectItemCaseSensitive(req, "cc");
+    cJSON *qth = cJSON_GetObjectItemCaseSensitive(req, "qth");
+
+    memset(m, 0, sizeof(*m));
+    if (cJSON_IsString(cc) && cc->valuestring[0]) {
+        if (strlen(cc->valuestring) != 2 || !country_find(cc->valuestring)) return "Unknown country";
+        snprintf(m->cc, sizeof(m->cc), "%s", country_find(cc->valuestring)->cc);
+    }
+    if (cJSON_IsString(qth) && qth->valuestring[0]) {
+        if (strlen(qth->valuestring) > 6 || !qth_grid_check(qth->valuestring)) return "Invalid QTH locator";
+        snprintf(m->qth, sizeof(m->qth), "%s", qth->valuestring);
+    }
+    if (!m->cc[0] && !m->qth[0]) return "Nothing to change";
+    return NULL;
+}
+
+static void meteo_apply(void *arg) {
+    meteo_set_t *m = (meteo_set_t *)arg;
+
+    if (m->cc[0] && strcasecmp(m->cc, params.country.x) != 0) country_apply(m->cc);
+    if (m->qth[0]) station_qth_save(m->qth);
+    params_flush();
+    unlink("/tmp/x6100-meteo.json");    /* Meteo trae los datos del lugar nuevo al abrirse */
+    meteo_alerts_now();
+}
+
 /* The answer to one request line */
 static int handle_line(const char *line, char *out, size_t size) {
     cJSON      *req  = cJSON_Parse(line);
@@ -336,6 +393,12 @@ static int handle_line(const char *line, char *out, size_t size) {
             err = "Busy, try again";
     } else if (!strcmp(name->valuestring, "band_use")) {
         err = band_use_get(req, out, size, &l);
+    } else if (!strcmp(name->valuestring, "meteo_pos")) {
+        l = meteo_pos_get(out, size);
+    } else if (!strcmp(name->valuestring, "meteo_set")) {
+        meteo_set_t m;
+        if (!(err = meteo_set(req, &m)) && !scheduler_put(meteo_apply, &m, sizeof(m)))
+            err = "Busy, try again";
     } else {
         err = "Unknown command";
     }

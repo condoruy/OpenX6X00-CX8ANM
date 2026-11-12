@@ -4339,6 +4339,102 @@ def flights_get():
         return json.load(f)
 
 
+# ---------- Meteo (x6100-meteo, src/dialog_meteo.c) ----------
+# El tiempo y las alertas para donde está la radio: la posición sale del GPS, del locator QTH o de la capital del país
+# (la GUI dice cuál: meteo_pos en src/cfg_socket.cpp); desde acá se cambian el país y el locator (meteo_set).
+METEO_CMD = "/usr/sbin/x6100-meteo"
+METEO_FILE = "/tmp/x6100-meteo.json"
+METEO_LOCK = threading.Lock()
+
+
+def meteo_countries():
+    from .countries_web import COUNTRIES
+    return [{"cc": c[0], "region": c[1], "name": c[3] or c[2], "loc": c[4]} for c in COUNTRIES]
+
+
+def meteo_pos():
+    """La posición que usa la radio; sin la GUI, el locator o el país de params.db"""
+    r = display_call({"cmd": "meteo_pos"})
+    if r and r.get("t") == "meteo_pos":
+        r.pop("t", None)
+        r["gui"] = True
+        return r
+    qth, cc = read_param("qth"), read_param("country")
+    c = grid_center(qth)
+    src = "qth"
+    if not c:
+        from .countries_web import COUNTRIES
+        loc = next((x[4] for x in COUNTRIES if x[0] == cc.upper()), "")
+        c, src = grid_center(loc), "country"
+    if not c:
+        c, src = (-34.896, -56.146), "default"
+    return {"lat": c[0], "lon": c[1], "from": src, "cc": cc, "qth": qth, "gui": False}
+
+
+def meteo_data():
+    try:
+        with open(METEO_FILE, encoding="utf-8") as f:
+            d = json.load(f)
+        d["age_s"] = int(time.time() - os.path.getmtime(METEO_FILE))
+        return d
+    except (OSError, ValueError):
+        return None
+
+
+@app.route('/meteo')
+def meteo_page():
+    return bottle.template('meteo')
+
+
+@app.get('/api/meteo')
+def meteo_get():
+    return {"pos": meteo_pos(), "data": meteo_data(), "countries": meteo_countries()}
+
+
+@app.post('/api/meteo/update')
+def meteo_update():
+    pos = meteo_pos()
+    cc = pos.get("cc") if re.fullmatch(r"[A-Za-z]{2}", pos.get("cc") or "") else "-"
+    args = [METEO_CMD, "update", "%.4f" % pos["lat"], "%.4f" % pos["lon"], cc, pos.get("from") or "qth"]
+    if not METEO_LOCK.acquire(timeout=1):
+        return api_error(409, "Already updating, wait a moment")
+    try:
+        r = subprocess.run(args, capture_output=True, text=True, timeout=120)
+        line = ((r.stdout or "").strip().splitlines() or [""])[-1]
+    except (OSError, subprocess.SubprocessError) as e:
+        line = "error %s" % e
+    finally:
+        METEO_LOCK.release()
+    if not line.startswith("ok"):
+        return api_error(502, line[6:] if line.startswith("error ") else "No data: is the radio on the internet?")
+    return {"pos": pos, "data": meteo_data()}
+
+
+@app.post('/api/meteo/location')
+def meteo_location():
+    try:
+        d = bottle.request.json or {}
+    except ValueError:
+        d = {}
+    cc = str(d.get("cc") or "").strip().upper()
+    qth = str(d.get("qth") or "").strip()
+    if cc and not re.fullmatch(r"[A-Z]{2}", cc):
+        return api_error(400, "Unknown country")
+    if qth:
+        if not re.fullmatch(r"[A-Ra-r]{2}\d{2}([A-Xa-x]{2})?", qth):
+            return api_error(400, "Invalid QTH locator")
+        qth = qth[:2].upper() + qth[2:4] + qth[4:].lower()
+    if not cc and not qth:
+        return api_error(400, "Nothing to change")
+    r = display_call({"cmd": "meteo_set", "cc": cc, "qth": qth})
+    if not r:
+        return api_error(503, "Radio GUI not reachable")
+    if r.get("t") != "ok":
+        return api_error(400, r.get("err") or "Not saved")
+    time.sleep(0.5)     # la GUI lo aplica en su hilo
+    return meteo_update()
+
+
 # ---------- Zello (x6100-zello, src/dialog_zello.c) ----------
 # /mnt/zello.conf: USER, PASS, ISSUER, CHANNEL, CHANNELS (separados por |); /mnt/zello.key: la Private Key (PEM).
 # La clave y la llave nunca se devuelven a la página: solo si están cargadas.

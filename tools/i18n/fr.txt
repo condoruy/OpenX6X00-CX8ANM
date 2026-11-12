@@ -1357,6 +1357,13 @@ Last 24 h	Dernières 24 h
 Tomorrow	Demain
 No forecast yet	Pas encore de prévisions
 (your department)	(votre département)
+No weather alerts for	Pas d'alertes météo pour
+forecast	prévision
+YELLOW NOTICE	AVIS JAUNE
+ORANGE NOTICE	AVIS ORANGE
+RED NOTICE	AVIS ROUGE
+(your area)	(votre zone)
+no weather warnings in force	aucun avertissement en vigueur
 No weather warnings in force from INUMET	Aucun avertissement INUMET en vigueur
 Getting the weather...	Récupération de la météo...
 No data: Update (needs WiFi)	Pas de données : Mettre à jour (WiFi requis)

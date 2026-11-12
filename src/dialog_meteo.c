@@ -1,10 +1,11 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  CX8ANM: estación meteorológica. La observación de la estación INUMET más cercana (temperatura,
- *  humedad, rocío, presión y su tendencia, viento, ráfagas, lluvia, visibilidad), lo que agrega
- *  Open-Meteo (estado del cielo, nubes, UV, sol, pronóstico de 5 días) y el pronóstico y las
- *  alertas de INUMET para la zona. Los datos los trae x6100-meteo; se actualiza cada 10 minutos.
+ *  CX8ANM: estación meteorológica para donde esté la radio (GPS, locator QTH o la capital del país elegido).
+ *  Open-Meteo en todo el mundo (tiempo actual, cielo, nubes, UV, sol, pronóstico de 5 días) y las alertas del
+ *  servicio del país (INUMET, SMN, INMET, NWS, MeteoAlarm; en los demás, avisos calculados del pronóstico).
+ *  En Uruguay además la estación INUMET más cercana y su pronóstico por zona. Los datos los trae x6100-meteo;
+ *  se actualiza cada 10 minutos.
  */
 #include "dialog_meteo.h"
 
@@ -131,7 +132,21 @@ static void tile(lv_coord_t x, lv_coord_t y, const char *name, const char *value
     lv_label_set_text(label(box, &sony_24, theme_hex(TC_text_value), x, y + 20, 172), value);
 }
 
-/* Las alertas para mi departamento: la más grave en una franja de su color */
+/* De dónde salen las alertas, para mostrar: "INUMET", "pronóstico" (calculadas) */
+static const char *alerts_src(void) {
+    const char *src = strv(data, "src");
+    if (!src[0]) return "INUMET";
+    if (!strcmp(src, "Pronóstico")) return tr("forecast");
+    const char *plus = strstr(src, "+");
+    if (plus) {     /* el servicio del país no respondió: "INUMET + pronóstico" */
+        static char buf[48];
+        snprintf(buf, sizeof(buf), "%.*s + %s", (int)(plus - src), src, tr("forecast"));
+        return buf;
+    }
+    return src;
+}
+
+/* Las alertas para mi zona: la más grave en una franja de su color */
 static void alert_strip(lv_coord_t y) {
     cJSON *a, *worst = NULL;
     int    mine = 0;
@@ -152,8 +167,8 @@ static void alert_strip(lv_coord_t y) {
     lv_obj_clear_flag(strip, LV_OBJ_FLAG_SCROLLABLE);
     if (!worst) {
         lv_obj_set_style_bg_opa(strip, LV_OPA_TRANSP, 0);
-        lv_label_set_text_fmt(label(strip, &sony_20, theme_hex(TC_ok), 8, 5, 754), "%s %s",
-                              tr("No INUMET alerts for"), strv(data, "dept"));
+        lv_label_set_text_fmt(label(strip, &sony_20, theme_hex(TC_ok), 8, 5, 754), "%s %s (%s)",
+                              tr("No weather alerts for"), strv(data, "dept"), alerts_src());
         return;
     }
     double level = 0;
@@ -335,15 +350,18 @@ static void draw_alerts(void) {
             meteo_short_time(strv(a, "from"), from, sizeof(from));
             meteo_short_time(strv(a, "to"), to, sizeof(to));
             uint32_t c = level >= 2 ? meteo_level_color((int)level) : theme_hex(TC_warn);
+            const char *src = !strcmp(strv(a, "kind"), "calculada") ? tr("forecast") : strv(a, "src")[0] ? strv(a, "src") : "INUMET";
             n += snprintf(txt + n, sizeof(txt) - n, "#%06x %s - %s#  %s\n", c, meteo_level_name((int)level, strv(a, "kind")),
-                          strv(a, "fenomeno"), pass == 0 ? tr("(your department)") : "");
-            n += snprintf(txt + n, sizeof(txt) - n, "%s %s  %s %s   %s\n%s\n#%06x %s#\n\n", tr("from"), from, tr("to"), to,
-                          strv(a, "prob"), strv(a, "desc"), theme_hex(TC_text_dim), strv(a, "zones"));
+                          strv(a, "fenomeno"), pass == 0 ? tr("(your area)") : "");
+            n += snprintf(txt + n, sizeof(txt) - n, "%s %s  %s %s   %s\n%s%s#%06x %s - %s#\n\n", tr("from"), from, tr("to"), to,
+                          strv(a, "prob"), strv(a, "desc"), strv(a, "desc")[0] ? "\n" : "", theme_hex(TC_text_dim), src,
+                          strv(a, "zones"));
             count++;
         }
     }
     if (!count)
-        snprintf(txt, sizeof(txt), "#%06x %s#", theme_hex(TC_ok), tr("No weather warnings in force from INUMET"));
+        snprintf(txt, sizeof(txt), "#%06x %s: %s#\n%s", theme_hex(TC_ok), alerts_src(), tr("no weather warnings in force"),
+                 strv(data, "dept"));
     lv_label_set_text(t, txt);
 }
 
@@ -374,8 +392,15 @@ static void show_status(void) {
         snprintf(extra, sizeof(extra), "  -  #%06x %s#", theme_hex(TC_err), upd_error);
     else if (data)
         snprintf(extra, sizeof(extra), "  -  %s %s", tr("updated"), strv(data, "time"));
+    char where[160] = "";
+    if (data) {
+        cJSON      *pos  = obj(data, "pos");
+        const char *from = strv(pos, "from");
+        snprintf(where, sizeof(where), "%s%s%s%s%s", strv(data, "dept"), pos ? " (" : "", strv(pos, "loc"),
+                 !strcmp(from, "gps") ? " GPS" : "", pos ? ")" : "");
+    }
     lv_label_set_text_fmt(status_lbl, "#%06x %s# #%06x %s - %s#%s", theme_hex(TC_text_head), tr("WEATHER"),
-                          theme_hex(TC_accent), names[view], data ? strv(data, "dept") : "", extra);
+                          theme_hex(TC_accent), names[view], where, extra);
 }
 
 /* ---------- datos ---------- */
@@ -415,11 +440,9 @@ static void update_done(void *arg) {
 
 static void *update_thread(void *arg) {
     upd_result_t r = {.gen = (int)(intptr_t)arg};
-    double       lat, lon;
     char         cmd[160], line[200] = "";
 
-    meteo_position(&lat, &lon);
-    snprintf(cmd, sizeof(cmd), HELPER " update %.4f %.4f 2>/dev/null", lat, lon);
+    meteo_helper_cmd(cmd, sizeof(cmd), "update");
     FILE *p = popen(cmd, "r");
     if (p) {
         char l[200];

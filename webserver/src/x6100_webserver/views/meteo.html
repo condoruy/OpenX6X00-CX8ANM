@@ -1,0 +1,192 @@
+% rebase('base.html', title='Meteo')
+<h2><svg class="i"><use href="#i-cloud"/></svg>Meteo</h2>
+<p class="sub">El tiempo y las alertas para donde está la radio, los mismos de APP &rarr; Meteo. La posición sale del <b>GPS</b> si
+tiene, si no del <b>locator QTH</b> y si no de la capital del <b>país</b> elegido. Las alertas oficiales vienen del servicio del país
+(INUMET en Uruguay, SMN en Argentina, INMET en Brasil, NWS en Estados Unidos, MeteoAlarm en Europa); en los demás países son
+<b>avisos calculados del pronóstico</b>, que no son oficiales.</p>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-pin"/></svg></span><div><h3>Ubicación</h3><p id="m-where">…</p></div></div>
+<div class="dp-row">
+    <div class="dp-lbl"><label for="m-region"><b>Región IARU</b><br><small>solo para achicar la lista de países</small></label></div>
+    <div class="dp-ctl"><select id="m-region"><option value="0">Todas</option><option value="1">Región 1 (Europa, África, Medio Oriente)</option>
+      <option value="2">Región 2 (América)</option><option value="3">Región 3 (Asia, Oceanía)</option></select></div>
+  </div>
+<div class="dp-row">
+    <div class="dp-lbl"><label for="m-cc"><b>País</b><br><small>el de la radio: también cambia la hora y la radio por Internet</small></label></div>
+    <div class="dp-ctl"><select id="m-cc"></select></div>
+  </div>
+<div class="dp-row">
+    <div class="dp-lbl"><label for="m-qth"><b>Grid locator</b><br><small>el QTH de la radio (4 o 6 caracteres)</small></label></div>
+    <div class="dp-ctl"><input id="m-qth" maxlength="6" autocomplete="off" placeholder="GF15wc" style="max-width: 10em; text-transform: none">
+      <button id="m-capital" type="button">Capital del país</button> <button id="m-here" type="button">Ubicación de este dispositivo</button></div>
+  </div>
+<div class="dp-body" style="border-top:1px solid #1a283c">
+<p class="sub" id="m-gps" style="margin: 0 0 8px; display: none">La radio tiene posición de <b>GPS</b>: se usa esa. El locator vale cuando no hay GPS.</p>
+<div class="actions"><button id="m-save" class="primary">Guardar y actualizar</button> <button id="m-update">Actualizar</button> <span class="status" id="m-status"></span></div>
+</div>
+</section>
+
+<section class="dp-card" id="m-alerts-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-bell"/></svg></span><div><h3>Alertas</h3><p id="m-alerts-src"></p></div></div>
+<div class="dp-body" id="m-alerts"><p class="sub" style="margin:0">Sin datos todavía.</p></div>
+</section>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-cloud"/></svg></span><div><h3>Ahora</h3><p id="m-now-src"></p></div></div>
+<div class="dp-body"><div class="m-now" id="m-now"><p class="sub" style="margin:0">Sin datos todavía.</p></div></div>
+</section>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-clock"/></svg></span><div><h3>Pronóstico</h3><p>Open-Meteo, 5 días</p></div></div>
+<div class="dp-body"><div class="m-days" id="m-days"></div><div id="m-zone"></div></div>
+</section>
+
+<style>
+.m-now{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.m-now .big{grid-column:1/-1;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.m-now .big b{font-size:44px;line-height:1}
+.m-tile small,.m-day small{display:block;color:var(--muted,#8da2bd);font-size:12px}
+.m-tile span{font-size:18px}
+.m-days{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.m-day{border:1px solid #1a283c;border-radius:8px;padding:8px}
+.m-day b{display:block}
+.m-alert{border-left:6px solid #888;padding:6px 10px;margin:0 0 10px;border-radius:4px;background:rgba(255,255,255,.03)}
+.m-alert h4{margin:0 0 4px;font-size:15px}
+.m-alert p{margin:2px 0;font-size:14px}
+.m-alert .z{color:var(--muted,#8da2bd);font-size:13px}
+#m-zone p{font-size:14px;margin:6px 0}
+</style>
+
+<script>
+const LEVEL = {2: ["#ffd800", "AMARILLA"], 3: ["#ff6a00", "NARANJA"], 4: ["#e00000", "ROJA"]};
+let countries = [], pos = null;
+
+function mStatus(text, error) {
+  const el = $("#m-status");
+  el.toggleClass("error", !!error);
+  el.html(text ? '<span class="dot"></span>' : "").append(document.createTextNode(text || ""));
+}
+function esc(s) { return $("<div>").text(s == null ? "" : String(s)).html(); }
+function n(v, dec, unit) {
+  if (v === null || v === undefined || v === "") return "--";
+  return Number(v).toFixed(dec).replace(".", ",") + (unit || "");
+}
+function shortTime(s) {
+  const m = /(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(s || "");
+  return m ? m[3] + "/" + m[2] + " " + m[4] + ":" + m[5] : (s || "");
+}
+function toLocator(lat, lon) {
+  lon += 180; lat += 90;
+  const A = "ABCDEFGHIJKLMNOPQR", a = "abcdefghijklmnopqrstuvwx";
+  return A[Math.floor(lon / 20)] + A[Math.floor(lat / 10)] + Math.floor((lon % 20) / 2) + Math.floor(lat % 10) +
+         a[Math.floor((lon % 2) * 12)] + a[Math.floor((lat % 1) * 24)];
+}
+function fillCountries() {
+  const region = +$("#m-region").val(), sel = $("#m-cc"), cur = sel.val() || (pos && pos.cc) || "";
+  sel.empty();
+  countries.filter(function(c) { return !region || c.region === region; })
+    .sort(function(a, b) { return a.name.localeCompare(b.name, "es"); })
+    .forEach(function(c) { sel.append($("<option>").val(c.cc).text(c.name)); });
+  if (sel.find("option[value='" + cur + "']").length) sel.val(cur);
+}
+function renderPos(p, data) {
+  pos = p;
+  const from = {gps: "GPS de la radio", qth: "locator QTH", country: "capital del país", "default": "sin ubicación: Montevideo"}[p.from] || p.from;
+  const place = data && data.place ? data.place + " · " : "";
+  $("#m-where").text(place + (data && data.pos ? data.pos.loc : (p.qth || "")) + " · por " + from);
+  $("#m-gps").toggle(p.from === "gps");
+}
+function sourceName(s) {
+  if (!s) return "INUMET";
+  if (s === "Pronóstico") return "avisos calculados del pronóstico (no oficiales)";
+  return s.replace("+Pronóstico", " (no respondió: avisos calculados del pronóstico)");
+}
+function renderAlerts(d) {
+  const box = $("#m-alerts").empty(), list = (d.alerts || []).slice();
+  $("#m-alerts-src").text(sourceName(d.src));
+  list.sort(function(a, b) { return (b.mine - a.mine) || (b.level - a.level); });
+  if (!list.length) { box.append('<p class="sub" style="margin:0;color:var(--ok)">Sin alertas vigentes para ' + esc(d.place || d.dept) + '.</p>'); return; }
+  list.forEach(function(a) {
+    const lv = LEVEL[a.level], calc = a.kind === "calculada";
+    const title = lv ? (calc ? "AVISO " + lv[1].replace(/A$/, "O") : "ALERTA " + lv[1]) : (a.kind === "aviso" ? "AVISO" : "ADVERTENCIA");
+    box.append('<div class="m-alert" style="border-color:' + (lv ? lv[0] : "#888") + '"><h4>' + esc(title) + " · " + esc(a.fenomeno) +
+      (a.mine ? " <small>(tu zona)</small>" : "") + "</h4><p>desde " + esc(shortTime(a.from)) + " hasta " + esc(shortTime(a.to)) +
+      (a.prob ? " · " + esc(a.prob) : "") + "</p>" + (a.desc ? "<p>" + esc(a.desc) + "</p>" : "") +
+      '<p class="z">' + esc(calc ? "pronóstico" : (a.src || "INUMET")) + " · " + esc(a.zones) + "</p></div>");
+  });
+}
+function tile(name, value) { return '<div class="m-tile"><small>' + esc(name) + "</small><span>" + esc(value) + "</span></div>"; }
+function renderNow(d) {
+  const st = d.station || {}, om = d.om || {}, day0 = (d.days || [])[0] || {}, sun = d.sun || {};
+  const v = function(k) { return st[k] !== undefined && st[k] !== null ? st[k] : om[k]; };
+  $("#m-now-src").text(d.station ? "INUMET " + st.name + " (" + st.dist_km + " km) " + st.time + " y Open-Meteo" : "Open-Meteo " + (om.time || ""));
+  $("#m-now").html('<div class="big"><b>' + n(v("temp"), 1, "°") + "</b><span>" + esc(om.text || "") + " · sensación " + n(v("feels"), 1, "°") +
+    " · mín " + n(day0.tmin, 0, "°") + " / máx " + n(day0.tmax, 0, "°") + "</span></div>" +
+    tile("Humedad", n(v("hum"), 0, " %")) + tile("Punto de rocío", n(v("dew"), 1, "°")) + tile("Presión", n(v("press"), 1, " hPa")) +
+    tile("Viento", (v("wind_card") || "") + " " + n(v("wind_kmh"), 0, " km/h")) + tile("Ráfagas", n(v("gust_kmh"), 0, " km/h")) +
+    tile("Lluvia", n(st.rain_24h !== undefined ? st.rain_24h : om.precip, 1, " mm")) + tile("Visibilidad", n(v("vis_km"), 0, " km")) +
+    tile("Nubes", n(om.cloud, 0, " %")) + tile("UV", n(om.uv, 1, "")) + tile("Sol", "↑" + (sun.rise || "--") + "  ↓" + (sun.set || "--")));
+}
+function renderDays(d) {
+  const box = $("#m-days").empty();
+  (d.days || []).slice(0, 5).forEach(function(x) {
+    box.append('<div class="m-day"><b>' + esc(x.dow) + "</b><span>" + n(x.tmax, 0, "°") + " / " + n(x.tmin, 0, "°") + "</span><small>" + esc(x.text) +
+      "</small><small>" + n(x.prob, 0, "%") + " · " + n(x.rain_mm, 1, " mm") + "</small><small>viento " + n(x.wind_max, 0, " km/h") + "</small></div>");
+  });
+  const z = $("#m-zone").empty();
+  if (d.zone) {
+    z.append("<p><b>INUMET · " + esc(d.zone.name) + "</b></p>");
+    (d.zone.days || []).slice(0, 2).forEach(function(day) {
+      (day.periods || []).forEach(function(p) { z.append("<p><b>" + esc(day.label) + " " + esc(p.p) + ":</b> " + esc(p.text) + " " + esc(p.wind) + "</p>"); });
+    });
+  }
+}
+function render(r) {
+  if (r.countries) { countries = r.countries; }
+  renderPos(r.pos, r.data);
+  if (r.countries) {
+    const c = countries.find(function(x) { return x.cc === (r.pos.cc || "").toUpperCase(); });
+    if (c) $("#m-region").val(String(c.region));
+    fillCountries();
+    $("#m-cc").val((r.pos.cc || "").toUpperCase());
+    $("#m-qth").val(r.pos.qth || "");
+  }
+  if (r.data) {
+    renderAlerts(r.data); renderNow(r.data); renderDays(r.data);
+    mStatus("Actualizado " + r.data.time + (r.data.errors && r.data.errors.length ? " · " + r.data.errors.join(" · ") : ""), false);
+  }
+}
+function update() {
+  mStatus("Buscando el tiempo… (hasta un minuto)");
+  $.ajax({url: "/api/meteo/update", type: "POST", dataType: "json", timeout: 130000,
+    success: render, error: function(xhr) { mStatus(xhr.responseJSON ? xhr.responseJSON.msg : "No se pudo actualizar", true); }});
+}
+$("#m-region").on("change", fillCountries);
+$("#m-capital").on("click", function() {
+  const c = countries.find(function(x) { return x.cc === $("#m-cc").val(); });
+  if (c && c.loc) $("#m-qth").val(c.loc.slice(0, 4) + c.loc.slice(4).toLowerCase());
+});
+$("#m-here").on("click", function() {
+  if (!navigator.geolocation) { mStatus("Este navegador no da la ubicación (en la radio, entrar por https://)", true); return; }
+  mStatus("Pidiendo la ubicación al navegador…");
+  navigator.geolocation.getCurrentPosition(function(p) {
+    $("#m-qth").val(toLocator(p.coords.latitude, p.coords.longitude));
+    mStatus("Locator del dispositivo puesto: falta Guardar");
+  }, function(e) { mStatus("Sin ubicación: " + e.message + " (hace falta https://)", true); }, {enableHighAccuracy: true, timeout: 20000});
+});
+$("#m-save").on("click", function() {
+  const d = {cc: $("#m-cc").val() || "", qth: $("#m-qth").val().trim()};
+  if (d.qth && !/^[A-Ra-r]{2}\d{2}([A-Xa-x]{2})?$/.test(d.qth)) { mStatus("El locator es como GF15 o GF15wc", true); return; }
+  mStatus("Guardando y buscando el tiempo…");
+  $.ajax({url: "/api/meteo/location", type: "POST", data: JSON.stringify(d), contentType: "application/json; charset=utf-8",
+    dataType: "json", timeout: 130000,
+    success: function(r) { render(r); mStatus("Guardado en la radio · actualizado " + (r.data ? r.data.time : "")); },
+    error: function(xhr) { mStatus(xhr.responseJSON ? xhr.responseJSON.msg : "No se pudo guardar", true); }});
+});
+$("#m-update").on("click", update);
+$.get("/api/meteo", {}, function(r) {
+  render(r);
+  if (!r.data || r.data.age_s > 600) update();
+});
+</script>

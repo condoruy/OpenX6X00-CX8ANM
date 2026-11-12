@@ -87,6 +87,10 @@ def main():
         name, _, value = s.partition("=")
         v = value if value.lstrip("-").isdigit() else "'" + value.replace("'", "''") + "'"
         subprocess.run(["sqlite3", db, f"INSERT INTO params VALUES('{name}', {v})"], check=True)
+    seed = os.environ.get("HOST_SHOTS_TMP_SEED")   # CX8ANM: archivos que el GUI encuentra en /tmp (datos de prueba)
+    if seed:
+        for n in os.listdir(seed):
+            shutil.copy(os.path.join(seed, n), os.path.join(tmp, n))
     with open(os.path.join(tmp, "inside.sh"), "w") as f:
         f.write(INSIDE)
     os.chmod(os.path.join(tmp, "inside.sh"), 0o755)

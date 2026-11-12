@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
-# CX8ANM: estación meteorológica y alertas de INUMET en el X6100.
+# CX8ANM: estación meteorológica y alertas en el X6100, para donde esté la radio.
 #
-#   x6100-meteo update LAT LON   todo (observación INUMET más cercana, Open-Meteo, pronóstico, alertas)
-#                                en /tmp/x6100-meteo.json; imprime "ok" o "error <motivo>"
-#   x6100-meteo alerts LAT LON   solo las alertas, en /tmp/x6100-meteo-alerts.json; imprime "ok <n mías>"
+#   x6100-meteo update LAT LON [PAIS [ORIGEN]]   todo en /tmp/x6100-meteo.json; imprime "ok" o "error <motivo>"
+#   x6100-meteo alerts LAT LON [PAIS [ORIGEN]]   solo las alertas, en /tmp/x6100-meteo-alerts.json; "ok <n mías>"
 #
-# INUMET no tiene una API documentada: se usan los mismos datos públicos que alimentan su sitio
-# (observaciones, pronóstico por zona y las advertencias embebidas en /alerta). Lo que INUMET no da
-# (UV, nubosidad, estado del cielo, salida y puesta del sol, probabilidad de lluvia) sale de Open-Meteo.
+# PAIS: el código ISO del país de la radio (Ajustes); ORIGEN: de dónde sale la posición (gps, qth, country).
+# El lugar (ciudad, provincia, país) sale de OpenStreetMap (Nominatim, guardado en /mnt/meteo/lugares.json:
+# una consulta por posición nueva). El tiempo actual y el pronóstico, de Open-Meteo (todo el mundo, hora local
+# del lugar). Las alertas oficiales, del servicio del país:
+#   UY INUMET (y su estación más cercana y su pronóstico por zona), AR SMN, BR INMET, EE. UU. NWS,
+#   Europa MeteoAlarm.
+# En los demás países, o si el servicio no responde, avisos calculados del pronóstico de Open-Meteo (viento,
+# lluvia, tormentas, calor, frío, UV), marcados como no oficiales.
+# INUMET no tiene una API documentada: se usan los mismos datos públicos que alimentan su sitio.
 import json
 import math
 import os
 import re
 import sys
+import hashlib
 import time
 import unicodedata
 import urllib.parse
@@ -20,11 +26,18 @@ import urllib.request
 
 OUT = "/tmp/x6100-meteo.json"
 OUT_ALERTS = "/tmp/x6100-meteo-alerts.json"
-UA = "X6100-CX8ANM/1.0 (radio de radioaficionado, datos publicos de INUMET)"
+UA = "OpenX6X00-CX8ANM/1.1 (estacion meteorologica de una radio de radioaficionado; github.com/condoruy/OpenX6X00-CX8ANM)"
 INUMET = "https://www.inumet.gub.uy"
 OBS = INUMET + "/reportes/estadoActual/datos_inumet_ui_publica.mch"
 FORECAST = INUMET + "/reportes/pronosticos/pronosticoV4.json"
 OPEN_METEO = "https://api.open-meteo.com/v1/forecast"
+NOMINATIM = "https://nominatim.openstreetmap.org"
+SMN_RSS = "https://ssl.smn.gob.ar/CAP/AR.php"
+INMET = "https://apiprevmet3.inmet.gov.br/avisos/ativos"
+NWS = "https://api.weather.gov/alerts/active"
+METEOALARM = "https://feeds.meteoalarm.org/api/v1/warnings/feeds-"
+PLACES = "/mnt/meteo/lugares.json"
+CAP_CACHE = "/tmp/x6100-meteo-cap"
 KNOT = 1.852
 _ssl_ctx = None
 
@@ -48,12 +61,12 @@ def ssl_context():
     return _ssl_ctx
 
 
-def get(url, text=False, tries=2):
+def get(url, text=False, tries=2, accept=None):
     last = None
     for i in range(tries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA,
-                                                       "Accept": "text/html" if text else "application/json"})
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "es",
+                                                       "Accept": accept or ("text/html" if text else "application/json")})
             with urllib.request.urlopen(req, timeout=25, context=ssl_context()) as r:
                 data = r.read()
             return data.decode("utf-8", "replace") if text else json.loads(data.decode("utf-8", "replace"))
@@ -215,6 +228,7 @@ def parse_alerts(html, dept_id):
                 "from": str(a.get("comienzo") or ""),
                 "to": str(a.get("finalizacion") or ""),
                 "mine": any(norm(z) == dept_id or norm(z).startswith(dept_id + " ") for z in zones),
+                "src": "INUMET",
             })
     return out
 
@@ -315,7 +329,7 @@ DOW = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 
 def open_meteo(lat, lon):
     q = {
-        "latitude": f"{lat:.3f}", "longitude": f"{lon:.3f}", "timezone": "America/Montevideo", "forecast_days": "5",
+        "latitude": f"{lat:.3f}", "longitude": f"{lon:.3f}", "timezone": "auto", "forecast_days": "5",
         "wind_speed_unit": "kmh",
         "current": "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,"
                    "cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility,"
@@ -379,6 +393,420 @@ def inumet_forecast(lat, lon):
             "published": str(raw.get("fechaPublicacion") or "")}
 
 
+# ---------- el lugar: ciudad, provincia y país de la posición ----------
+def locator(lat, lon):
+    lon, lat = lon + 180, lat + 90
+    a = chr(65 + int(lon // 20)) + chr(65 + int(lat // 10))
+    b = str(int((lon % 20) // 2)) + str(int(lat % 10))
+    c = chr(97 + int((lon % 2) * 12)) + chr(97 + int((lat % 1) * 24))
+    return a + b + c
+
+
+def _load_places():
+    try:
+        with open(PLACES) as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def place_of(lat, lon):
+    """{"city", "state", "county", "country", "cc"} de OpenStreetMap; una consulta por posición nueva."""
+    key = f"{lat:.2f},{lon:.2f}"
+    places = _load_places()
+    if key in places:
+        return places[key]
+    q = {"lat": f"{lat:.4f}", "lon": f"{lon:.4f}", "format": "jsonv2", "zoom": "10", "accept-language": "es"}
+    r = get(NOMINATIM + "/reverse?" + urllib.parse.urlencode(q), tries=1)
+    a = r.get("address") or {}
+    geo = {
+        "city": a.get("city") or a.get("town") or a.get("village") or a.get("municipality") or a.get("hamlet")
+                or a.get("suburb") or "",
+        "county": a.get("county") or a.get("state_district") or "",
+        "state": a.get("state") or a.get("province") or a.get("region") or "",
+        "country": a.get("country") or "",
+        "cc": str(a.get("country_code") or "").upper(),
+    }
+    if not geo["cc"]:
+        return None     # en el mar: sin guardar
+    places[key] = geo
+    if len(places) > 40:
+        for k in list(places)[:len(places) - 40]:
+            del places[k]
+    try:
+        os.makedirs(os.path.dirname(PLACES), exist_ok=True)
+        tmp = PLACES + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(places, f, ensure_ascii=False)
+        os.replace(tmp, PLACES)
+    except OSError:
+        pass
+    return geo
+
+
+def place_text(geo, lat, lon):
+    if not geo:
+        return locator(lat, lon)
+    parts = []
+    for k in ("city", "state", "country"):
+        v = geo.get(k)
+        if v and v not in parts:
+            parts.append(v)
+    return ", ".join(parts) or locator(lat, lon)
+
+
+# ---------- horas: todas a la hora local de la radio, "AAAA-MM-DD HH:MM" ----------
+def epoch_of(iso):
+    """ISO 8601 con o sin zona ("2026-11-12T09:00:00-03:00", "...Z", "2026-11-12 09:00"); None si no se entiende."""
+    m = re.match(r"\s*(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?\s*(Z|[+-]\d{2}:?\d{2})?", str(iso or ""))
+    if not m:
+        return None
+    y, mo, d, h, mi = (int(m.group(i)) for i in range(1, 6))
+    sec = int(m.group(6) or 0)
+    tz = m.group(7)
+    if tz is None:
+        return time.mktime((y, mo, d, h, mi, sec, 0, 0, -1))
+    import calendar
+    e = calendar.timegm((y, mo, d, h, mi, sec, 0, 0, 0))
+    if tz != "Z":
+        sign = -1 if tz[0] == "-" else 1
+        tz = tz[1:].replace(":", "")
+        e -= sign * (int(tz[:2]) * 3600 + int(tz[2:]) * 60)
+    return e
+
+
+def local(iso):
+    e = epoch_of(iso)
+    return time.strftime("%Y-%m-%d %H:%M", time.localtime(e)) if e else str(iso or "")
+
+
+def expired(iso):
+    e = epoch_of(iso)
+    return e is not None and e < time.time()
+
+
+# ---------- geometría: ¿la posición cae en el área de la alerta? ----------
+def in_ring(lat, lon, ring):
+    """ring: [(lat, lon), ...]"""
+    inside = False
+    n = len(ring)
+    for i in range(n):
+        y1, x1 = ring[i]
+        y2, x2 = ring[(i + 1) % n]
+        if (y1 > lat) != (y2 > lat) and lon < (x2 - x1) * (lat - y1) / ((y2 - y1) or 1e-12) + x1:
+            inside = not inside
+    return inside
+
+
+def ring_dist(lat, lon, ring):
+    """Distancia en km del punto al vértice más cercano del área (0 si está adentro)"""
+    if in_ring(lat, lon, ring):
+        return 0
+    return min((dist_km(lat, lon, a, b) for a, b in ring), default=99999)
+
+
+def geojson_rings(g):
+    """Anillos exteriores (lat, lon) de un Polygon o MultiPolygon GeoJSON"""
+    if isinstance(g, str):
+        try:
+            g = json.loads(g)
+        except ValueError:
+            return []
+    if not isinstance(g, dict):
+        return []
+    t, c = g.get("type"), g.get("coordinates") or []
+    polys = [c] if t == "Polygon" else c if t == "MultiPolygon" else []
+    out = []
+    for poly in polys:
+        if poly and isinstance(poly[0], list):
+            out.append([(pt[1], pt[0]) for pt in poly[0] if isinstance(pt, list) and len(pt) >= 2])
+    return out
+
+
+NEAR_KM = 150     # las que no son de acá pero están cerca también se listan
+
+
+def alert(kind, level, fenomeno, desc, prob, zones, frm, to, mine, src):
+    return {"kind": kind, "level": level if level in LEVELS else 0, "color": LEVELS.get(level, ""),
+            "fenomeno": " ".join(str(fenomeno or "").split())[:120], "desc": " ".join(str(desc or "").split())[:900],
+            "prob": " ".join(str(prob or "").split())[:120], "zones": " ".join(str(zones or "").split())[:300],
+            "from": local(frm) if frm else "", "to": local(to) if to else "", "mine": bool(mine), "src": src}
+
+
+def level_of_words(*texts):
+    t = norm(" ".join(str(x or "") for x in texts))
+    for word, lv in (("ROJ", 4), ("RED", 4), ("VERMELH", 4), ("NARANJ", 3), ("ORANGE", 3), ("LARANJ", 3),
+                     ("AMARIL", 2), ("YELLOW", 2), ("AMAREL", 2)):
+        if re.search(r"\b" + word, t):
+            return lv
+    return 0
+
+
+SEVERITY = {"EXTREME": 4, "SEVERE": 3, "MODERATE": 2, "MINOR": 2}
+
+
+# ---------- Argentina: SMN, alertas CAP ----------
+def _tag(xml, name):
+    m = re.search(r"<(?:\w+:)?" + name + r"\b[^>]*>(.*?)</(?:\w+:)?" + name + ">", xml, re.S)
+    if not m:
+        return ""
+    v = m.group(1).strip()
+    v = re.sub(r"^<!\[CDATA\[(.*)\]\]>$", r"\1", v, flags=re.S)
+    return html_unescape(v)
+
+
+def _tags(xml, name):
+    return re.findall(r"<(?:\w+:)?" + name + r"\b[^>]*>(.*?)</(?:\w+:)?" + name + ">", xml, re.S)
+
+
+def html_unescape(s):
+    import html as _h
+    return _h.unescape(s)
+
+
+def cap_file(url):
+    """Los CAP no cambian: se guardan en /tmp por su dirección"""
+    os.makedirs(CAP_CACHE, exist_ok=True)
+    path = os.path.join(CAP_CACHE, hashlib.sha1(url.encode()).hexdigest()[:16] + ".xml")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return f.read()
+    except OSError:
+        pass
+    xml = get(url, text=True, tries=1, accept="application/xml, text/xml")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(xml)
+    return xml
+
+
+def cap_alerts(xml, lat, lon, src):
+    """Las <info> de un CAP (la primera en español, si no la primera) con sus áreas"""
+    infos = _tags(xml, "info")
+    if not infos:
+        return []
+    info = next((i for i in infos if norm(_tag(i, "language")).startswith("ES")), infos[0])
+    if expired(_tag(info, "expires")):
+        return []
+    rings, names = [], []
+    for area in _tags(info, "area"):
+        names.append(html_unescape(_tag(area, "areaDesc")))
+        for poly in _tags(area, "polygon"):
+            ring = []
+            for pt in poly.split():
+                try:
+                    a, b = pt.split(",")[:2]
+                    ring.append((float(a), float(b)))
+                except ValueError:
+                    pass
+            if len(ring) >= 3:
+                rings.append(ring)
+    d = min((ring_dist(lat, lon, r) for r in rings), default=None)
+    if d is None or d > NEAR_KM:
+        return []
+    head, event = _tag(info, "headline"), _tag(info, "event")
+    level = level_of_words(head, event) or SEVERITY.get(norm(_tag(info, "severity")), 0)
+    return [alert("advertencia", level, event or head, _tag(info, "description"), _tag(info, "instruction")[:120],
+                  ", ".join(n for n in names if n)[:300], _tag(info, "onset") or _tag(info, "effective"),
+                  _tag(info, "expires"), d == 0, src)]
+
+
+def smn_alerts(lat, lon):
+    rss = get(SMN_RSS, text=True, accept="application/rss+xml, application/xml, text/xml")
+    links = [html_unescape(l.strip()) for l in _tags(rss, "link")]
+    links = [l for l in links if re.search(r"\.xml(\?|$)", l, re.I)][:60]
+    out = []
+    for url in links:
+        try:
+            out += cap_alerts(cap_file(url), lat, lon, "SMN")
+        except Fail:
+            continue
+        except Exception:
+            continue
+    return out
+
+
+# ---------- Brasil: INMET ----------
+INMET_LEVEL = {"PERIGO POTENCIAL": 2, "PERIGO": 3, "GRANDE PERIGO": 4}
+
+
+def inmet_alerts(lat, lon):
+    raw = get(INMET)
+    out = []
+    for group in ("hoje", "futuro"):
+        for a in raw.get(group) or [] if isinstance(raw, dict) else []:
+            if not isinstance(a, dict) or a.get("encerrado"):
+                continue
+            rings = geojson_rings(a.get("poligono"))
+            d = min((ring_dist(lat, lon, r) for r in rings), default=None)
+            if d is None or d > NEAR_KM:
+                continue
+            frm = a.get("inicio") or f"{a.get('data_inicio', '')} {a.get('hora_inicio', '')}"
+            to = a.get("fim") or f"{a.get('data_fim', '')} {a.get('hora_fim', '')}"
+            if expired(to):
+                continue
+            riscos = a.get("riscos") if isinstance(a.get("riscos"), list) else []
+            out.append(alert("advertencia", INMET_LEVEL.get(norm(a.get("severidade")), 0), a.get("descricao"),
+                             " ".join(str(x) for x in riscos), a.get("severidade"),
+                             a.get("estados") or a.get("mesorregioes") or "", frm, to, d == 0, "INMET"))
+    return out
+
+
+# ---------- Estados Unidos: NWS ----------
+def nws_alerts(lat, lon):
+    raw = get(f"{NWS}?point={lat:.4f},{lon:.4f}", accept="application/geo+json")
+    out = []
+    for f in raw.get("features") or []:
+        p = f.get("properties") or {}
+        if expired(p.get("ends") or p.get("expires")):
+            continue
+        out.append(alert("advertencia", SEVERITY.get(norm(p.get("severity")), 0), p.get("event"),
+                         p.get("headline") or p.get("description"), p.get("certainty"), p.get("areaDesc"),
+                         p.get("onset") or p.get("effective"), p.get("ends") or p.get("expires"), True, "NWS"))
+    return out
+
+
+# ---------- Europa: MeteoAlarm ----------
+METEOALARM_FEEDS = {
+    "AT": "austria", "BE": "belgium", "BA": "bosnia-herzegovina", "BG": "bulgaria", "HR": "croatia", "CY": "cyprus",
+    "CZ": "czechia", "DK": "denmark", "EE": "estonia", "FI": "finland", "FR": "france", "DE": "germany",
+    "GR": "greece", "HU": "hungary", "IS": "iceland", "IE": "ireland", "IL": "israel", "IT": "italy", "LV": "latvia",
+    "LT": "lithuania", "LU": "luxembourg", "MT": "malta", "MD": "moldova", "ME": "montenegro", "NL": "netherlands",
+    "MK": "republic-of-north-macedonia", "NO": "norway", "PL": "poland", "PT": "portugal", "RO": "romania",
+    "RS": "serbia", "SK": "slovakia", "SI": "slovenia", "ES": "spain", "SE": "sweden", "CH": "switzerland",
+    "UA": "ukraine", "GB": "united-kingdom",
+}
+
+
+def _same_place(area, geo):
+    a = norm(area)
+    for k in ("city", "county", "state"):
+        v = norm(geo.get(k)) if geo else ""
+        if len(v) >= 4 and (v in a or a in v):
+            return True
+    return False
+
+
+def meteoalarm_alerts(cc, geo):
+    raw = get(METEOALARM + METEOALARM_FEEDS[cc])
+    mine, other = [], []
+    for w in raw.get("warnings") or []:
+        infos = ((w.get("alert") or {}).get("info")) or []
+        if not infos:
+            continue
+        info = next((i for i in infos if norm(i.get("language")).startswith("ES")), None) \
+            or next((i for i in infos if norm(i.get("language")).startswith("EN")), infos[0])
+        if expired(info.get("expires")):
+            continue
+        params_ = {p.get("valueName"): str(p.get("value") or "") for p in info.get("parameter") or [] if isinstance(p, dict)}
+        try:
+            level = int(params_.get("awareness_level", "0").split(";")[0])
+        except ValueError:
+            level = 0
+        if level < 2:
+            continue      # verde: sin aviso
+        areas = [a.get("areaDesc") or "" for a in info.get("area") or [] if isinstance(a, dict)]
+        is_mine = any(_same_place(a, geo) for a in areas)
+        if not is_mine and level < 3:
+            continue      # las amarillas de otras zonas del país no
+        item = alert("advertencia", level, info.get("event") or info.get("headline"), info.get("description"),
+                     info.get("certainty"), ", ".join(areas), info.get("onset") or info.get("effective"),
+                     info.get("expires"), is_mine, "MeteoAlarm")
+        (mine if is_mine else other).append(item)
+    other.sort(key=lambda a: -a["level"])
+    return mine + other[:12]
+
+
+# ---------- avisos calculados del pronóstico (países sin servicio, o si el servicio no responde) ----------
+def computed_alerts(days, where):
+    out = []
+    note = "Calculado del pronóstico (no oficial)"
+    for d in (days or [])[:2]:
+        checks = []
+        g, mm, code = num(d.get("gust_max")), num(d.get("rain_mm")), d.get("code")
+        tmax, tmin, uv = num(d.get("tmax")), num(d.get("tmin")), num(d.get("uv"))
+        if g is not None and g >= 65:
+            checks.append((4 if g >= 120 else 3 if g >= 90 else 2, f"Ráfagas de hasta {g:.0f} km/h"))
+        if mm is not None and mm >= 50:
+            checks.append((4 if mm >= 150 else 3 if mm >= 100 else 2, f"Lluvia de {mm:.0f} mm"))
+        if code in (95, 96, 99):
+            checks.append((3 if code in (96, 99) else 2, "Tormentas" + (" con granizo" if code in (96, 99) else "")))
+        if tmax is not None and tmax >= 36:
+            checks.append((4 if tmax >= 44 else 3 if tmax >= 40 else 2, f"Calor: máxima de {tmax:.0f}°"))
+        if tmin is not None and tmin <= -12:
+            checks.append((3 if tmin <= -20 else 2, f"Frío: mínima de {tmin:.0f}°"))
+        if uv is not None and uv >= 11:
+            checks.append((2, f"UV extremo ({uv:.0f})"))
+        for level, text in checks:
+            out.append(alert("calculada", level, f"{d.get('dow', '')}: {text}", "", note, where,
+                             f"{d.get('date')} 00:00", f"{d.get('date')} 23:59", True, "Pronóstico"))
+    return out
+
+
+# ---------- qué servicio de alertas toca ----------
+NWS_CC = ("US", "PR", "VI", "GU", "AS", "MP")
+
+
+def official_src(cc):
+    return ("INUMET" if cc == "UY" else "SMN" if cc == "AR" else "INMET" if cc == "BR"
+            else "NWS" if cc in NWS_CC else "MeteoAlarm" if cc in METEOALARM_FEEDS else "")
+
+
+def official_alerts(cc, lat, lon, geo):
+    """(alertas, error) del servicio del país; ([], None) si el país no tiene uno acá"""
+    try:
+        if cc == "UY":
+            return fetch_alerts(my_dept(lat, lon)[0])
+        if cc == "AR":
+            return smn_alerts(lat, lon), None
+        if cc == "BR":
+            return inmet_alerts(lat, lon), None
+        if cc in NWS_CC:
+            return nws_alerts(lat, lon), None
+        if cc in METEOALARM_FEEDS:
+            return meteoalarm_alerts(cc, geo), None
+    except Fail as e:
+        return [], str(e)
+    except Exception as e:
+        return [], " ".join(str(e).split())[:60]
+    return [], None
+
+
+def where_am_i(args):
+    """(lat, lon, país, origen, geo, texto del lugar)"""
+    lat, lon = args_pos(args)
+    cc = (args[2] if len(args) > 2 else "").strip().upper()
+    origin = (args[3] if len(args) > 3 else "").strip().lower()
+    try:
+        geo = place_of(lat, lon)
+    except Fail:
+        geo = None
+    if geo and geo.get("cc"):
+        cc = geo["cc"]        # el país donde está la posición (con GPS, aunque esté de viaje)
+    if not cc:
+        cc = "UY" if -35.1 < lat < -30.0 and -58.5 < lon < -53.0 else ""
+    if cc == "UY" and (not geo or not geo.get("state")):
+        geo = dict(geo or {}, state=my_dept(lat, lon)[1], country=(geo or {}).get("country") or "Uruguay")
+    return lat, lon, cc, origin, geo, place_text(geo, lat, lon)
+
+
+def gather_alerts(cc, lat, lon, geo, place, days):
+    """Las oficiales y, si no hay servicio o no respondió, las calculadas. (alertas, fuente, errores)"""
+    src = official_src(cc)
+    alerts, err = official_alerts(cc, lat, lon, geo)
+    errors = []
+    if err:
+        errors.append(f"alertas {src}: {err}")
+    if not src or err:
+        if days is None:
+            try:
+                days = open_meteo(lat, lon)[1]
+            except Fail:
+                days = []
+        alerts += computed_alerts(days, place)
+    return alerts, (src if src and not err else src + "+Pronóstico" if src else "Pronóstico"), errors
+
+
 def no_hash(o):
     """Sin "#": en la pantalla de la radio marca colores"""
     if isinstance(o, str):
@@ -406,37 +834,38 @@ def args_pos(args):
 
 
 def cmd_alerts(args):
-    lat, lon = args_pos(args)
-    dept = my_dept(lat, lon)
-    alerts, err = fetch_alerts(dept[0])
-    if err and not alerts:
-        raise Fail("INUMET: " + err)
-    write(OUT_ALERTS, {"dept": dept[1], "time": time.strftime("%H:%M"), "alerts": alerts})
+    lat, lon, cc, origin, geo, place = where_am_i(args)
+    alerts, src, errors = gather_alerts(cc, lat, lon, geo, place, None)
+    if errors and not alerts and official_src(cc):
+        raise Fail(errors[0])
+    write(OUT_ALERTS, {"dept": place, "place": place, "src": src, "time": time.strftime("%H:%M"), "alerts": alerts})
     print("ok", sum(1 for a in alerts if a["mine"]))
 
 
 def cmd_update(args):
-    lat, lon = args_pos(args)
-    dept = my_dept(lat, lon)
-    data = {"time": time.strftime("%H:%M"), "dept": dept[1], "errors": []}
-    try:
-        data["station"] = nearest_station(lat, lon)
-    except Fail as e:
-        data["errors"].append("estación INUMET: " + str(e))
+    lat, lon, cc, origin, geo, place = where_am_i(args)
+    data = {"time": time.strftime("%H:%M"), "dept": place, "place": place, "cc": cc,
+            "pos": {"lat": round(lat, 4), "lon": round(lon, 4), "loc": locator(lat, lon), "from": origin},
+            "errors": []}
+    if cc == "UY":
+        try:
+            data["station"] = nearest_station(lat, lon)
+        except Fail as e:
+            data["errors"].append("estación INUMET: " + str(e))
     try:
         data["om"], data["days"], data["sun"] = open_meteo(lat, lon)
     except Fail as e:
         data["errors"].append("Open-Meteo: " + str(e))
-    try:
-        data["zone"] = inumet_forecast(lat, lon)
-    except Fail as e:
-        data["errors"].append("pronóstico INUMET: " + str(e))
-    alerts, err = fetch_alerts(dept[0])
-    data["alerts"] = alerts
-    if err and not alerts:
-        data["errors"].append("alertas INUMET: " + err)
+    if cc == "UY":
+        try:
+            data["zone"] = inumet_forecast(lat, lon)
+        except Fail as e:
+            data["errors"].append("pronóstico INUMET: " + str(e))
+    alerts, src, errors = gather_alerts(cc, lat, lon, geo, place, data.get("days") or [])
+    data["alerts"], data["src"] = alerts, src
+    data["errors"] += errors
     write(OUT, data)
-    write(OUT_ALERTS, {"dept": dept[1], "time": data["time"], "alerts": alerts})
+    write(OUT_ALERTS, {"dept": place, "place": place, "src": src, "time": data["time"], "alerts": alerts})
     if "station" not in data and "om" not in data:
         raise Fail(data["errors"][0] if data["errors"] else "sin datos")
     print("ok")
@@ -445,7 +874,7 @@ def cmd_update(args):
 def main(argv):
     cmds = {"update": cmd_update, "alerts": cmd_alerts}
     if len(argv) < 2 or argv[1] not in cmds:
-        print("uso: x6100-meteo update LAT LON | alerts LAT LON", file=sys.stderr)
+        print("uso: x6100-meteo update|alerts LAT LON [PAIS [gps|qth|country]]", file=sys.stderr)
         return 2
     try:
         cmds[argv[1]](argv[2:])

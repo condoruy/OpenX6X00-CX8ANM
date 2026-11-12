@@ -1,13 +1,15 @@
 /*
  *  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  CX8ANM: alertas meteorológicas de INUMET. Con WiFi, cada 15 minutos x6100-meteo trae las
- *  advertencias vigentes; una nueva para el departamento de la radio (por el GPS o el locator QTH)
- *  sale en un recuadro del color de la alerta. La app Meteo muestra el detalle.
+ *  CX8ANM: alertas meteorológicas para donde esté la radio. Con WiFi, cada 15 minutos x6100-meteo
+ *  trae las vigentes del servicio del país (INUMET, SMN, INMET, NWS, MeteoAlarm; en los demás, avisos
+ *  calculados del pronóstico); una nueva para la zona de la radio (por el GPS, el locator QTH o la capital
+ *  del país elegido) sale en un recuadro del color de la alerta. La app Meteo muestra el detalle.
  */
 #include "meteo_alerts.h"
 
 #include "cJSON.h"
+#include "countries.h"
 #include "gps.h"
 #include "params/params.h"
 #include "qth/qth.h"
@@ -37,17 +39,41 @@ static bool        busy;
 static lv_obj_t   *popup;
 static lv_timer_t *popup_timer;
 
-bool meteo_position(double *lat, double *lon) {
-    int age = 0;
+const char *meteo_position_src(double *lat, double *lon) {
+    int              age = 0;
+    const country_t *c;
 
-    if (gps_last_fix(lat, lon, &age) && age < 3600) return true;
+    if (gps_last_fix(lat, lon, &age) && age < 3600) return "gps";
     if (params.qth.x[0] && qth_grid_check(params.qth.x)) {
         qth_str_to_pos(params.qth.x, lat, lon);
-        return true;
+        return "qth";
+    }
+    c = params.country.x[0] ? country_find(params.country.x) : NULL;
+    if (c && c->loc[0] && qth_grid_check(c->loc)) {
+        qth_str_to_pos(c->loc, lat, lon);   /* la capital del país elegido */
+        return "country";
     }
     *lat = -34.896;     /* GF15WC */
     *lon = -56.146;
-    return false;
+    return "default";
+}
+
+bool meteo_position(double *lat, double *lon) {
+    const char *src = meteo_position_src(lat, lon);
+    return strcmp(src, "default") != 0;
+}
+
+/* Lo que va después de LAT LON al llamar a x6100-meteo: el país elegido y de dónde sale la posición */
+void meteo_helper_cmd(char *cmd, size_t size, const char *what) {
+    double      lat, lon;
+    const char *src = meteo_position_src(&lat, &lon);
+    char        cc[4];
+    int         n = 0;
+
+    for (const char *p = params.country.x; *p && n < 2; p++)
+        if ((*p >= 'A' && *p <= 'Z') || (*p >= 'a' && *p <= 'z')) cc[n++] = *p;
+    cc[n] = 0;
+    snprintf(cmd, size, HELPER " %s %.4f %.4f %s %s 2>/dev/null", what, lat, lon, n == 2 ? cc : "-", src);
 }
 
 uint32_t meteo_level_color(int level) {
@@ -60,6 +86,13 @@ uint32_t meteo_level_color(int level) {
 }
 
 const char *meteo_level_name(int level, const char *kind) {
+    if (kind && !strcmp(kind, "calculada")) {    /* del pronóstico, no de un servicio: "aviso" */
+        switch (level) {
+            case 3:  return tr("ORANGE NOTICE");
+            case 4:  return tr("RED NOTICE");
+            default: return tr("YELLOW NOTICE");
+        }
+    }
     switch (level) {
         case 2:  return tr("YELLOW ALERT");
         case 3:  return tr("ORANGE ALERT");
@@ -162,7 +195,9 @@ static void popup_show(cJSON *a) {
     lv_obj_t *l = lv_label_create(popup);
     lv_obj_set_style_text_font(l, &sony_28, 0);
     lv_obj_set_style_text_color(l, lv_color_hex(fg), 0);
-    lv_label_set_text_fmt(l, "%s  -  INUMET", meteo_level_name(level, kind));
+    const char *src = cJSON_GetStringValue(cJSON_GetObjectItem(a, "src"));
+    lv_label_set_text_fmt(l, "%s  -  %s", meteo_level_name(level, kind),
+                          kind && !strcmp(kind, "calculada") ? tr("forecast") : src && src[0] ? src : "INUMET");
     lv_obj_set_pos(l, 14, 8);
 
     l = lv_label_create(popup);
@@ -215,6 +250,9 @@ void meteo_alerts_check_file(void) {
             if (*p == '\n') *p = ' ';
         if (seen_has(key)) continue;
         seen_add(key);
+        /* los avisos calculados del pronóstico salen en pantalla solo desde naranja */
+        const char *kind = cJSON_GetStringValue(cJSON_GetObjectItem(a, "kind"));
+        if (kind && !strcmp(kind, "calculada") && cJSON_GetNumberValue(cJSON_GetObjectItem(a, "level")) < 3) continue;
         if (!show || cJSON_GetNumberValue(cJSON_GetObjectItem(a, "level")) >
                      cJSON_GetNumberValue(cJSON_GetObjectItem(show, "level")))
             show = a;       /* la más grave de las nuevas */
@@ -248,15 +286,12 @@ static void *check_thread(void *arg) {
 static void timer_cb(lv_timer_t *t) {
     (void)t;
     time_t now = time(NULL);
-    double lat, lon;
     char   cmd[160];
 
     if (busy || !params.meteo_alerts.x || wifi_get_status() != WIFI_CONNECTED) return;
-    if (params.country.x[0] && strcasecmp(params.country.x, "UY") != 0) return;   /* INUMET: solo Uruguay */
     if (last_check && now - last_check < CHECK_S) return;
     last_check = now;
-    meteo_position(&lat, &lon);
-    snprintf(cmd, sizeof(cmd), HELPER " alerts %.4f %.4f 2>/dev/null", lat, lon);
+    meteo_helper_cmd(cmd, sizeof(cmd), "alerts");
 
     pthread_t th;
     busy = true;

@@ -1357,6 +1357,13 @@ Last 24 h	Ultime 24 h
 Tomorrow	Domani
 No forecast yet	Ancora nessuna previsione
 (your department)	(il tuo dipartimento)
+No weather alerts for	Nessuna allerta meteo per
+forecast	previsione
+YELLOW NOTICE	AVVISO GIALLO
+ORANGE NOTICE	AVVISO ARANCIONE
+RED NOTICE	AVVISO ROSSO
+(your area)	(la tua zona)
+no weather warnings in force	nessuna avvertenza in vigore
 No weather warnings in force from INUMET	Nessuna avvertenza INUMET in vigore
 Getting the weather...	Recupero il meteo...
 No data: Update (needs WiFi)	Nessun dato: Aggiorna (serve il WiFi)

@@ -1092,3 +1092,9 @@ The backup shown is not the one on the radio any more: choose the file again	La 
 Can't save: channels.json is nested too deep for the page	No se puede guardar: channels.json tiene demasiados niveles para la página
 Fill by level	Relleno por nivel
 The fill in the waterfall's colours by signal level, weak at the bottom and strong at the top, like an SDR	El relleno con los colores de la cascada según el nivel de señal, débil abajo y fuerte arriba, como en un SDR
+Already updating, wait a moment	Ya se está actualizando, esperá un momento
+No data: is the radio on the internet?	Sin datos: ¿la radio tiene internet?
+Unknown country	País desconocido
+Invalid QTH locator	El locator QTH no es válido
+Nothing to change	No hay nada para cambiar
+Not saved	No se guardó
