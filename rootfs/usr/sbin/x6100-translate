@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+# CX8ANM: traducción de los mensajes de JS8 para las redes GhostNet en inglés (src/ghostnet.c).
+#
+#   x6100-translate rx "CX1ABC: @GHOSTNET ALL STATIONS PLEASE CHECK IN"
+#       si el texto está en inglés imprime "ok <traducción al español>"; si no, "skip"
+#   x6100-translate tx "@GHOSTNET BUENAS NOCHES A TODOS, CHEQUEO DESDE MONTEVIDEO"
+#       imprime "ok <traducción al inglés en mayúsculas, solo con las letras que JS8 puede mandar>"
+#   en cualquier error imprime "error <motivo>"
+#
+# Las direcciones del principio (CX8ANM:, @GHOSTNET, CX1ABC, MSG, ...) no se traducen: quedan como están.
+# Usa MyMemory (api.mymemory.translated.net, gratis y sin clave, unos 5000 caracteres por día). Lo ya traducido
+# se guarda en /tmp/x6100-translate.json y no se vuelve a pedir.
+import json
+import os
+import re
+import sys
+import unicodedata
+import urllib.parse
+import urllib.request
+
+API = "https://api.mymemory.translated.net/get"
+CACHE = "/tmp/x6100-translate.json"
+UA = "OpenX6X00-CX8ANM/1.1 (JS8 de una radio de radioaficionado; github.com/condoruy/OpenX6X00-CX8ANM)"
+JS8_OK = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .-+?!\"/@:<>{}_#&'(),=;*")
+
+EN = set("""THE AND IS ARE TO OF YOU YOUR FOR WITH THIS THAT HAVE HAS WILL BE WE OUR ALL STATIONS STATION PLEASE
+CHECK IN ON AT FROM GOOD MORNING EVENING NIGHT THANKS THANK WEATHER HERE THERE ANY ANYONE COPY HEAR HEARD
+NET TONIGHT TODAY POWER OUT DOWN UP NO YES IT AN NOT CAN WHAT WHERE WHEN HOW SIGNAL REPORT RELAY SAFE
+EVERYONE NEED NEEDS HELP STATUS ROGER LOUD CLEAR WORKING BAND OPEN CLOSED SUNNY RAIN STORM WIND""".split())
+ES = set("""EL LA LOS LAS DE DEL Y ES SON PARA CON ESTE ESTA ESO QUE HAY TODOS TODAS ESTACION ESTACIONES POR FAVOR
+BUENAS BUENOS DIAS TARDES NOCHES GRACIAS TIEMPO AQUI ALLI ALGUIEN COPIA ESCUCHO RED HOY LUZ SIN SI NO UN UNA
+DONDE CUANDO COMO SENAL REPORTE BIEN TODO NECESITO AYUDA ESTADO SALUDOS DESDE LLUVIA VIENTO SOL CHEQUEO""".split())
+COMMANDS = {"MSG", "TO:", "ACK", "NACK", "HB", "HEARTBEAT", "SNR", "SNR?", "GRID", "GRID?", "INFO", "INFO?",
+            "STATUS", "STATUS?", "HEARING", "HEARING?", "QUERY", "MSGS", "MSGS?", "CMD", "RELAY", "CQ", "DE", "AGN?",
+            "QSL", "QSL?", "QTH", "QTH?", "YES", "NO", "73", "RR", "SK", "DIT", "DIT!"}
+CALL = re.compile(r"^@?[A-Z0-9/]*\d[A-Z0-9/]*:?$|^@[A-Z0-9]+$")
+
+
+def fail(why):
+    print("error", " ".join(str(why).split())[:80])
+    sys.exit(0)
+
+
+def strip_accents(s):
+    return "".join(c for c in unicodedata.normalize("NFKD", s) if not unicodedata.combining(c))
+
+
+def split_head(text):
+    """(direcciones y comandos del principio, el resto)"""
+    words = text.split()
+    i = 0
+    while i < len(words) and (CALL.match(words[i]) or words[i] in COMMANDS or words[i].rstrip(":") in COMMANDS):
+        i += 1
+    return " ".join(words[:i]), " ".join(words[i:])
+
+
+def english(body):
+    words = re.findall(r"[A-Z']+", strip_accents(body.upper()))
+    en = sum(w in EN for w in words)
+    es = sum(w in ES for w in words)
+    return len(words) >= 3 and en >= 2 and en > es
+
+
+def sentence_case(s):
+    s = s.lower()
+    return re.sub(r"(^|[.!?]\s+)([a-z])", lambda m: m.group(1) + m.group(2).upper(), s)
+
+
+def load_cache():
+    try:
+        with open(CACHE) as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def save_cache(c):
+    if len(c) > 300:
+        for k in list(c)[:len(c) - 300]:
+            del c[k]
+    try:
+        with open(CACHE + ".tmp", "w") as f:
+            json.dump(c, f, ensure_ascii=False)
+        os.replace(CACHE + ".tmp", CACHE)
+    except OSError:
+        pass
+
+
+def translate(text, pair):
+    cache = load_cache()
+    key = pair + "|" + text
+    if key in cache:
+        return cache[key]
+    q = urllib.parse.urlencode({"q": sentence_case(text)[:480], "langpair": pair})
+    req = urllib.request.Request(API + "?" + q, headers={"User-Agent": UA, "Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            data = json.loads(r.read().decode("utf-8", "replace"))
+    except Exception as e:
+        fail(f"sin conexión con el traductor ({e.__class__.__name__})")
+    out = ((data or {}).get("responseData") or {}).get("translatedText") or ""
+    status = str((data or {}).get("responseStatus", ""))
+    if status != "200" or not out:
+        fail("el traductor no respondió" + (": " + str(data.get("responseDetails"))[:60] if isinstance(data, dict) else ""))
+    if "MYMEMORY WARNING" in out.upper():
+        fail("se terminó la traducción gratis de hoy")
+    import html
+    out = html.unescape(out).strip()
+    cache[key] = out
+    save_cache(cache)
+    return out
+
+
+def js8_text(s):
+    s = strip_accents(s).upper().replace("¿", "").replace("¡", "").replace("Ñ", "N")
+    s = s.replace("’", "'").replace("“", '"').replace("”", '"')
+    s = "".join(c if c in JS8_OK else " " for c in s)
+    return " ".join(s.split())
+
+
+def main(argv):
+    if len(argv) < 3 or argv[1] not in ("rx", "tx"):
+        print("uso: x6100-translate rx|tx TEXTO")
+        return
+    text = " ".join(argv[2:]).strip()
+    head, body = split_head(text.upper())
+    if not body:
+        print("skip")
+        return
+    if argv[1] == "rx":
+        if not english(body):
+            print("skip")
+            return
+        out = translate(body, "en|es")
+        print("ok", " ".join(out.split()))
+    else:
+        out = js8_text(translate(body, "es|en"))
+        if not out:
+            fail("traducción vacía")
+        print("ok", (head + " " + out).strip())
+
+
+if __name__ == "__main__":
+    main(sys.argv)

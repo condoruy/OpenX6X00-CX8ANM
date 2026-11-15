@@ -1543,3 +1543,23 @@ EMERGENCY	EMERGENZA
 Getting the flights...	Ricerca dei voli...
 No aircraft seen in this zone right now	Nessun aereo visto in questa zona
 Only aircraft picked up by a volunteer receiver nearby are shown	Si vedono solo gli aerei captati da un ricevitore volontario vicino
+EMERGENCY  -  @GSTFLASH	EMERGENZA  -  @GSTFLASH
+GhostNet: pass it on at once to whoever can help, by any means	GhostNet: inoltralo subito a chi può aiutare, con ogni mezzo
+Starts in %d min (%s): %s on %d.%03d MHz	Inizia tra %d min (%s): %s su %d.%03d MHz
+APP > Modes > JS8 > Freq > GhostNet mode  -  groups @GHOSTNET @GSTFLASH	APP > JS8 > Freq > GhostNet  -  gruppi @GHOSTNET @GSTFLASH
+no translator (is the radio on the internet?)	nessun traduttore (la radio ha internet?)
+Not translated: %s	Non tradotto: %s
+In English: check it and press OK to send	In inglese: controlla e premi OK per inviare
+Not translated (%s): OK sends it as it is	Non tradotto (%s): OK lo invia così
+Translating to English...	Traduzione in inglese...
+No WiFi to translate: OK sends it as it is	Niente WiFi per tradurre: OK lo invia così
+GhostNet: %s, groups %s	GhostNet: %s, gruppi %s
+Reminder %d min before: %s	Promemoria %d min prima: %s
+English messages, translated: %s	Messaggi inglesi tradotti: %s
+Mine sent in English: %s	I miei inviati in inglese: %s
+RTTY 7.077 MHz, 45.45 baud (closes JS8)	RTTY 7.077 MHz, 45,45 baud (chiude JS8)
+GhostNet - groups @GHOSTNET @GSTFLASH %s	GhostNet - gruppi @GHOSTNET @GSTFLASH %s
+Next 7 days (your local time), * with reminder:	Prossimi 7 giorni (ora locale), * con promemoria:
+Nets, Spanish net and reminders: web page GhostNet	Reti, rete ispanica e promemoria: pagina web GhostNet
+GhostNet mode: 7.107 + its groups	Modo GhostNet: 7.107 + i suoi gruppi
+GhostNet: nets, translation, RTTY...	GhostNet: reti, traduzione, RTTY...

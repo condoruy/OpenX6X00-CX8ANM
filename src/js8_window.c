@@ -11,6 +11,8 @@
 
 #define _GNU_SOURCE     /* pthread_setname_np */
 #include "js8_window.h"
+#include "ghostnet.h"
+#include "wifi.h"
 #include "board.h"
 #include "js8_map.h"
 #include "main.h"
@@ -86,6 +88,7 @@
  * depending on the words, so the compose box allows more than that and the
  * frame limit is what you run into, as on desktop JS8Call. */
 #define TX_TEXT_MAX      500
+#define ROW_MAX          (JS8_RX_TEXT_LEN + 360) /* a row: the message and its translation (CX8ANM) */
 #define TEXT_MAX         64                        /* INFO and STATUS answers */
 #define SAVED_N          10                        /* Query > Saved messages > */
 #define APRS_COMMENT_MAX 43                        /* longest comment in an APRS position report */
@@ -592,6 +595,23 @@ static bool passes_filter(const js8_rx_msg_t *msg)
 /* "hh:mm:ss  TX 1500  text" for ours, "hh:mm:ss -12 1500  text" for theirs.
  * A speed other than Normal adds its letter after the offset, the same
  * column desktop shows it in. */
+/* CX8ANM: lo que llegó en inglés, traducido (GhostNet): por msg_id, lo último primero */
+#define TRANS_N 48
+static struct {
+    uint32_t id;
+    int32_t  utc;
+    char     text[320];
+} trans[TRANS_N];
+static int  trans_head;
+static bool trans_warned;   /* "sin traductor" una vez por sesión */
+
+static const char *trans_find(const js8_rx_msg_t *msg) {
+    if (msg->tx || msg->partial || msg->msg_id == 0) return NULL;
+    for (int i = 0; i < TRANS_N; i++)
+        if (trans[i].id == msg->msg_id && trans[i].utc == msg->utc && trans[i].text[0]) return trans[i].text;
+    return NULL;
+}
+
 static void format_row(const js8_rx_msg_t *msg, char *out, size_t out_size)
 {
     int         utc = (int)msg->utc;
@@ -606,8 +626,10 @@ static void format_row(const js8_rx_msg_t *msg, char *out, size_t out_size)
         if (msg->partial) tail = " ...";
         else if (msg->checksum < 0) tail = "  (bad checksum)";
         const char *open = msg->low_confidence ? "[" : "", *close = msg->low_confidence ? "]" : "";
-        snprintf(out, out_size, "%02d:%02d:%02d %+3d %4.0f%s  %s%s%s%s", utc / 10000, utc / 100 % 100, utc % 100,
-                 msg->snr, msg->freq_hz, letter, open, msg->text, close, tail);
+        int n = snprintf(out, out_size, "%02d:%02d:%02d %+3d %4.0f%s  %s%s%s%s", utc / 10000, utc / 100 % 100,
+                         utc % 100, msg->snr, msg->freq_hz, letter, open, msg->text, close, tail);
+        const char *es = trans_find(msg);
+        if (es && n > 0 && (size_t)n < out_size) snprintf(out + n, out_size - n, "\n          ES: %s", es);
     } else {
         snprintf(out, out_size, "%02d:%02d:%02d  TX %4.0f%s  %s", utc / 10000, utc / 100 % 100, utc % 100,
                  msg->freq_hz, letter, msg->text);
@@ -711,7 +733,7 @@ static void rebuild_message_rows(void)
 
     table_empty();
     if (!count) append_row("Listening for JS8...", -1);
-    char line[JS8_RX_TEXT_LEN + 48];
+    char line[ROW_MAX];
     while (count--) {
         format_row(&history[picked[count]], line, sizeof(line));
         append_row(line, picked[count]);
@@ -828,7 +850,7 @@ static void update_slot(int slot, const js8_rx_msg_t *msg)
     history[slot] = *msg;
     if (stations_view_update(msg)) return;
 
-    char line[JS8_RX_TEXT_LEN + 48];
+    char line[ROW_MAX];
     format_row(msg, line, sizeof(line));
     uint16_t r = 0;
     while (r < rows && row_hist[r] != slot) r++;
@@ -842,9 +864,51 @@ static void update_slot(int slot, const js8_rx_msg_t *msg)
     }
 }
 
+/* CX8ANM: la traducción de un mensaje llegó: a su fila */
+static void trans_rx_done(uint32_t id, bool ok, const char *text) {
+    if (!table) return;   /* la app se cerró mientras tanto */
+    if (!ok) {
+        if (text[0] && !trans_warned) {
+            trans_warned = true;
+            msg_update_text_fmt(tr("Not translated: %s"), text);
+        }
+        return;
+    }
+    int idx = hist_head;
+    for (int i = 0; i < hist_count; i++) {
+        idx = idx == 0 ? HISTORY - 1 : idx - 1;
+        if (history[idx].msg_id != id || history[idx].tx || history[idx].partial) continue;
+        trans[trans_head].id  = id;
+        trans[trans_head].utc = history[idx].utc;
+        snprintf(trans[trans_head].text, sizeof(trans[trans_head].text), "%s", text);
+        trans_head = (trans_head + 1) % TRANS_N;
+        if (ghostnet_is_group(history[idx].to) || params.js8_ghostnet.x)
+            ghostnet_log('T', id, history[idx].from, history[idx].to, history[idx].snr, cparam_i_get(cfg_fg_freq), text);
+        js8_rx_msg_t copy = history[idx];
+        update_slot(idx, &copy);
+        return;
+    }
+}
+
+/* Un mensaje completo que puede estar en inglés: a traducir, si GhostNet lo pide y hay WiFi */
+static void trans_rx_ask(const js8_rx_msg_t *m) {
+    if (m->tx || m->partial || m->heartbeat || m->snr_report || m->low_confidence || m->msg_id == 0) return;
+    if (!ghostnet_conf()->translate_rx || wifi_get_status() != WIFI_CONNECTED) return;
+    if (strlen(m->text) < 12) return;
+    ghostnet_translate(false, m->text, m->msg_id, trans_rx_done);
+}
+
 static void add_message(const js8_rx_msg_t *in)
 {
     js8_rx_msg_t m = *in;
+    if (!m.partial) {
+        /* CX8ANM: lo de los grupos de GhostNet (o todo, en sus frecuencias) queda para la página web */
+        if (!m.heartbeat && !m.snr_report && !m.low_confidence &&
+            (ghostnet_is_group(m.to) || (params.js8_ghostnet.x && !params.js8_custom_on.x)))
+            ghostnet_log(m.tx ? 'X' : 'R', m.msg_id, m.tx ? params.callsign.x : m.from, m.to, m.snr,
+                         cparam_i_get(cfg_fg_freq), m.text);
+        trans_rx_ask(&m);
+    }
 
     int growing = -1;
     if (!m.tx) growing = find_partial(m.msg_id);
@@ -870,7 +934,7 @@ static void add_message(const js8_rx_msg_t *in)
         rebuild_rows(); /* also cuts a full list back to KEEP_ROWS */
         return;
     }
-    char line[JS8_RX_TEXT_LEN + 48];
+    char line[ROW_MAX];
     format_row(&m, line, sizeof(line));
     push_row(line, (int16_t)slot);
 }
@@ -1952,12 +2016,53 @@ static void edit_finish(void)
 /* OK in the compose window. As in the FT8 app's keyboard we close it here
  * and return true, which makes textarea_window's own close do nothing;
  * false keeps it open. */
+static void p3_say(const char *text);
+static bool p3_refuse(const char *why);
+
+/* CX8ANM: lo que escribo, al inglés antes de mandarlo (GhostNet): el primer OK traduce y muestra, el segundo manda */
+static char tx_checked[TX_TEXT_MAX + 1];   /* el texto ya revisado: con OK sale así */
+static bool tx_translating;
+
+static void trans_tx_done(uint32_t id, bool ok, const char *text) {
+    LV_UNUSED(id);
+    tx_translating = false;
+    if (!composing || edit_target != 0) return;
+    if (ok) {
+        textarea_window_set(text);
+        snprintf(tx_checked, sizeof(tx_checked), "%s", textarea_window_get());
+        p3_say(tr("In English: check it and press OK to send"));
+    } else {
+        snprintf(tx_checked, sizeof(tx_checked), "%s", textarea_window_get());
+        msg_update_text_fmt(tr("Not translated (%s): OK sends it as it is"), text[0] ? text : "?");
+    }
+}
+
+/* True cuando hay que esperar la traducción (la ventana queda abierta) */
+static bool trans_tx_first(const char *typed) {
+    if (!ghostnet_conf()->translate_tx || !strcmp(typed, tx_checked) || !typed[strspn(typed, " ")]) return false;
+    if (tx_translating) {
+        p3_say(tr("Translating to English..."));
+        return true;
+    }
+    if (wifi_get_status() != WIFI_CONNECTED) {
+        snprintf(tx_checked, sizeof(tx_checked), "%s", typed);
+        p3_say(tr("No WiFi to translate: OK sends it as it is"));
+        return true;
+    }
+    if (!ghostnet_translate(true, typed, 1, trans_tx_done)) return false;
+    tx_translating = true;
+    p3_say(tr("Translating to English..."));
+    return true;
+}
+
 static bool compose_ok_cb(void)
 {
     const char *typed = textarea_window_get();
 
     switch (edit_target) {
     case 0: {
+        if (trans_tx_first(typed)) return false; /* window stays: the English text comes into it */
+        tx_checked[0] = 0;
         /* Macros in the message are filled in on the way out, as on
          * desktop; one that can't be (<CALL> with no station selected) is
          * sent as typed. */
@@ -5273,6 +5378,14 @@ static void alert_check(js8_rx_msg_t *msg, bool first_heard) {
     char    word[16];
     uint8_t on = params.js8_alerts.x;
     if (msg->low_confidence) return; /* likely a false decode */
+    /* CX8ANM: GhostNet, tráfico de emergencia: recuadro rojo y tres pitidos */
+    if (!msg->tx && (!strcasecmp(msg->to, "@GSTFLASH") || strstr(msg->text, "@GSTFLASH"))) {
+        msg->alert = true;
+        ghostnet_flash_show(msg->text);
+        msg_update_text_fmt("@GSTFLASH: %s", msg->text);
+        alert_beep(3);
+        return;
+    }
     if (js8_alert_hit(msg->text, msg->from, alert_words, word, sizeof(word))) {
         msg->alert = true; /* the row turns purple */
         msg_update_text_fmt("Alert %s: %s", word, msg->text);
@@ -5472,7 +5585,7 @@ static void decode_cb(button_data_t *b) {
  * GhostNet chosen, through GhostNet's (3.575, 7.107, 14.107 MHz). A
  * custom frequency is kept; the band keys go from it back to the list. */
 
-enum freq_choice { FQ_JS8, FQ_GHOSTNET, FQ_CUSTOM, FQ_CLOSE };
+enum freq_choice { FQ_JS8, FQ_GHOSTNET, FQ_GN_MORE, FQ_CUSTOM, FQ_CLOSE };
 
 static const char *freq_label_getter(void) { /* "Freq:\nJS8", "Freq:\nGhostNet" or the custom kHz */
     static char text[32];
@@ -5496,6 +5609,102 @@ static void p3_use_list(bool use_ghostnet) {
 
 /* As typed: kHz ("7107.5") or, under 100, MHz ("7.1075"). On a bad one,
  * false with the reason shown: the keyboard stays open. */
+/* CX8ANM: el modo GhostNet: 7.107 MHz y los grupos @GHOSTNET, @GSTFLASH y el regional */
+static void p3_ghostnet_mode(void) {
+    if (!p3_tx_idle()) return;
+    params_bool_set(&params.js8_ghostnet, true);
+    params_bool_set(&params.js8_custom_on, false);
+    cparam_i_set(cfg_fg_freq, 7107000);   /* la red de 40 m primero; las teclas de banda siguen con 3.575 y 14.107 */
+    load_band(0);
+    retuned();
+    char before[sizeof(groups_text)];
+    snprintf(before, sizeof(before), "%s", groups_text);
+    ghostnet_add_groups(groups_text, sizeof(groups_text));
+    js8_groups_normalise(groups_text, groups_text, sizeof(groups_text));
+    if (strcmp(before, groups_text)) save_texts();
+    msg_update_text_fmt(tr("GhostNet: %s, groups %s"), where_label(), groups_text);
+    add_info_row("GhostNet: %s", groups_text);
+}
+
+/* ---- GhostNet: las redes, el recordatorio, la traducción, RTTY (CX8ANM) ---- */
+
+enum gn_choice { GN_REMIND, GN_TR_RX, GN_TR_TX, GN_RTTY, GN_CLOSE, GN_SLOT };
+
+static void gn_item_text(int item, char *out, size_t size) {
+    const ghostnet_conf_t *c = ghostnet_conf();
+    switch (item) {
+    case GN_REMIND:
+        snprintf(out, size, tr("Reminder %d min before: %s"), c->remind_min, c->remind ? tr("On") : tr("Off"));
+        break;
+    case GN_TR_RX: snprintf(out, size, tr("English messages, translated: %s"), c->translate_rx ? tr("On") : tr("Off")); break;
+    case GN_TR_TX: snprintf(out, size, tr("Mine sent in English: %s"), c->translate_tx ? tr("On") : tr("Off")); break;
+    case GN_RTTY: snprintf(out, size, "%s", tr("RTTY 7.077 MHz, 45.45 baud (closes JS8)")); break;
+    default: snprintf(out, size, "%s", tr("Close"));
+    }
+}
+
+static void gn_item_cb(lv_event_t *ev) {
+    int             item = (int)(intptr_t)lv_event_get_user_data(ev);
+    ghostnet_conf_t c    = *ghostnet_conf();
+    char            text[96];
+    switch (item) {
+    case GN_REMIND: c.remind = !c.remind; break;
+    case GN_TR_RX: c.translate_rx = !c.translate_rx; break;
+    case GN_TR_TX: c.translate_tx = !c.translate_tx; tx_checked[0] = 0; break;
+    case GN_SLOT: return;   /* a line of the schedule */
+    case GN_RTTY:
+        if (!p3_tx_idle()) return;
+        p3_popup_shut(&freq_list);
+        ghostnet_rtty_open();
+        dialog_destruct();
+        return;
+    default: p3_popup_shut(&freq_list); return;
+    }
+    ghostnet_conf_save(&c);
+    gn_item_text(item, text, sizeof(text));
+    lv_label_set_text(lv_obj_get_child(lv_event_get_target(ev), 0), text);
+}
+
+static void gn_key_cb(lv_event_t *ev) {
+    if (p3_popup_key(ev)) p3_popup_shut(&freq_list);
+}
+
+static void ghostnet_show(void) { /* en el lugar del popup Freq */
+    char            text[160], when[24], region[16];
+    ghostnet_slot_t slot[8];
+    lv_obj_t       *top = NULL;
+
+    freq_list = p3_popup_new(620);
+    ghostnet_region_tag(region, sizeof(region));
+    snprintf(text, sizeof(text), tr("GhostNet - groups @GHOSTNET @GSTFLASH %s"), region);
+    p3_popup_note(freq_list, text);
+    for (int k = GN_REMIND; k <= GN_CLOSE; k++) {
+        gn_item_text(k, text, sizeof(text));
+        lv_obj_t *made = p3_popup_item(freq_list, text, gn_item_cb, gn_key_cb, k);
+        p3_popup_dots(made);
+        if (k == GN_CLOSE) lv_obj_set_style_text_color(made, TC(action), 0);
+        if (!top) top = made;
+    }
+    p3_popup_note(freq_list, tr("Next 7 days (your local time), * with reminder:"));
+    static ghostnet_slot_t all[32];
+    int n = ghostnet_upcoming(all, 32, 7 * 24, false), shown = 0;
+    LV_UNUSED(slot);
+    for (int i = 0; i < n && shown < 14; i++) {
+        if (strcmp(all[i].mode, "VARA") == 0 || strcmp(all[i].mode, "ALE") == 0 || strcmp(all[i].mode, "LSB") == 0)
+            continue;   /* de PC, o la voz de emergencia */
+        ghostnet_local_when(all[i].start, when, sizeof(when));
+        snprintf(text, sizeof(text), "%s%s  %s  %s %d.%03d", ghostnet_net_reminded(all[i].net) ? "* " : "", when,
+                 all[i].name, all[i].mode, all[i].khz / 1000, all[i].khz % 1000);
+        lv_obj_t *row = p3_popup_item(freq_list, text, gn_item_cb, gn_key_cb, GN_SLOT); /* the knob scrolls them */
+        p3_popup_dots(row);
+        lv_obj_set_style_text_font(row, &sony_22, 0);
+        if (ghostnet_net_reminded(all[i].net)) lv_obj_set_style_text_color(row, TC(ok), 0);
+        shown++;
+    }
+    p3_popup_note(freq_list, tr("Nets, Spanish net and reminders: web page GhostNet"));
+    p3_popup_focus(top);
+}
+
 static bool parse_custom(const char *typed, int32_t *hz_out) {
     char  *rest;
     double num = strtod(typed, &rest);
@@ -5531,8 +5740,14 @@ static void p3_freq_item_cb(lv_event_t *ev) {
         p3_say("Dial frequency in kHz, then Enter");
         return;
     }
+    if (item == FQ_GN_MORE) {
+        p3_popup_drop(&freq_list);
+        ghostnet_show();
+        return;
+    }
     p3_popup_shut(&freq_list);
-    if (item == FQ_JS8 || item == FQ_GHOSTNET) p3_use_list(item == FQ_GHOSTNET);
+    if (item == FQ_JS8) p3_use_list(false);
+    if (item == FQ_GHOSTNET) p3_ghostnet_mode();
 }
 
 static void p3_freq_key_cb(lv_event_t *ev) {
@@ -5552,7 +5767,8 @@ static void freq_show(void) { /* the Freq popup */
     snprintf(text, sizeof(text), tr("Now: %s"), where_label());
     p3_popup_note(freq_list, text);
     opt[FQ_JS8]      = p3_freq_add(FQ_JS8, "JS8Call frequencies (7.078, 14.078...)");
-    opt[FQ_GHOSTNET] = p3_freq_add(FQ_GHOSTNET, "GhostNet (3.575, 7.107, 14.107)");
+    opt[FQ_GHOSTNET] = p3_freq_add(FQ_GHOSTNET, "GhostNet mode: 7.107 + its groups");
+    opt[FQ_GN_MORE]  = p3_freq_add(FQ_GN_MORE, "GhostNet: nets, translation, RTTY...");
     if (params.js8_custom_hz.x == 0) {
         snprintf(text, sizeof(text), tr("Custom kHz..."));
     } else {
@@ -5564,6 +5780,7 @@ static void freq_show(void) { /* the Freq popup */
     lv_obj_set_style_text_color(opt[FQ_CLOSE], TC(action), 0);
     /* The list in use stands out, and the knob starts on it. */
     int now = params.js8_custom_on.x ? FQ_CUSTOM : params.js8_ghostnet.x ? FQ_GHOSTNET : FQ_JS8;
+    lv_obj_set_style_text_color(opt[FQ_GN_MORE], TC(row_alert_text), 0);
     lv_obj_set_style_text_color(opt[now], TC(ok), 0);
     p3_popup_focus(opt[now]);
 }

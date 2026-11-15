@@ -1098,3 +1098,11 @@ Unknown country	País desconocido
 Invalid QTH locator	El locator QTH no es válido
 Nothing to change	No hay nada para cambiar
 Not saved	No se guardó
+Reminder: between 1 and 120 minutes	Recordatorio: entre 1 y 120 minutos
+Invalid day	Día no válido
+Duration: between 5 and 240 minutes	Duración: entre 5 y 240 minutos
+Frequency: between 1800 and 54000 kHz	Frecuencia: entre 1800 y 54000 kHz
+Check the numbers	Revisá los números
+Time like 21:00	La hora es como 21:00
+Invalid mode	Modo no válido
+The regional group is like @GNURYMO	El grupo regional es como @GNURYMO

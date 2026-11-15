@@ -4339,6 +4339,47 @@ def flights_get():
         return json.load(f)
 
 
+# ---------- GhostNet (src/ghostnet.c, ghostnet_web.py) ----------
+@app.route('/ghostnet')
+def ghostnet_page():
+    return bottle.template('ghostnet')
+
+
+@app.get('/api/ghostnet')
+def ghostnet_get():
+    from . import ghostnet_web as gn
+    conf = gn.read_conf()
+    tag, why = gn.region_tag(read_param("country"), conf)
+    msgs, stations = gn.messages()
+    return {"conf": conf, "nets": [{"id": n[0], "name": n[1], "note": n[2]} for n in gn.NETS],
+            "region": tag, "region_why": why, "schedule": gn.schedule(conf), "messages": msgs, "stations": stations,
+            "tz": time.strftime("%Z"), "callsign": read_param("callsign")}
+
+
+@app.post('/api/ghostnet/conf')
+def ghostnet_conf():
+    from . import ghostnet_web as gn
+    try:
+        d = bottle.request.json or {}
+    except ValueError:
+        d = {}
+    conf, err = gn.write_conf(d)
+    if err:
+        return api_error(400, err)
+    return {"conf": conf, "schedule": gn.schedule(conf)}
+
+
+@app.post('/api/ghostnet/clear')
+def ghostnet_clear():
+    from . import ghostnet_web as gn
+    for p in (gn.LOG, gn.LOG + ".1"):
+        try:
+            os.remove(p)
+        except OSError:
+            pass
+    return {"status": "ok"}
+
+
 # ---------- Meteo (x6100-meteo, src/dialog_meteo.c) ----------
 # El tiempo y las alertas para donde está la radio: la posición sale del GPS, del locator QTH o de la capital del país
 # (la GUI dice cuál: meteo_pos en src/cfg_socket.cpp); desde acá se cambian el país y el locator (meteo_set).

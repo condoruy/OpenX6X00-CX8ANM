@@ -10,6 +10,7 @@
  */
 
 #include "meteo_alerts.h"
+#include "ghostnet.h"
 #include "dialog_setup.h"
 #include "dialog_field.h"
 #include "msg_box.h"
@@ -373,6 +374,7 @@ int main(void) {
     lv_scr_load(screen);
     walkie_init(screen);      /* its screen instead, when on */
     meteo_alerts_init();      /* CX8ANM: alertas de INUMET con WiFi */
+    ghostnet_init();          /* CX8ANM: recordatorio de las redes GhostNet */
     if (dialog_setup_first_start()) {
         /* CX8ANM: primer encendido: idioma, licencia, región y país antes que nada */
     } else if (!walkie_on() && param_i_get(cfg_field_boot)) {

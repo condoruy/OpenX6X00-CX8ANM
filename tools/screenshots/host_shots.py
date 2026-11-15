@@ -91,6 +91,10 @@ def main():
     if seed:
         for n in os.listdir(seed):
             shutil.copy(os.path.join(seed, n), os.path.join(tmp, n))
+    seed = os.environ.get("HOST_SHOTS_DATA_SEED")  # CX8ANM: lo mismo para la carpeta de datos (/mnt de la radio)
+    if seed:
+        for n in os.listdir(seed):
+            shutil.copy(os.path.join(seed, n), os.path.join(data, n))
     with open(os.path.join(tmp, "inside.sh"), "w") as f:
         f.write(INSIDE)
     os.chmod(os.path.join(tmp, "inside.sh"), 0o755)

@@ -415,7 +415,7 @@ def place_of(lat, lon):
     """{"city", "state", "county", "country", "cc"} de OpenStreetMap; una consulta por posición nueva."""
     key = f"{lat:.2f},{lon:.2f}"
     places = _load_places()
-    if key in places:
+    if key in places and "iso" in places[key]:
         return places[key]
     q = {"lat": f"{lat:.4f}", "lon": f"{lon:.4f}", "format": "jsonv2", "zoom": "10", "accept-language": "es"}
     r = get(NOMINATIM + "/reverse?" + urllib.parse.urlencode(q), tries=1)
@@ -427,6 +427,7 @@ def place_of(lat, lon):
         "state": a.get("state") or a.get("province") or a.get("region") or "",
         "country": a.get("country") or "",
         "cc": str(a.get("country_code") or "").upper(),
+        "iso": str(a.get("ISO3166-2-lvl4") or a.get("ISO3166-2-lvl6") or "").upper(),   # "UY-MO": GhostNet @GNURYMO
     }
     if not geo["cc"]:
         return None     # en el mar: sin guardar
@@ -845,6 +846,7 @@ def cmd_alerts(args):
 def cmd_update(args):
     lat, lon, cc, origin, geo, place = where_am_i(args)
     data = {"time": time.strftime("%H:%M"), "dept": place, "place": place, "cc": cc,
+            "region": (geo or {}).get("iso", ""),
             "pos": {"lat": round(lat, 4), "lon": round(lon, 4), "loc": locator(lat, lon), "from": origin},
             "errors": []}
     if cc == "UY":

@@ -2297,3 +2297,23 @@ Marks:\nOff	Marcas:\nNO
 Marks:\nOn	Marcas:\nSÍ
 Marks:\n+ notch	Marcas:\n+ notch
 Fill by level	Relleno por nivel
+EMERGENCY  -  @GSTFLASH	EMERGENCIA  -  @GSTFLASH
+GhostNet: pass it on at once to whoever can help, by any means	GhostNet: pasalo enseguida a quien pueda ayudar, por el medio que sea
+Starts in %d min (%s): %s on %d.%03d MHz	Empieza en %d min (%s): %s en %d.%03d MHz
+APP > Modes > JS8 > Freq > GhostNet mode  -  groups @GHOSTNET @GSTFLASH	APP > Modos > JS8 > Frec. > Modo GhostNet  -  grupos @GHOSTNET @GSTFLASH
+no translator (is the radio on the internet?)	sin traductor (¿la radio tiene internet?)
+Not translated: %s	Sin traducir: %s
+In English: check it and press OK to send	En inglés: revisalo y apretá OK para enviar
+Not translated (%s): OK sends it as it is	Sin traducir (%s): OK lo manda como está
+Translating to English...	Traduciendo al inglés...
+No WiFi to translate: OK sends it as it is	Sin WiFi para traducir: OK lo manda como está
+GhostNet: %s, groups %s	GhostNet: %s, grupos %s
+Reminder %d min before: %s	Recordatorio %d min antes: %s
+English messages, translated: %s	Mensajes en inglés, traducidos: %s
+Mine sent in English: %s	Los míos salen en inglés: %s
+RTTY 7.077 MHz, 45.45 baud (closes JS8)	RTTY 7.077 MHz, 45,45 baudios (cierra JS8)
+GhostNet - groups @GHOSTNET @GSTFLASH %s	GhostNet - grupos @GHOSTNET @GSTFLASH %s
+Next 7 days (your local time), * with reminder:	Próximos 7 días (tu hora), * con recordatorio:
+Nets, Spanish net and reminders: web page GhostNet	Redes, red hispana y recordatorios: página web GhostNet
+GhostNet mode: 7.107 + its groups	Modo GhostNet: 7.107 y sus grupos
+GhostNet: nets, translation, RTTY...	GhostNet: redes, traducción, RTTY...
