@@ -1344,3 +1344,70 @@ Ion2G ALE (from a PC)	Ion2G ALE (depuis un PC)
 RTTY 45.45 baud	RTTY 45,45 bauds
 chosen by hand	choisi à la main
 OpenX6X00 by RF.Guru	OpenX6X00 par RF.Guru
+Listen to DMR talkgroups over the internet on the radio: APP → DMR. The radio joins the network as a hotspot of its own and	Écoutez des groupes de discussion DMR par Internet sur la radio : APP → DMR. La radio rejoint le réseau comme son propre hotspot et
+only listens	écoute seulement
+: it never transmits on DMR. The voice comes out of the speaker (or Bluetooth headphones).	: elle n'émet jamais en DMR. La voix sort du haut-parleur (ou des écouteurs Bluetooth).
+Before you start	Avant de commencer
+Once, in three steps	Une seule fois, en trois étapes
+(7 digits) from	(7 chiffres) de
+, if you do not have one yet. It is free; they check your licence.	, si vous n'en avez pas encore. C'est gratuit ; ils vérifient votre licence.
+In	Dans
+(log in with your DMR ID):	(connectez-vous avec votre ID DMR) :
+: turn it on and choose a password. That is the	: activez-la et choisissez un mot de passe. C'est le
+hotspot password	mot de passe du hotspot
+below.	ci-dessous.
+The radio appears as a hotspot with your DMR ID and two more digits (the SSID, 01 by default). In SelfCare, open it under	La radio apparaît comme un hotspot avec votre ID DMR et deux chiffres de plus (le SSID, 01 par défaut). Dans SelfCare, ouvrez-le sous
+and add the	et ajoutez les
+static talkgroups	groupes fixes (static talkgroups)
+you want to hear. To change talkgroups from the radio instead, create an	que vous voulez écouter. Pour changer de groupe depuis la radio, créez une
+(Profile → API Keys) and paste it below.	(Profile → API Keys) et collez-la ci-dessous.
+FreeDMR and other networks of hotspots work too: there the radio asks for the talkgroup you choose on it.	FreeDMR et d'autres réseaux de hotspots marchent aussi : la radio y demande le groupe que vous choisissez dessus.
+Network and hotspot	Réseau et hotspot
+Other (Homebrew / MMDVM)	Autre (Homebrew / MMDVM)
+BrandMeister server	Serveur BrandMeister
+the one of your country, or the nearest	celui de votre pays, ou le plus proche
+Hotspot password	Mot de passe du hotspot
+BrandMeister API key	Clé API BrandMeister
+optional: to change talkgroups from the radio	facultatif : pour changer de groupe depuis la radio
+remove the saved key	supprimer la clé enregistrée
+{tg} is the talkgroup chosen on the radio	{tg} est le groupe choisi sur la radio
+Talkgroups	Groupes de discussion
+Up to 30, one a line: the number and a name	Jusqu'à 30, un par ligne : le numéro et un nom
+91 Worldwide 214 Spain 7484 Uruguay	91 Monde 214 Espagne 7484 Uruguay
+On the air now	À l'antenne maintenant
+The DMR app on the radio is closed	L'app DMR de la radio est fermée
+Seconds	Secondes
+API key saved (paste another to change it)	Clé API enregistrée (collez-en une autre pour la changer)
+Missing: DMR ID and hotspot password	Manque : ID DMR et mot de passe du hotspot
+Saved. On the radio: APP → DMR → Reload talkgroups	Enregistré. Sur la radio : APP → DMR → Recharger groupes (TG)
+Talking now:	Parle maintenant :
+Choose…	Choisir…
+No list	Pas de liste
+Testing… (up to 30 s)	Test… (jusqu'à 30 s)
+Connected: 	Connecté : 
+Up to 20 channels	Jusqu'à 20 canaux
+Could not get the BrandMeister server list (is the radio on the internet?)	Impossible d'obtenir la liste des serveurs BrandMeister (la radio a-t-elle Internet ?)
+Invalid network	Réseau non valide
+The server is a name like 3021.master.brandmeister.network or an IP address	Le serveur est un nom comme 3021.master.brandmeister.network ou une adresse IP
+Invalid port	Port non valide
+The DMR ID has 7 digits (radioid.net)	L'ID DMR a 7 chiffres (radioid.net)
+The hotspot SSID is 2 digits, 01 to 99	Le SSID du hotspot fait 2 chiffres, de 01 à 99
+Each line starts with the talkgroup number: 91 Worldwide	Chaque ligne commence par le numéro du groupe : 91 Monde
+Up to 30 talkgroups	Jusqu'à 30 groupes
+set your DMR ID on the radio's web page (DMR page)	saisissez votre ID DMR sur la page web de la radio (page DMR)
+choose the server on the radio's web page (DMR page)	choisissez le serveur sur la page web de la radio (page DMR)
+set the hotspot password on the radio's web page (DMR page)	saisissez le mot de passe du hotspot sur la page web de la radio (page DMR)
+the server rejected the hotspot ID (is it registered?)	le serveur refuse l'ID du hotspot (est-il enregistré ?)
+wrong hotspot password	mot de passe du hotspot erroné
+the server rejected the configuration	le serveur refuse la configuration
+the server rejected the options	le serveur refuse les options
+the server does not answer	le serveur ne répond pas
+no Internet connection	pas de connexion Internet
+the server stopped answering, reconnecting	le serveur ne répond plus, reconnexion
+the server dropped the hotspot, reconnecting	le serveur a déconnecté le hotspot, reconnexion
+Radioaficionados Uruguay Otro canal	Radioamateurs France Autre canal
+Loading…	Chargement…
+Options	Options
+Connecting…	Connexion…
+Get a	Obtenez un
+Hotspot ID:	ID du hotspot :

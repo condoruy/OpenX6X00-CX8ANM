@@ -76,6 +76,7 @@ if(ENABLE_TESTING AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 else()
         add_subdirectory(third-party/js8core)     # JS8Call's modem, for src/js8
         add_subdirectory(third-party/wsprd)
+        add_subdirectory(third-party/mbelib)     # the DMR voice decoder (src/dmr_ambe.c)
         add_subdirectory(src)
         add_subdirectory(lv_drivers)
         add_subdirectory(sql)

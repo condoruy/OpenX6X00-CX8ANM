@@ -264,6 +264,16 @@ def i_cb(p):         # a CB mobile rig with its microphone
     p.box(74, 70, 92, 92, r=6)
 
 
+def i_dmr(p):        # a handheld with a digital display and waves: DMR over the internet
+    p.box(26, 26, 58, 92, r=8)
+    p.line([(34, 26), (34, 8)])
+    p.fill_box(33, 36, 51, 52, r=2)
+    p.line([(34, 64), (50, 64)], w=p.w // 2 + 1)
+    p.line([(34, 74), (50, 74)], w=p.w // 2 + 1)
+    p.ring(60, 40, 14, w=p.w // 2 + 1, start=-60, end=60)
+    p.ring(60, 40, 26, w=p.w // 2 + 1, start=-55, end=55)
+
+
 ICONS = {n[2:]: f for n, f in globals().items() if n.startswith("i_") and callable(f)}
 
 

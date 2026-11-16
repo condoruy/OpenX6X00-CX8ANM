@@ -69,9 +69,9 @@ $("#z-save").on("click", function() {
     error: function(xhr) { zStatus(xhr.responseJSON ? xhr.responseJSON.msg : "Could not save", true); }});
 });
 $("#z-test").on("click", function() {
-  zStatus("Probando… (hasta 30 s)");
+  zStatus("Testing… (up to 30 s)");
   $.ajax({url: "/api/zello/test", type: "POST", dataType: "json",
-    success: function(r) { zStatus(r.ok ? "Conectado: " + r.msg : r.msg, !r.ok); },
+    success: function(r) { zStatus(r.ok ? "Connected: " + r.msg : r.msg, !r.ok); },
     error: function() { zStatus("Could not test", true); }});
 });
 $.get("/api/zello", {}, zRender);

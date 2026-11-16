@@ -1,0 +1,5 @@
+# mbelib 1.3.0 (github.com/szechyjs/mbelib, ISC): the AMBE+2 voice decoder for the DMR app (src/dmr_ambe.c)
+add_library(mbe STATIC mbelib.c ambe3600x2450.c ecc.c)
+target_include_directories(mbe PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_options(mbe PRIVATE -w -O2)
+target_link_libraries(mbe PUBLIC m)

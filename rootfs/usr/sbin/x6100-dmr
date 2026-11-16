@@ -1,0 +1,508 @@
+#!/usr/bin/env python3
+# CX8ANM: escucha de DMR por Internet (solo recepción) con el protocolo de los hotspots (Homebrew / MMDVM):
+# la radio entra a la red como un hotspot propio, recibe la voz de los grupos de conversación (TG) que tenga
+# y la pasa a la GUI, que decodifica el AMBE+2 con mbelib (src/dmr_ambe.c) y lo manda al parlante.
+#
+#   x6100-dmr run [TG]
+#        se conecta y se queda escuchando. Por la salida estándar: b"V" + 33 bytes por cada ráfaga de voz y b"E"
+#        al terminar cada transmisión. El estado en STATUS, cuatro líneas:
+#          estado ("connecting", "online", "error <motivo>")
+#          red<TAB>id del hotspot<TAB>TG
+#          quién habla ahora: indicativo nombre<TAB>id<TAB>TG (vacío si nadie)
+#          (vacía)
+#        y las últimas estaciones oídas en HEARD (época<TAB>id<TAB>indicativo nombre<TAB>TG<TAB>segundos).
+#   x6100-dmr test      prueba la conexión; imprime "ok <servidor>" o "error <motivo>"
+#   x6100-dmr masters   los servidores de BrandMeister, en JSON (para la página web)
+#
+# Nunca transmite: no manda voz ni datos a la red, solo los paquetes de conexión y los ping.
+#
+# Configuración (web de la radio, página DMR) en /mnt/dmr.conf:
+#   NETWORK=bm | freedmr | other     HOST= PORT=62031
+#   DMR_ID=7480123   SSID=01 (el id del hotspot: DMR_ID y dos cifras más)   PASSWORD= (la del hotspot)
+#   APIKEY= (BrandMeister, opcional: para cambiar de TG desde la radio)   OPTIONS= (other: "TS2={tg}")
+#   TALKGROUPS=91 Mundial|214 España|7484 Uruguay      TG=91
+import hashlib
+import json
+import os
+import random
+import socket
+import sqlite3
+import struct
+import sys
+import threading
+import time
+import urllib.error
+import urllib.request
+
+DATA = os.environ.get("X6100_DATA", "/mnt")   # la partición de datos de la radio (otra, para las pruebas en una PC)
+CONF = DATA + "/dmr.conf"
+STATUS = "/tmp/x6100-dmr.status"
+HEARD = "/tmp/x6100-dmr.heard"
+IDS = DATA + "/dmr_ids.json"            # indicativos ya buscados (radioid.net)
+STATIC_DONE = DATA + "/dmr_static.json"  # el TG fijo que la radio puso en BrandMeister (para sacarlo al cambiar)
+LOG = DATA + "/app_logs/dmr.txt"
+LOG_MAX = 256 * 1024
+UA = "OpenX6X00-CX8ANM/1.1 (escucha DMR de una radio de radioaficionado; github.com/condoruy/OpenX6X00-CX8ANM)"
+BM_API = "https://api.brandmeister.network/v2"
+SOFTWARE = "OpenX6X00-CX8ANM"
+PING_S = 5
+DEAD_S = 30
+CALL_END_S = 1.2                      # sin ráfagas en este tiempo, la transmisión terminó
+DEFAULT_HOST = {"bm": "", "freedmr": ""}
+
+
+def log(msg):
+    try:
+        os.makedirs(os.path.dirname(LOG), exist_ok=True)
+        if os.path.exists(LOG) and os.path.getsize(LOG) > LOG_MAX:
+            os.replace(LOG, LOG + ".1")
+        with open(LOG, "a") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S ") + msg.rstrip() + "\n")
+    except OSError:
+        pass
+
+
+def read_conf():
+    c = {"NETWORK": "bm", "HOST": "", "PORT": "62031", "DMR_ID": "", "SSID": "01", "PASSWORD": "", "APIKEY": "",
+         "OPTIONS": "", "TALKGROUPS": "", "TG": ""}
+    try:
+        with open(CONF, encoding="utf-8") as f:
+            for line in f:
+                if "=" in line and not line.startswith("#"):
+                    k, v = line.rstrip("\r\n").split("=", 1)
+                    v = v.strip()
+                    if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+                        v = v[1:-1]
+                    c[k.strip()] = v
+    except OSError:
+        pass
+    return c
+
+
+def radio_callsign():
+    try:
+        con = sqlite3.connect("file:" + DATA + "/params.db?mode=ro", uri=True)
+        try:
+            row = con.execute("SELECT val FROM params WHERE name = 'callsign'").fetchone()
+        finally:
+            con.close()
+        return (row[0] or "").strip().upper() if row else ""
+    except Exception:
+        return ""
+
+
+def hotspot_id(c):
+    i = "".join(ch for ch in c.get("DMR_ID", "") if ch.isdigit())
+    if not i:
+        return 0
+    if len(i) == 7:
+        s = "".join(ch for ch in c.get("SSID", "") if ch.isdigit())
+        if s:
+            i += s.zfill(2)[-2:]
+    return int(i)
+
+
+class Status:
+    def __init__(self):
+        self.lines = ["connecting", "", "", ""]
+        self.heard = []
+
+    def set(self, n, text):
+        self.lines[n] = text
+        self.write()
+
+    def write(self):
+        try:
+            with open(STATUS + ".tmp", "w") as f:
+                f.write("\n".join(self.lines) + "\n")
+            os.replace(STATUS + ".tmp", STATUS)
+        except OSError:
+            pass
+
+    def add_heard(self, epoch, src, who, tg, secs):
+        self.heard = [h for h in self.heard if h[1] != src][:29]
+        self.heard.insert(0, (int(epoch), src, who, tg, int(round(secs))))
+        try:
+            with open(HEARD + ".tmp", "w") as f:
+                for h in self.heard:
+                    f.write("%d\t%d\t%s\t%d\t%d\n" % h)
+            os.replace(HEARD + ".tmp", HEARD)
+        except OSError:
+            pass
+
+
+# ---------- indicativos (radioid.net) ----------
+
+class Names:
+    def __init__(self):
+        self.lock = threading.Lock()
+        try:
+            with open(IDS) as f:
+                self.db = json.load(f)
+            if not isinstance(self.db, dict):
+                self.db = {}
+        except (OSError, ValueError):
+            self.db = {}
+        self.pending = set()
+
+    def get(self, i):
+        with self.lock:
+            v = self.db.get(str(i))
+            if v is None and i not in self.pending:
+                self.pending.add(i)
+                threading.Thread(target=self._lookup, args=(i,), daemon=True).start()
+        return v or ""
+
+    def _lookup(self, i):
+        name = ""
+        try:
+            req = urllib.request.Request("https://radioid.net/api/dmr/user/?id=%d" % i,
+                                         headers={"User-Agent": UA, "Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                d = json.loads(r.read().decode("utf-8", "replace"))
+            res = (d or {}).get("results") or []
+            if res:
+                u = res[0]
+                name = " ".join(x for x in (u.get("callsign") or "", u.get("fname") or "") if x).strip()
+        except Exception as e:
+            log("radioid %d: %s" % (i, e.__class__.__name__))
+            with self.lock:
+                self.pending.discard(i)
+            return
+        with self.lock:
+            self.db[str(i)] = name or ""
+            self.pending.discard(i)
+            if len(self.db) > 3000:
+                for k in list(self.db)[:len(self.db) - 3000]:
+                    del self.db[k]
+            try:
+                with open(IDS + ".tmp", "w") as f:
+                    json.dump(self.db, f)
+                os.replace(IDS + ".tmp", IDS)
+            except OSError:
+                pass
+
+
+# ---------- BrandMeister: el TG fijo del hotspot (con la llave de la API) ----------
+
+def bm_request(method, path, key, body=None):
+    data = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request(BM_API + path, data=data, method=method,
+                                 headers={"User-Agent": UA, "Accept": "application/json",
+                                          "Content-Type": "application/json", "Authorization": "Bearer " + key})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        txt = r.read().decode("utf-8", "replace")
+    return json.loads(txt) if txt.strip() else None
+
+
+def bm_set_static(c, hid, tg):
+    """Deja `tg` como el TG fijo del hotspot: saca el que puso la radio antes y agrega el nuevo"""
+    key = c.get("APIKEY", "").strip()
+    if not key or not tg:
+        return None
+    try:
+        with open(STATIC_DONE) as f:
+            done = json.load(f)
+    except (OSError, ValueError):
+        done = {}
+    if done.get("hid") == hid and done.get("tg") == tg:
+        return None
+    if done.get("hid") == hid and done.get("tg"):
+        try:
+            bm_request("DELETE", "/device/%d/talkgroup/%d/%d" % (hid, done.get("slot", 0), done["tg"]), key)
+        except Exception as e:
+            log("BM: no se pudo sacar el TG %s: %s" % (done.get("tg"), e))
+    err = None
+    for slot in (0, 2):    # 0 en los hotspots simplex; 2 si BrandMeister no lo acepta
+        try:
+            bm_request("POST", "/device/%d/talkgroup" % hid, key, {"slot": slot, "group": tg})
+            with open(STATIC_DONE, "w") as f:
+                json.dump({"hid": hid, "tg": tg, "slot": slot}, f)
+            log("BM: TG fijo %d en el hotspot %d (slot %d)" % (tg, hid, slot))
+            return None
+        except urllib.error.HTTPError as e:
+            err = "BrandMeister API: HTTP %d" % e.code
+            if e.code in (401, 403):
+                break
+        except Exception as e:
+            err = "BrandMeister API: %s" % e.__class__.__name__
+    log(err or "BM: error")
+    return err
+
+
+def bm_masters():
+    req = urllib.request.Request(BM_API + "/masters/", headers={"User-Agent": UA, "Accept": "application/json"})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        d = json.loads(r.read().decode("utf-8", "replace"))
+    out = []
+    for m in d if isinstance(d, list) else []:
+        addr = m.get("address") or m.get("ip") or ""
+        if addr:
+            out.append({"id": m.get("id"), "country": m.get("country") or "", "address": addr,
+                        "port": m.get("port") or 62031})
+    return out
+
+
+# ---------- el protocolo de los hotspots ----------
+
+class Link:
+    def __init__(self, c):
+        self.c = c
+        self.hid = hotspot_id(c)
+        self.net = c.get("NETWORK", "bm")
+        self.host = c.get("HOST", "").strip() or DEFAULT_HOST.get(self.net, "")
+        try:
+            self.port = int(c.get("PORT") or 62031)
+        except ValueError:
+            self.port = 62031
+        self.password = c.get("PASSWORD", "")
+        self.idb = struct.pack(">I", self.hid)
+        self.sock = None
+        self.addr = None
+
+    def check(self):
+        if not self.hid:
+            return "set your DMR ID on the radio's web page (DMR page)"
+        if not self.host:
+            return "choose the server on the radio's web page (DMR page)"
+        if not self.password:
+            return "set the hotspot password on the radio's web page (DMR page)"
+        return None
+
+    def open(self):
+        info = socket.getaddrinfo(self.host, self.port, socket.AF_INET, socket.SOCK_DGRAM)
+        self.addr = info[0][4]
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.settimeout(1.0)
+
+    def send(self, b):
+        self.sock.sendto(b, self.addr)
+
+    def recv(self):
+        try:
+            d, a = self.sock.recvfrom(2048)
+        except socket.timeout:
+            return None
+        return d if a[0] == self.addr[0] else None
+
+    def config(self):
+        call = (radio_callsign() or "N0CALL")[:8]
+        fmt = "%-8.8s%09u%09u%02u%02u%8.8s%9.9s%03d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s"
+        s = fmt % (call, 430000000, 430000000, 0, 1, "%08f" % 0.0, "%09f" % 0.0, 0, "Internet", "X6100 listen only",
+                   "4", "https://github.com/condoruy/OpenX6X00-CX8ANM", SOFTWARE, "MMDVM")
+        return b"RPTC" + self.idb + s.encode("ascii", "replace")
+
+    def options(self, tg):
+        o = self.c.get("OPTIONS", "").strip()
+        if self.net == "freedmr" and not o:
+            o = "TS2={tg};DIAL=0;VOICE=0;TIMER=0"
+        if not o or not tg:
+            return None
+        return o.replace("{tg}", str(tg))
+
+    def login(self, tg, timeout=12):
+        """Devuelve None si entró, o el motivo"""
+        pkt = b"RPTL" + self.idb
+        self.send(pkt)
+        step, t0, last = "login", time.time(), time.time()
+        opts = self.options(tg)
+        while time.time() - t0 < timeout:
+            d = self.recv()
+            if d is None:
+                if time.time() - last > 3:      # sin respuesta: se repite el paso
+                    last = time.time()
+                    self.send(pkt)
+                continue
+            if d.startswith(b"MSTNAK"):
+                return {"login": "the server rejected the hotspot ID (is it registered?)",
+                        "auth": "wrong hotspot password",
+                        "config": "the server rejected the configuration",
+                        "options": "the server rejected the options"}[step]
+            if not d.startswith(b"RPTACK"):
+                continue
+            if step == "login":
+                salt = d[6:10]
+                pkt, step = b"RPTK" + self.idb + hashlib.sha256(salt + self.password.encode()).digest(), "auth"
+            elif step == "auth":
+                pkt, step = self.config(), "config"
+            elif step == "config" and opts:
+                pkt, step = b"RPTO" + self.idb + opts.encode(), "options"
+            else:
+                return None
+            self.send(pkt)
+            last = time.time()
+        log("sin respuesta del servidor en el paso %s" % step)
+        return "the server does not answer"
+
+    def close(self):
+        if self.sock:
+            try:
+                self.send(b"RPTCL" + self.idb)
+            except OSError:
+                pass
+            self.sock.close()
+            self.sock = None
+
+
+def out_write(b):
+    try:
+        sys.stdout.buffer.write(b)
+        sys.stdout.buffer.flush()
+    except BrokenPipeError:
+        sys.exit(0)
+
+
+def run(tg_arg):
+    c = read_conf()
+    st = Status()
+    try:
+        tg = int(tg_arg or c.get("TG") or 0)
+    except ValueError:
+        tg = 0
+    link = Link(c)
+    why = link.check()
+    netname = {"bm": "BrandMeister", "freedmr": "FreeDMR"}.get(link.net, link.host)
+    st.lines[1] = "%s\t%d\t%s" % (netname, link.hid, tg or "")
+    if why:
+        st.set(0, "error " + why)
+        time.sleep(3)
+        return
+    if link.net == "bm":
+        err = bm_set_static(c, link.hid, tg)
+        if err:
+            st.set(3, err)
+    names = Names()
+    tries = 0
+    while True:
+        st.set(0, "connecting")
+        try:
+            link.open()
+            why = link.login(tg)
+        except OSError as e:
+            log("red: %s" % e)
+            why = "no Internet connection"
+        if why:
+            log("no se pudo entrar a %s:%d: %s" % (link.host, link.port, why))
+            st.set(0, "error " + why)
+            link.close()
+            tries += 1
+            if tries >= 5 or "password" in why or "rejected" in why:
+                time.sleep(2)
+                return
+            time.sleep(min(30, 3 * tries))
+            continue
+        tries = 0
+        log("conectado a %s:%d como %d, TG %s" % (link.host, link.port, link.hid, tg or "-"))
+        st.set(0, "online")
+        if listen(link, st, names) == "closed":
+            log("el servidor cerró la conexión")
+        link.close()
+        st.set(2, "")
+        time.sleep(2)
+
+
+def listen(link, st, names):
+    last_rx = last_ping = time.time()
+    stream = None           # (stream id, src, dst, comienzo, último paquete)
+    while True:
+        now = time.time()
+        if now - last_ping >= PING_S:
+            link.send(b"RPTPING" + link.idb)
+            last_ping = now
+        if now - last_rx > DEAD_S:
+            st.set(0, "error the server stopped answering, reconnecting")
+            return "dead"
+        if stream and now - stream[4] > CALL_END_S:
+            stream = end_call(stream, st, names)
+        d = link.recv()
+        if d is None:
+            continue
+        last_rx = time.time()
+        if d.startswith(b"MSTCL"):
+            return "closed"
+        if d.startswith(b"MSTNAK"):
+            st.set(0, "error the server dropped the hotspot, reconnecting")
+            return "nak"
+        if not d.startswith(b"DMRD") or len(d) < 53:
+            continue
+        src = int.from_bytes(d[5:8], "big")
+        dst = int.from_bytes(d[8:11], "big")
+        flags = d[15]
+        private = bool(flags & 0x40)
+        if private and dst != link.hid and dst != link.hid // 100:
+            continue
+        sid = d[16:20]
+        if stream and stream[0] != sid:
+            if time.time() - stream[4] < CALL_END_S:
+                continue                    # otra transmisión encima: se sigue con la primera
+            stream = end_call(stream, st, names)
+        data_sync = bool(flags & 0x20)
+        dtype = flags & 0x0F
+        if data_sync and dtype == 2:        # fin de la transmisión (terminador con LC)
+            if stream:
+                stream = end_call(stream, st, names)
+            continue
+        if data_sync:
+            if dtype == 1 and not stream:   # cabecera de voz
+                stream = start_call(sid, src, dst, st, names)
+            continue
+        if not stream:
+            stream = start_call(sid, src, dst, st, names)
+        stream = (stream[0], stream[1], stream[2], stream[3], time.time())
+        out_write(b"V" + d[20:53])
+
+
+def start_call(sid, src, dst, st, names):
+    who = names.get(src) or str(src)
+    st.set(2, "%s\t%d\t%d" % (who, src, dst))
+    return (sid, src, dst, time.time(), time.time())
+
+
+def end_call(stream, st, names):
+    sid, src, dst, t0, tl = stream
+    out_write(b"E")
+    secs = tl - t0
+    if secs >= 0.5:
+        st.add_heard(t0, src, names.get(src) or str(src), dst, secs)
+    st.set(2, "")
+    return None
+
+
+def test():
+    c = read_conf()
+    link = Link(c)
+    why = link.check()
+    if why:
+        print("error", why)
+        return
+    try:
+        link.open()
+        why = link.login(int(c.get("TG") or 0) if (c.get("TG") or "").isdigit() else 0)
+    except OSError as e:
+        log("red: %s" % e)
+        why = "no Internet connection"
+    link.close()
+    print("error " + why if why else "ok %s:%d" % (link.host, link.port))
+
+
+def main(argv):
+    if len(argv) >= 2 and argv[1] == "run":
+        try:
+            run(argv[2] if len(argv) > 2 else "")
+        except KeyboardInterrupt:
+            pass
+    elif len(argv) >= 2 and argv[1] == "test":
+        test()
+    elif len(argv) >= 2 and argv[1] == "masters":
+        try:
+            print(json.dumps(bm_masters()))
+        except Exception as e:
+            print(json.dumps({"error": e.__class__.__name__}))
+    else:
+        print("uso: x6100-dmr run [TG] | test | masters")
+
+
+if __name__ == "__main__":
+    import signal
+    signal.signal(signal.SIGTERM, lambda *a: sys.exit(0))
+    main(sys.argv)

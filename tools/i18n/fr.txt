@@ -2332,3 +2332,31 @@ Turn the knob to steer - MFK to start	Tournez la molette pour diriger - MFK pour
 %s line syncs found	%s synchros de ligne trouvées
 %s mode	mode %s
 Activation	Activation
+talkgroups	groupes (TG)
+Help	Aide
+Talkgroups	Groupes de discussion
+Listen to talkgroups	Écouter les groupes
+Set your DMR ID on the radio's web page (DMR page)	Saisissez votre ID DMR sur la page web de la radio (page DMR)
+Other network	Autre réseau
+no DMR ID	pas d'ID DMR
+No talkgroups: add them on the radio's web page (DMR page)	Aucun groupe : ajoutez-les sur la page web de la radio (page DMR)
+listening	écoute
+Listening	Écoute
+Last heard	Derniers entendus
+Disconnected: choose a talkgroup and press the MFK or Connect	Déconnecté : choisissez un groupe et appuyez sur le MFK ou Connecter
+Disconnected: press Connect (talkgroups set in BrandMeister SelfCare)	Déconnecté : appuyez sur Connecter (groupes réglés dans BrandMeister SelfCare)
+the talkgroups of your hotspot in BrandMeister SelfCare	les groupes de votre hotspot dans BrandMeister SelfCare
+Listen only: the radio never transmits on DMR	Écoute seule : la radio n'émet jamais en DMR
+DMR: set your DMR ID, hotspot password and talkgroups on the radio's web page (DMR page)	DMR : saisissez votre ID DMR, le mot de passe du hotspot et les groupes sur la page web de la radio (page DMR)
+BrandMeister: add your API key on the DMR web page to change talkgroups from the radio	BrandMeister : ajoutez votre clé API sur la page web DMR pour changer de groupe depuis la radio
+set your DMR ID on the radio's web page (DMR page)	saisissez votre ID DMR sur la page web de la radio (page DMR)
+choose the server on the radio's web page (DMR page)	choisissez le serveur sur la page web de la radio (page DMR)
+set the hotspot password on the radio's web page (DMR page)	saisissez le mot de passe du hotspot sur la page web de la radio (page DMR)
+the server rejected the hotspot ID (is it registered?)	le serveur refuse l'ID du hotspot (est-il enregistré ?)
+wrong hotspot password	mot de passe du hotspot erroné
+the server rejected the configuration	le serveur refuse la configuration
+the server rejected the options	le serveur refuse les options
+the server does not answer	le serveur ne répond pas
+no Internet connection	pas de connexion Internet
+the server stopped answering, reconnecting	le serveur ne répond plus, reconnexion
+the server dropped the hotspot, reconnecting	le serveur a déconnecté le hotspot, reconnexion

@@ -4194,7 +4194,7 @@ def add_iradio(kind):
     except ValueError as ex:
         return api_error(400, str(ex))
     except OSError as ex:
-        return api_error(500, f"No se pudo guardar: {ex}")
+        return api_error(500, f"Could not save: {ex}")
     return get_iradio(kind)
 
 
@@ -4238,7 +4238,7 @@ def import_iradio(kind):
         if added:
             write_iradio(items, k)
     except OSError as ex:
-        return api_error(500, f"No se pudo guardar: {ex}")
+        return api_error(500, f"Could not save: {ex}")
     r = get_iradio(kind)
     r.update({"added": added, "skipped": skipped, "bad": bad[:20]})
     return r
@@ -4266,7 +4266,7 @@ def set_iradio(kind, i):
     except ValueError as ex:
         return api_error(400, str(ex))
     except OSError as ex:
-        return api_error(500, f"No se pudo guardar: {ex}")
+        return api_error(500, f"Could not save: {ex}")
     return get_iradio(kind)
 
 
@@ -4279,7 +4279,7 @@ def delete_iradio(kind, i):
             del items[i]
             write_iradio(items, k)
     except OSError as ex:
-        return api_error(500, f"No se pudo guardar: {ex}")
+        return api_error(500, f"Could not save: {ex}")
     return get_iradio(kind)
 
 
@@ -4589,7 +4589,7 @@ def set_zello():
                 if x and x not in chans:
                     chans.append(x)
             if len(chans) > 20:
-                raise ValueError("Hasta 20 canales")
+                raise ValueError("Up to 20 channels")
             c["CHANNELS"] = "|".join(chans)
             if c["CHANNEL"] not in chans:
                 c["CHANNEL"] = chans[0] if chans else ""
@@ -4613,7 +4613,7 @@ def set_zello():
     except ValueError as ex:
         return api_error(400, str(ex))
     except OSError as ex:
-        return api_error(500, f"No se pudo guardar: {ex}")
+        return api_error(500, f"Could not save: {ex}")
     return zello_public()
 
 
@@ -4621,11 +4621,187 @@ def set_zello():
 def test_zello():
     try:
         r = subprocess.run(["/usr/sbin/x6100-zello", "test"], capture_output=True, text=True, timeout=40)
-        out = (r.stdout.strip().splitlines() or ["error sin respuesta"])[-1]
+        out = (r.stdout.strip().splitlines() or ["error no answer"])[-1]
     except (OSError, subprocess.SubprocessError) as ex:
         out = "error " + str(ex)
     return {"ok": out.startswith("ok"), "msg": out[3:] if out.startswith("ok") else out[6:] if out.startswith("error") else out}
 
+
+
+# ---------- DMR (x6100-dmr, src/dialog_dmr.c): escucha de DMR por Internet, solo recepción ----------
+# /mnt/dmr.conf: NETWORK, HOST, PORT, DMR_ID, SSID, PASSWORD, APIKEY, OPTIONS, TALKGROUPS (separados por |), TG.
+# La clave del hotspot y la llave de la API nunca se devuelven a la página: solo si están cargadas.
+DMR_KEYS = ("NETWORK", "HOST", "PORT", "DMR_ID", "SSID", "PASSWORD", "APIKEY", "OPTIONS", "TALKGROUPS", "TG")
+
+
+def dmr_path():
+    return os.path.join(settings.FILEBROWSER_PATH or "/mnt", "dmr.conf")
+
+
+def read_dmr():
+    c = {"NETWORK": "bm", "HOST": "", "PORT": "62031", "DMR_ID": "", "SSID": "01", "PASSWORD": "", "APIKEY": "",
+         "OPTIONS": "", "TALKGROUPS": "91 Worldwide", "TG": "91"}
+    try:
+        with open(dmr_path(), encoding="utf-8") as f:
+            for line in f:
+                line = line.rstrip("\r\n")
+                if "=" in line and not line.startswith("#"):
+                    k, v = line.split("=", 1)
+                    v = v.strip()
+                    if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+                        v = v[1:-1]
+                    c[k.strip().upper()] = v
+    except OSError:
+        pass
+    return c
+
+
+def dmr_public():
+    c = read_dmr()
+    return {"network": c["NETWORK"], "host": c["HOST"], "port": c["PORT"], "dmr_id": c["DMR_ID"], "ssid": c["SSID"],
+            "pass_set": bool(c["PASSWORD"]), "apikey_set": bool(c["APIKEY"]), "options": c["OPTIONS"],
+            "talkgroups": [x for x in c["TALKGROUPS"].split("|") if x], "tg": c["TG"]}
+
+
+@app.route('/dmr')
+def dmr_page():
+    return bottle.template('dmr')
+
+
+@app.get('/api/dmr')
+def get_dmr():
+    return dmr_public()
+
+
+@app.post('/api/dmr')
+def set_dmr():
+    data = bottle.request.json if isinstance(bottle.request.json, dict) else {}
+    c = read_dmr()
+    one = lambda v, n: " ".join(str(v or "").replace("\n", " ").replace("|", " ").replace('"', "").split())[:n]
+    try:
+        if "network" in data:
+            if data["network"] not in ("bm", "freedmr", "other"):
+                raise ValueError("Invalid network")
+            c["NETWORK"] = data["network"]
+        if "host" in data:
+            h = one(data.get("host"), 100)
+            if h and not re.fullmatch(r"[A-Za-z0-9.-]+", h):
+                raise ValueError("The server is a name like 3021.master.brandmeister.network or an IP address")
+            c["HOST"] = h
+        if "port" in data:
+            port = int(str(data.get("port") or "62031"))
+            if not 1 <= port <= 65535:
+                raise ValueError("Invalid port")
+            c["PORT"] = str(port)
+        if "dmr_id" in data:
+            i = str(data.get("dmr_id") or "").strip()
+            if i and not re.fullmatch(r"\d{6,7}", i):
+                raise ValueError("The DMR ID has 7 digits (radioid.net)")
+            c["DMR_ID"] = i
+        if "ssid" in data:
+            ss = str(data.get("ssid") or "").strip()
+            if ss and not re.fullmatch(r"\d{1,2}", ss):
+                raise ValueError("The hotspot SSID is 2 digits, 01 to 99")
+            c["SSID"] = ss.zfill(2) if ss else ""
+        if data.get("password"):
+            c["PASSWORD"] = str(data["password"]).replace("\n", "").replace('"', "")[:64]
+        if data.get("apikey"):
+            c["APIKEY"] = str(data["apikey"]).strip().replace("\n", "").replace('"', "")[:1000]
+        if data.get("apikey_clear"):
+            c["APIKEY"] = ""
+        if "options" in data:
+            c["OPTIONS"] = one(data.get("options"), 200)
+        if "talkgroups" in data:
+            tgs, seen = [], set()
+            for x in data.get("talkgroups") or []:
+                x = one(x, 50)
+                m = re.match(r"(\d{1,8})\b\s*(.*)$", x)
+                if not x:
+                    continue
+                if not m:
+                    raise ValueError("Each line starts with the talkgroup number: 91 Worldwide")
+                if m.group(1) not in seen:
+                    seen.add(m.group(1))
+                    tgs.append((m.group(1) + " " + m.group(2)).strip())
+            if len(tgs) > 30:
+                raise ValueError("Up to 30 talkgroups")
+            c["TALKGROUPS"] = "|".join(tgs)
+            if c["TG"] not in seen:
+                c["TG"] = tgs[0].split()[0] if tgs else ""
+        tmp = dmr_path() + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            for k in DMR_KEYS:
+                f.write('%s="%s"\n' % (k, c[k]))
+        os.chmod(tmp, 0o600)
+        os.replace(tmp, dmr_path())
+        os.sync()
+    except ValueError as ex:
+        return api_error(400, str(ex))
+    except OSError as ex:
+        return api_error(500, f"Could not save: {ex}")
+    return dmr_public()
+
+
+@app.post('/api/dmr/test')
+def test_dmr():
+    try:
+        r = subprocess.run(["/usr/sbin/x6100-dmr", "test"], capture_output=True, text=True, timeout=40)
+        out = (r.stdout.strip().splitlines() or ["error no answer"])[-1]
+    except (OSError, subprocess.SubprocessError) as ex:
+        out = "error " + str(ex)
+    ok = out.startswith("ok")
+    msg = out[3:] if ok else out[6:] if out.startswith("error") else out
+    return {"ok": ok, "msg": msg if ok else i18n_web.t(msg)}
+
+
+@app.get('/api/dmr/masters')
+def dmr_masters():
+    """Los servidores de BrandMeister (x6100-dmr masters), guardados un día en /tmp"""
+    cache = "/tmp/x6100-dmr-masters.json"
+    try:
+        if time.time() - os.path.getmtime(cache) < 86400:
+            with open(cache) as f:
+                return {"masters": json.load(f)}
+    except (OSError, ValueError):
+        pass
+    try:
+        r = subprocess.run(["/usr/sbin/x6100-dmr", "masters"], capture_output=True, text=True, timeout=30)
+        d = json.loads(r.stdout or "[]")
+    except (OSError, subprocess.SubprocessError, ValueError):
+        d = {"error": "x6100-dmr"}
+    if isinstance(d, list) and d:
+        try:
+            with open(cache, "w") as f:
+                json.dump(d, f)
+        except OSError:
+            pass
+        return {"masters": d}
+    return {"masters": [], "error": "Could not get the BrandMeister server list (is the radio on the internet?)"}
+
+
+@app.get('/api/dmr/heard')
+def dmr_heard():
+    """Lo que la app DMR está escuchando: estado, quién habla y los últimos oídos"""
+    st = ["", "", "", ""]
+    try:
+        with open("/tmp/x6100-dmr.status", encoding="utf-8") as f:
+            st = (f.read().split("\n") + ["", "", "", ""])[:4]
+    except OSError:
+        pass
+    heard = []
+    try:
+        with open("/tmp/x6100-dmr.heard", encoding="utf-8") as f:
+            for line in f:
+                p = line.rstrip("\n").split("\t")
+                if len(p) >= 5:
+                    heard.append({"time": int(p[0]), "local": time.strftime("%H:%M", time.localtime(int(p[0]))),
+                                  "id": p[1], "who": p[2], "tg": p[3], "secs": int(p[4])})
+    except (OSError, ValueError):
+        pass
+    talk = st[2].split("\t")
+    state = st[0]
+    return {"state": state, "error": i18n_web.t(state[6:]) if state.startswith("error ") else "",
+            "talker": talk[0] if talk[0] else "", "talker_tg": talk[2] if len(talk) > 2 else "", "heard": heard}
 
 
 # The Bands, Digital modes, Time and Files pages, static files: config_pages.py adds their routes to app

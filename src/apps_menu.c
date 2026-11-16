@@ -30,7 +30,7 @@
 #define PAD    6
 #define BOX_W  760
 #define TILE_W ((BOX_W - 2 * PAD - (COLS - 1) * GAP) / COLS)
-#define TILE_H 66
+#define TILE_H_STD 66
 #define HEAD_H 38
 #define HINT_H 26
 #define BOX_Y  (TOP_BAR_STD_H + 4)
@@ -60,6 +60,7 @@ static const struct {
     {"Weather", "Forecast, alerts", "meteo", OPEN_APP, ACTION_APP_METEO},
     {"Internet radio", "Stations, ATC", "iradio", OPEN_APP, ACTION_APP_IRADIO},
     {"Zello", "Voice channels", "zello", OPEN_APP, ACTION_APP_ZELLO},
+    {"DMR", "Listen to talkgroups", "dmr", OPEN_APP, ACTION_APP_DMR},
     {"Flights", "Aircraft overhead", "flights", OPEN_APP, ACTION_APP_FLIGHTS},
     {"HF Air Band", "Oceanic, VOLMET", "aero", OPEN_APP, ACTION_APP_AERO},
     {"CB", "Channels by band", "cb", OPEN_APP, ACTION_APP_CB},
@@ -68,6 +69,8 @@ static const struct {
 
 #define APPS_N ((int)(sizeof(apps) / sizeof(apps[0])))
 #define ROWS_N ((APPS_N + COLS - 1) / COLS)
+/* CX8ANM: con una quinta fila (la app DMR) las fichas son más bajas, para que la grilla siga entrando */
+#define TILE_H (ROWS_N > 4 ? 52 : TILE_H_STD)
 #define BOX_H  (HEAD_H + ROWS_N * TILE_H + (ROWS_N - 1) * GAP + HINT_H + PAD)
 
 _Static_assert(BOX_Y + BOX_H <= 480 - BUTTONS_H_MAX, "APP grid overlaps the buttons");

@@ -1,0 +1,154 @@
+% rebase('base.html', title='DMR')
+<h2><svg class="i"><use href="#i-antenna"/></svg>DMR</h2>
+<p class="sub">Listen to DMR talkgroups over the internet on the radio: APP → DMR. The radio joins the network as a hotspot of its own and <b>only listens</b>: it never transmits on DMR. The voice comes out of the speaker (or Bluetooth headphones).</p>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-list"/></svg></span><div><h3>Before you start</h3><p>Once, in three steps</p></div></div>
+<div class="dp-body">
+<ol class="sub" style="margin-top: 0">
+<li>Get a <b>DMR ID</b> (7 digits) from <a href="https://radioid.net/" target="_blank" rel="noopener">radioid.net</a>, if you do not have one yet. It is free; they check your licence.</li>
+<li>In <a href="https://brandmeister.network/" target="_blank" rel="noopener">BrandMeister SelfCare</a> (log in with your DMR ID): <b>Profile → Hotspot Security</b>: turn it on and choose a password. That is the <b>hotspot password</b> below.</li>
+<li>The radio appears as a hotspot with your DMR ID and two more digits (the SSID, 01 by default). In SelfCare, open it under <b>My hotspots</b> and add the <b>static talkgroups</b> you want to hear. To change talkgroups from the radio instead, create an <b>API key</b> (Profile → API Keys) and paste it below.</li>
+</ol>
+<p class="sub" style="margin: 0">FreeDMR and other networks of hotspots work too: there the radio asks for the talkgroup you choose on it.</p>
+</div>
+</section>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-lock"/></svg></span><div><h3>Network and hotspot</h3><p id="d-state"></p></div></div>
+<div class="dp-row">
+    <div class="dp-lbl"><label for="d-net"><b>Network</b></label></div>
+    <div class="dp-ctl"><select id="d-net">
+      <option value="bm">BrandMeister</option>
+      <option value="freedmr">FreeDMR</option>
+      <option value="other">Other (Homebrew / MMDVM)</option>
+    </select></div>
+  </div>
+<div class="dp-row" id="row-master">
+    <div class="dp-lbl"><label for="d-master"><b>BrandMeister server</b></label><br><span class="sub">the one of your country, or the nearest</span></div>
+    <div class="dp-ctl"><select id="d-master"><option value="">Loading…</option></select></div>
+  </div>
+<div class="dp-row">
+    <div class="dp-lbl"><label for="d-host"><b>Server</b></label></div>
+    <div class="dp-ctl"><input id="d-host" autocomplete="off" maxlength="100" placeholder="3021.master.brandmeister.network"> <input id="d-port" type="number" min="1" max="65535" style="width: 7em" placeholder="62031"></div>
+  </div>
+<div class="dp-row">
+    <div class="dp-lbl"><label for="d-id"><b>DMR ID</b></label></div>
+    <div class="dp-ctl"><input id="d-id" inputmode="numeric" maxlength="7" style="width: 9em" placeholder="7480123"> <label for="d-ssid">SSID</label> <input id="d-ssid" inputmode="numeric" maxlength="2" style="width: 4em" placeholder="01"> <span class="sub" id="d-hid"></span></div>
+  </div>
+<div class="dp-row">
+    <div class="dp-lbl"><label for="d-pass"><b>Hotspot password</b></label></div>
+    <div class="dp-ctl"><input id="d-pass" type="password" autocomplete="new-password" maxlength="64"></div>
+  </div>
+<div class="dp-row" id="row-api">
+    <div class="dp-lbl"><label for="d-api"><b>BrandMeister API key</b></label><br><span class="sub">optional: to change talkgroups from the radio</span></div>
+    <div class="dp-ctl"><textarea id="d-api" rows="2" style="font-family: monospace; width: 100%"></textarea> <label id="lbl-clear" style="display:none"><input type="checkbox" id="d-api-clear"> remove the saved key</label></div>
+  </div>
+<div class="dp-row" id="row-opt">
+    <div class="dp-lbl"><label for="d-opt"><b>Options</b></label><br><span class="sub">{tg} is the talkgroup chosen on the radio</span></div>
+    <div class="dp-ctl"><input id="d-opt" autocomplete="off" maxlength="200" placeholder="TS2={tg};DIAL=0;VOICE=0;TIMER=0"></div>
+  </div>
+</section>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-speaker"/></svg></span><div><h3>Talkgroups</h3><p>Up to 30, one a line: the number and a name</p></div></div>
+<div class="dp-body">
+<textarea id="d-tgs" rows="7" placeholder="91 Worldwide&#10;214 Spain&#10;7484 Uruguay" style="width: 100%"></textarea>
+<div class="actions"><button id="d-save" class="primary">Save</button> <button id="d-test">Test the connection</button> <span class="status" id="d-status"></span></div>
+</div>
+</section>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-antenna"/></svg></span><div><h3>On the air now</h3><p id="d-live">The DMR app on the radio is closed</p></div></div>
+<div class="dp-body">
+<div class="d-table-wrap"><table class="d-table" id="d-heard"><thead><tr><th>Time</th><th>Station</th><th>TG</th><th>Seconds</th></tr></thead><tbody></tbody></table></div>
+</div>
+</section>
+
+<style>
+.d-table-wrap{overflow-x:auto}
+.d-table{width:100%;border-collapse:collapse;font-size:14px}
+.d-table th,.d-table td{text-align:left;padding:6px 8px;border-bottom:1px solid #1a283c;white-space:nowrap}
+.d-table th{color:var(--muted,#8da2bd);font-weight:600}
+</style>
+
+<script>
+let dSaved = null;
+function dStatus(text, error) {
+  const el = $("#d-status");
+  el.toggleClass("error", !!error);
+  el.html('<span class="dot"></span>').append(document.createTextNode(text));
+}
+function dShowNet() {
+  const n = $("#d-net").val();
+  $("#row-master, #row-api").toggle(n === "bm");
+  $("#row-opt").toggle(n !== "bm");
+}
+function dShowHid() {
+  const i = $("#d-id").val().trim(), s = $("#d-ssid").val().trim();
+  $("#d-hid").text(/^\d{7}$/.test(i) ? "Hotspot ID: " + i + (s ? ("0" + s).slice(-2) : "") : "");
+}
+function dRender(d) {
+  dSaved = d;
+  $("#d-net").val(d.network);
+  $("#d-host").val(d.host);
+  $("#d-port").val(d.port);
+  $("#d-id").val(d.dmr_id);
+  $("#d-ssid").val(d.ssid);
+  $("#d-pass").val("").attr("placeholder", d.pass_set ? "saved (leave it empty to keep it)" : "");
+  $("#d-api").val("").attr("placeholder", d.apikey_set ? "API key saved (paste another to change it)" : "");
+  $("#lbl-clear").toggle(d.apikey_set);
+  $("#d-api-clear").prop("checked", false);
+  $("#d-opt").val(d.options);
+  $("#d-tgs").val(d.talkgroups.join("\n"));
+  $("#d-state").text(d.dmr_id && d.pass_set ? "Ready" : "Missing: DMR ID and hotspot password");
+  $("#d-master").val(d.host);
+  dShowNet();
+  dShowHid();
+}
+$("#d-net").on("change", dShowNet);
+$("#d-id, #d-ssid").on("input", dShowHid);
+$("#d-master").on("change", function() {
+  if (this.value) { $("#d-host").val(this.value); $("#d-port").val($(this).find(":selected").data("port") || 62031); }
+});
+$("#d-save").on("click", function() {
+  const d = {network: $("#d-net").val(), host: $("#d-host").val().trim(), port: $("#d-port").val().trim() || "62031",
+             dmr_id: $("#d-id").val().trim(), ssid: $("#d-ssid").val().trim(), options: $("#d-opt").val().trim(),
+             talkgroups: $("#d-tgs").val().split("\n").map(function(x) { return x.trim(); }).filter(Boolean)};
+  if ($("#d-pass").val()) d.password = $("#d-pass").val();
+  if ($("#d-api").val().trim()) d.apikey = $("#d-api").val().trim();
+  if ($("#d-api-clear").prop("checked")) d.apikey_clear = true;
+  $.ajax({url: "/api/dmr", type: "POST", data: JSON.stringify(d), contentType: "application/json; charset=utf-8", dataType: "json",
+    success: function(r) { dRender(r); dStatus("Saved. On the radio: APP → DMR → Reload talkgroups"); },
+    error: function(xhr) { dStatus(xhr.responseJSON ? xhr.responseJSON.msg : "Could not save", true); }});
+});
+$("#d-test").on("click", function() {
+  dStatus("Testing… (up to 30 s)");
+  $.ajax({url: "/api/dmr/test", type: "POST", dataType: "json",
+    success: function(r) { dStatus(r.ok ? "Connected: " + r.msg : r.msg, !r.ok); },
+    error: function() { dStatus("Could not test", true); }});
+});
+function dLive() {
+  $.get("/api/dmr/heard", {}, function(r) {
+    let live = "The DMR app on the radio is closed";
+    if (r.state === "online") live = r.talker ? "Talking now: " + r.talker + " (TG " + r.talker_tg + ")" : "Listening";
+    else if (r.state === "connecting") live = "Connecting…";
+    else if (r.error) live = r.error;
+    $("#d-live").text(live);
+    const tb = $("#d-heard tbody").empty();
+    r.heard.forEach(function(h) {
+      $("<tr>").append($("<td>").text(h.local), $("<td>").text(h.who), $("<td>").text(h.tg), $("<td>").text(h.secs)).appendTo(tb);
+    });
+  });
+}
+$.get("/api/dmr", {}, dRender);
+$.get("/api/dmr/masters", {}, function(r) {
+  const sel = $("#d-master").empty().append($("<option>").val("").text(r.masters.length ? "Choose…" : (r.error || "No list")));
+  r.masters.sort(function(a, b) { return (a.country || "").localeCompare(b.country || "") || a.id - b.id; }).forEach(function(m) {
+    sel.append($("<option>").val(m.address).data("port", m.port).text((m.country ? m.country.toUpperCase() + " " : "") + m.id + " – " + m.address));
+  });
+  if (dSaved) sel.val(dSaved.host);
+});
+dLive();
+setInterval(dLive, 3000);
+</script>

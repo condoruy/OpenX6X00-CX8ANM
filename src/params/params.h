@@ -81,6 +81,7 @@ typedef enum {
     ACTION_APP_FLIGHTS,
     ACTION_APP_AERO,
     ACTION_APP_CB,
+    ACTION_APP_DMR,
 } press_action_t;
 
 typedef enum {

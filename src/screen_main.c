@@ -17,6 +17,7 @@
 #include "dialog_flights.h"
 #include "dialog_aero.h"
 #include "dialog_cb.h"
+#include "dialog_dmr.h"
 #include "screen_main.h"
 
 #include "ft8/ft2.h"
@@ -501,6 +502,7 @@ static const char *app_name(press_action_t a) {
         case ACTION_APP_FLIGHTS:    return "Flights";
         case ACTION_APP_AERO:       return "HF Air Band";
         case ACTION_APP_CB:         return "CB";
+        case ACTION_APP_DMR:        return "DMR";
         default:                   return NULL;    /* Modes menu: a menu, not an app */
     }
 }
@@ -596,6 +598,7 @@ void main_screen_start_app(press_action_t app_action) {
         {ACTION_APP_FLIGHTS, &dialog_flights},
         {ACTION_APP_AERO, &dialog_aero},
         {ACTION_APP_CB, &dialog_cb},
+        {ACTION_APP_DMR, &dialog_dmr},
     };
 
     if (app_action == ACTION_APP_RTTY) {

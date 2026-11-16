@@ -235,7 +235,7 @@ static void show_list(void) {
     for (int i = 0; i < list_n; i++) {
         char name[80], info[32];
         bool on = play_on && !strcmp(list[i].url, playing.url);
-        snprintf(name, sizeof(name), "%s%s%s", on ? LV_SYMBOL_PLAY " " : "", kind != L_FAV && is_fav(list[i].url) ? "* " : "",
+        snprintf(name, sizeof(name), "%s%s%s", on ? "> " : "", kind != L_FAV && is_fav(list[i].url) ? "* " : "",
                  list[i].name);
         snprintf(info, sizeof(info), "%s %s%s %s", list[i].codec, list[i].kbps, list[i].kbps[0] ? "k" : "", list[i].cc);
         lv_table_set_cell_value(table, i, 0, name);
@@ -497,7 +497,7 @@ static void status_cb(lv_timer_t *t) {
         return;
     }
     lv_label_set_text_fmt(now_lbl, "#%06x %s %s#", theme_hex(play_on ? TC_accent : TC_text_dim),
-                          play_on ? LV_SYMBOL_PLAY : LV_SYMBOL_STOP, playing.name);
+                          play_on ? ">" : "||", playing.name);
     if (!strncmp(st, "error", 5)) {
         lv_label_set_text_fmt(info_lbl, "#%06x %s#", theme_hex(TC_err), st[5] ? st + 6 : tr("Error"));
     } else if (!play_on) {

@@ -407,7 +407,7 @@ static void show_all(void) {
     }
     for (int i = 0; i < channels_n; i++) {
         bool cur = run_on && !strcmp(channels[i], cur_channel);
-        lv_table_set_cell_value_fmt(table, i, 0, "%s %s", cur ? LV_SYMBOL_PLAY : " ", channels[i]);
+        lv_table_set_cell_value_fmt(table, i, 0, "%s %s", cur ? ">" : " ", channels[i]);
         lv_table_set_cell_value(table, i, 1, cur ? tr("connected") : "");
     }
 }
@@ -433,7 +433,7 @@ static void status_cb(lv_timer_t *t) {
     } else if (!strncmp(st, "error", 5)) {
         lv_label_set_text_fmt(state_lbl, "#%06x %s#", theme_hex(TC_err), st[5] ? st + 6 : tr("Error"));
     } else if (!strcmp(st, "online")) {
-        lv_label_set_text_fmt(state_lbl, "#%06x %s %s#  %s%s%s", theme_hex(TC_accent), LV_SYMBOL_PLAY, cur_channel,
+        lv_label_set_text_fmt(state_lbl, "#%06x %s %s#  %s%s%s", theme_hex(TC_accent), ">", cur_channel,
                               users && users[0] ? users : "", users && users[0] ? " " : "", users && users[0] ? tr("online") : "");
     } else {
         lv_label_set_text_fmt(state_lbl, "#%06x %s %s#", theme_hex(TC_text_dim), tr("Connecting..."), cur_channel);
@@ -441,7 +441,7 @@ static void status_cb(lv_timer_t *t) {
     if (tx_on) {
         lv_label_set_text_fmt(talk_lbl, "#%06x %s %s#", theme_hex(TC_err), "TX", tr("Talking: speak into the hand mic"));
     } else if (run_on && talker[0]) {
-        lv_label_set_text_fmt(talk_lbl, "#%06x %s %s#", theme_hex(TC_accent), LV_SYMBOL_PLAY, talker);
+        lv_label_set_text_fmt(talk_lbl, "#%06x %s %s#", theme_hex(TC_accent), ">", talker);
     } else {
         lv_label_set_text_fmt(talk_lbl, "#%06x %s#", theme_hex(TC_text_dim),
                               run_on ? tr("Side PTT or Talk: speak into the hand mic (without its PTT)") : "");
