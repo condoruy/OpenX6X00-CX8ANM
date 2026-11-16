@@ -1563,3 +1563,772 @@ Next 7 days (your local time), * with reminder:	Nächste 7 Tage (Ortszeit), * mi
 Nets, Spanish net and reminders: web page GhostNet	Netze, spanisches Netz und Erinnerungen: Webseite GhostNet
 GhostNet mode: 7.107 + its groups	GhostNet-Modus: 7.107 + Gruppen
 GhostNet: nets, translation, RTTY...	GhostNet: Netze, Übersetzung, RTTY...
+ % + time \n Volts \n Alternate \n % + V 	 % + Zeit \n Volt \n Wechselnd \n % + V 
+ (keyboard)	 (Tastatur)
+ (no QTH or modifier with this call)	 (kein QTH oder Zusatz bei diesem Rufzeichen)
+ - RX only	 - nur RX
+ 1 hour \n 45 min \n 30 min \n 15 min \n 5 min 	 1 Stunde \n 45 Min \n 30 Min \n 15 Min \n 5 Min 
+ 40% \n Passband \n Line 	 40% \n Durchlass \n Linie 
+ = not a character. 	 = kein Zeichen. 
+ = not a character. Right: +1 WPM, wrong: -1 WPM.	 = kein Zeichen. Richtig: +1 WPM, falsch: -1 WPM.
+ APP CW Keyboard 	 APP CW-Tastatur 
+ APP Channels 	 APP Kanäle 
+ APP Cluster 	 APP Cluster 
+ Built-in \n Hand \n Auto 	 Eingebaut \n Hand \n Auto 
+ Center \n Other edge \n Scroll 	 Mitte \n Anderer Rand \n Scrollen 
+ Frequency lock on/off 	 Frequenzsperre ein/aus 
+ Off \n After 3 s \n After 5 s \n After 10 s 	 Aus \n Nach 3 s \n Nach 5 s \n Nach 10 s 
+ Off \n Marks \n Marks + notch 	 Aus \n Marken \n Marken + Notch 
+ Off \n On \n Shadow	 Aus \n Ein \n Schatten
+ Strength \n Waterfall \n Blue 	 Stärke \n Wasserfall \n Blau 
+ TUNE ext. tuner on/off 	 TUNE ext. Tuner ein/aus 
+ Theme \n Blue \n Cyan \n Green \n Yellow \n Orange \n Red \n Violet \n White 	 Thema \n Blau \n Cyan \n Grün \n Gelb \n Orange \n Rot \n Violett \n Weiß 
+ WF 3D on/off 	 WF 3D ein/aus 
+ and 	 und 
+ and S9+20. Nothing changed.	 und S9+20. Nichts geändert.
+ day after	 übermorgen
+ on this band	 auf diesem Band
+ to S9+20. PRE, ATT and RF gain are tried, then put back.	 auf S9+20. PRE, ATT und HF-Verstärkung werden probiert und dann zurückgestellt.
+ tomorrow	 morgen
+%.1f V  charging	%.1f V  lädt
+%d paired: %s	%d gekoppelt: %s
+%i of %i sent - TX or PTT: stop	%i von %i gesendet - TX oder PTT: Stopp
+%i sent - TX or PTT: stop	%i gesendet - TX oder PTT: Stopp
+%i sent, until %02i:%02i%s - TX or PTT: stop	%i gesendet, bis %02i:%02i%s - TX oder PTT: Stopp
+%i traces	%i Spuren
+%i: TX power limit, W	%i: TX-Leistungsgrenze, W
+%i: from, to, shift (0 off)	%i: von, bis, Ablage (0 aus)
+%s - logging in...	%s - Anmeldung...
+%s is open, close it	%s ist offen, schließen
+%s on %s	%s auf %s
+%s spot on the DX clusters only: no %s key (web page, Field Ops)	%s-Spot nur in den DX-Clustern: kein %s-Schlüssel (Webseite, Field Ops)
+%s spot on the DX clusters: %s %.1f %s	%s-Spot in den DX-Clustern: %s %.1f %s
+%s uses %s: the radio joins open and WPA2 networks	%s nutzt %s: das Funkgerät verbindet sich mit offenen und WPA2-Netzen
+%s: %d found, %d known in all, saved.	%s: %d gefunden, %d insgesamt bekannt, gespeichert.
+%s: %d found, %d known in all, saved. List full at %d: %d more not kept. Antenna off? Clear and scan again.	%s: %d gefunden, %d insgesamt bekannt, gespeichert. Liste voll bei %d: %d weitere nicht behalten. Antenne ab? Löschen und neu scannen.
+%s: %d new	%s: %d neu
+%s: no TX	%s: kein TX
+%s: no data from the base	%s: keine Daten von der Basis
+%s: not a tile (a 6-character locator, JO20ab)	%s: kein Feld (ein 6-stelliger Locator, JO20ab)
+%s: not in the castle list, taken as it is	%s: nicht in der Burgenliste, so übernommen
+%s: stopping after this block	%s: Stopp nach diesem Block
+, Birdie Cal off the dial	, Birdie-Kal. außerhalb der Skala
+, none since the start	, keine seit dem Start
+, retry %d of 5	, Versuch %d von 5
+, some refused	, einige abgelehnt
+, the level back to 0 dB	, der Pegel zurück auf 0 dB
+0 W during Birdie Cal	0 W während der Birdie-Kal.
+1 viewer	1 Zuschauer
+3D colours	3D-Farben
+3D depth	3D-Tiefe
+3D depth: %i traces	3D-Tiefe: %i Spuren
+3D depth:	3D-Tiefe:
+3D floor	3D-Boden
+3D floor: +%i	3D-Boden: +%i
+3D floor:	3D-Boden:
+3D glide	3D-Gleiten
+3D peaks	3D-Spitzen
+3D range	3D-Bereich
+3D tilt	3D-Neigung
+3D tilt: %i	3D-Neigung: %i
+3D tilt:	3D-Neigung:
+4-character locator: Ref... your tile, or GPS	4-stelliger Locator: Ref... dein Feld oder GPS
+54 MHz-1 GHz, receive only	54 MHz-1 GHz, nur Empfang
+: ATU on	: ATU ein
+: VFO changed	: VFO geändert
+: browser gone	: Browser weg
+: mode changed	: Betriebsart geändert
+: tuned away	: weggestimmt
+A WPA password has 8 to 63 characters	Ein WPA-Passwort hat 8 bis 63 Zeichen
+A hidden network: not supported	Ein verstecktes Netz: nicht unterstützt
+A new version was just installed: it is confirmed once the radio has run a minute.	Eine neue Version wurde gerade installiert: sie wird bestätigt, sobald das Funkgerät eine Minute gelaufen ist.
+APP grid overlaps the buttons	APP-Raster überdeckt die Tasten
+APRS via @APRSIS	APRS über @APRSIS
+ATT on	ATT ein
+AUTO:	AUTO:
+About %.0f min in QRSS3	Etwa %.0f Min in QRSS3
+About %.0f s at %i WPM	Etwa %.0f s bei %i WPM
+About %.0f s in QRSS3	Etwa %.0f s in QRSS3
+Beacon: %s	Bake: %s
+Activ.:	Aktiv.:
+Activating POTA %s	Aktivierung POTA %s
+Activating SOTA %s	Aktivierung SOTA %s
+Address / Viewer	Adresse / Zuschauer
+All settings	Alle Einstellungen
+Anti-VOX	Anti-VOX
+Asking GitHub for the latest release...	Frage GitHub nach der neuesten Version...
+Att	Att
+Attenuator	Abschwächer
+Audio	Audio
+Auto	Auto
+Auto: x%d	Auto: x%d
+BATTERY HIGH TEMP!	AKKU ZU HEISS!
+BATTERY LOW TEMP!	AKKU ZU KALT!
+BEACON	BAKE
+BIRDIE CALIBRATION	BIRDIE-KALIBRIERUNG
+BROWSER REMOTE	BROWSER-FERNBEDIENUNG
+BROWSER REMOTE is off (General): turn it on	BROWSER-FERNBEDIENUNG ist aus (Allgemein): einschalten
+Back to defaults: all settings with the band memory and the CW messages, app frequencies, DX cluster, FT8 UDP, PSK squelch, TCI server, time zone, headphone volume, Bluetooth CAT.	Zurück auf Standard: alle Einstellungen mit Bandspeicher und CW-Texten, App-Frequenzen, DX-Cluster, FT8 UDP, PSK-Squelch, TCI-Server, Zeitzone, Kopfhörerlautstärke, Bluetooth-CAT.
+Band activity	Bandaktivität
+Base versions: see the README	Basis-Versionen: siehe README
+Baseband: Settings > Info	Basisband: Einstellungen > Info
+Battery	Akku
+Battery %d%%	Akku %d%%
+Battery %d%%: about %d min left	Akku %d%%: etwa %d Min übrig
+Battery %d%%: connect power	Akku %d%%: Strom anschließen
+Birdies	Birdies
+Birdies are steady carriers the radio makes inside itself. This scan finds them on every active band and keeps their frequencies: the waterfall marks them, and with Marks + notch the notch filter takes one out of the passband when you tune across it.	Birdies sind stetige Träger, die das Funkgerät selbst erzeugt. Dieser Scan findet sie auf jedem aktiven Band und merkt sich ihre Frequenzen: der Wasserfall markiert sie, und mit Marken + Notch nimmt das Notch-Filter einen aus dem Durchlass, wenn man darüber stimmt.
+Boot sound	Startton
+Broadcast	Rundfunk
+Broadcast list	Rundfunkliste
+Broadcast list updated: %s stations, season %s.	Rundfunkliste aktualisiert: %s Sender, Saison %s.
+Broadcast names	Sendernamen
+Browser remote	Browser-Fernbedienung
+Bunkers	Bunker
+On The Air	On The Air
+CQ off: press TX CQ to call on this frequency	CQ aus: TX CQ drücken, um auf dieser Frequenz zu rufen
+CW as you type	CW beim Tippen
+Keyboard	Tastatur
+Cannot create the file on the SD card	Datei kann auf der SD-Karte nicht angelegt werden
+Channel not tuned: %s	Kanal nicht abgestimmt: %s
+Channels	Kanäle
+Check	Prüfen
+Check failed: %.70s	Prüfung fehlgeschlagen: %.70s
+Check looks for a newer release on GitHub; installing takes a minute.	Prüfen sucht auf GitHub nach einer neueren Version; die Installation dauert eine Minute.
+Checking the files: %ld of %ld	Prüfe die Dateien: %ld von %ld
+Clock in sync (NTP, within %d ms): no Time Sync needed	Uhr synchron (NTP, innerhalb %d ms): kein Zeitabgleich nötig
+Clock moved %+.2f s to the slot start	Uhr um %+.2f s auf den Slot-Beginn verschoben
+Clock on the slot already (%+.2f s)	Uhr schon auf dem Slot (%+.2f s)
+Cluster link off	Cluster-Verbindung aus
+Cluster modes	Cluster-Betriebsarten
+Cluster modes: %s	Cluster-Betriebsarten: %s
+Cluster: can't save	Cluster: kann nicht speichern
+Connecting to %s...	Verbinde mit %s...
+Connecting to %s... (try %d/%d)	Verbinde mit %s... (Versuch %d/%d)
+Connecting to eibispace.de...	Verbinde mit eibispace.de...
+DX Cluster	DX-Cluster
+DX cluster not running: no %s spot	DX-Cluster läuft nicht: kein %s-Spot
+DX spots	DX-Spots
+Dial locked	Abstimmknopf gesperrt
+Dial unlocked	Abstimmknopf frei
+Disconnect the antenna, then press Start. A few minutes: every active band the radio transmits on.	Antenne abklemmen, dann Start drücken. Einige Minuten: jedes aktive Band, auf dem das Funkgerät sendet.
+Discoverable	Sichtbar
+Done %s%s: PRE %i dB, ATT %i dB, RF gain %i.%02i dB a step.	Fertig %s%s: PRE %i dB, ATT %i dB, HF-Verst. %i.%02i dB pro Schritt.
+Done %s%s: PRE %i dB, ATT %i dB.	Fertig %s%s: PRE %i dB, ATT %i dB.
+Done %s%s: PRE %i dB, ATT %i, the top, so %i or more.	Fertig %s%s: PRE %i dB, ATT %i, das Maximum, also %i oder mehr.
+Done: preamp %i dB, attenuator %i dB, RF gain %i.%02i dB a step.	Fertig: Vorverstärker %i dB, Abschwächer %i dB, HF-Verst. %i.%02i dB pro Schritt.
+Done: preamp %i dB, attenuator %i, the top, so %i or more.	Fertig: Vorverstärker %i dB, Abschwächer %i, das Maximum, also %i oder mehr.
+Downloading %.1f MB	Lade %.1f MB
+Downloading %.1f of %.1f MB	Lade %.1f von %.1f MB
+Downloading the reference lists...	Lade die Referenzlisten...
+Downloading the reference lists: up to half an hour on a slow WiFi	Lade die Referenzlisten: bis zu einer halben Stunde bei langsamem WLAN
+Downloading...	Lade...
+ETHERNET	ETHERNET
+EXTERNAL TUNE	EXTERNES TUNEN
+EXTERNAL TUNER	EXTERNER TUNER
+Ethernet in use	Ethernet in Gebrauch
+Ext tune:	Ext. Tunen:
+External	Extern
+F%d is empty - hold to set it	F%d ist leer - halten zum Belegen
+F3 long	F3 lang
+FAILED	FEHLGESCHLAGEN
+FIRMWARE	FIRMWARE
+Factory reset	Werkseinstellungen
+File length	Dateilänge
+Filter colour	Filterfarbe
+Find birdies, antenna off	Birdies finden, Antenne ab
+Finishing...	Abschluss...
+For %s only. Feed -73 dBm and set the reading to S9 on each band you use.	Nur für %s. -73 dBm einspeisen und die Anzeige auf jedem genutzten Band auf S9 stellen.
+For you	Für dich
+Forget all	Alle vergessen
+Forgotten. Scan again when you like.	Vergessen. Scanne erneut, wann du willst.
+From %02i:%02i %s, %s	Ab %02i:%02i %s, %s
+From %02i:%02i to %02i:%02i%s %s	Von %02i:%02i bis %02i:%02i%s %s
+General	Allgemein
+Get	Holen
+Groups	Gruppen
+HB ACK:	HB ACK:
+Heard: 	Gehört: 
+Hide buttons	Tasten ausblenden
+His call	Sein Rufzeichen
+History	Verlauf
+Hold MFK down 3 s to reset - ESC: cancel	MFK 3 s gedrückt halten zum Zurücksetzen - ESC: Abbruch
+Hold:	Halten:
+Icon menus	Symbolmenüs
+In use: season %s, updated %s, %s stations.	In Gebrauch: Saison %s, aktualisiert %s, %s Sender.
+In use: the list that came with the firmware, from %s.	In Gebrauch: die Liste der Firmware, von %s.
+In use: the list that came with the firmware.	In Gebrauch: die Liste der Firmware.
+Independent VFOs	Unabhängige VFOs
+Info	Info
+Install	Installieren
+Installing: %ld of %ld files	Installiere: %ld von %ld Dateien
+JTTY receiver rate	JTTY-Empfangsrate
+Jump at	Springen bei
+Jump to	Springen zu
+KEY Train: sidetone only, 0 W	KEY Training: nur Mithörton, 0 W
+KEY buttons in CW	KEY-Tasten in CW
+Keep holding LOCK to restart: %i s	LOCK weiter halten für Neustart: %i s
+Keep holding: %u s	Weiter halten: %u s
+Keep the signal steady: about 12 s.	Signal stabil halten: etwa 12 s.
+Kept: logs (ADIF, QSO, field), memory channels, PSK/Olivia macros, JS8 texts, voice messages, pictures, recordings, themes, CW trainer progress, Bluetooth pairings.	Behalten: Logs (ADIF, QSO, Field), Speicherkanäle, PSK/Olivia-Makros, JS8-Texte, Sprachnachrichten, Bilder, Aufnahmen, Themen, CW-Trainer-Fortschritt, Bluetooth-Kopplungen.
+Keyboard %s	Tastatur %s
+Keyboard modes	Tastatur-Betriebsarten
+Keys ([ ] too)	Tasten ([ ] auch)
+Known birdies: %d, %d on this band.	Bekannte Birdies: %d, %d auf diesem Band.
+Known birdies: none yet.	Bekannte Birdies: noch keine.
+LOCK let go: no restart	LOCK losgelassen: kein Neustart
+Lakes and	Seen und
+Lagoons	Lagunen
+Learn CW	CW lernen
+Learn dit and dah	Dit und Dah lernen
+Left Alt	Alt links
+Left Ctrl	Strg links
+Left Shift	Umschalt links
+Letters, digits and '-', up to 32	Buchstaben, Ziffern und '-', bis 32
+Lighthouses	Leuchttürme
+Listen first: %s, %.3f MHz	Erst hören: %s, %.3f MHz
+Again sends on %.3f MHz: %i s	Wiederholung sendet auf %.3f MHz: %i s
+Test beacon again sends: %i s	Testbake sendet erneut: %i s
+Live: 	Live: 
+Live: keyed as typed	Live: beim Tippen getastet
+Live:	Live:
+Log out	Abmelden
+Logged	Geloggt
+Logged in as %s	Angemeldet als %s
+Logging out...	Abmeldung...
+Login	Anmelden
+Low battery, DC IN under %d V! Turning off in 30s.	Akku schwach, DC IN unter %d V! Aus in 30 s.
+MFK or VOL: 10 Hz steps - press MFK: done	MFK oder VOL: 10-Hz-Schritte - MFK drücken: fertig
+MFK or VOL: 5 min steps (%s clock) - press MFK: done	MFK oder VOL: 5-Min-Schritte (%s-Uhr) - MFK drücken: fertig
+MFK or VOL: how many - Until: next kind - MFK: done	MFK oder VOL: wie viele - Bis: nächste Art - MFK: fertig
+MFK: a tile (km: to its edge).  Ref...: any tile	MFK: ein Feld (km: bis zu seinem Rand).  Ref...: irgendein Feld
+MFK: choose - press: open - APP or ESC: close	MFK: wählen - drücken: öffnen - APP oder ESC: schließen
+MFK: choose the castle.  Ref...: any castle by its number (most have no position)	MFK: die Burg wählen.  Ref...: jede Burg nach Nummer (die meisten ohne Position)
+MFK: choose, press to open.   GEN: back to the radio	MFK: wählen, drücken zum Öffnen.   GEN: zurück zum Funkgerät
+MIDI notes	MIDI-Noten
+Manual	Manuell
+Marks:	Marken:
++ notch	+ Notch
+Measure	Messen
+Measuring %d of %d, %s. Keep the signal steady.	Messe %d von %d, %s. Signal stabil halten.
+Memory channels	Speicherkanäle
+Mills	Mühlen
+Mode from band plan	Betriebsart nach Bandplan
+Mode, speed, ratio	Betriebsart, Tempo, Verhältnis
+Mode:	Betriebsart:
+Modes grid overlaps the buttons	Betriebsarten-Raster überdeckt die Tasten
+Mouse buttons	Maustasten
+My call	Mein Rufzeichen
+NETWORK NAME	NETZWERKNAME
+Name	Name
+Nature	Natur
+Network name not set	Netzwerkname nicht gesetzt
+New card image for this version: %s	Neues Kartenabbild für diese Version: %s
+Next TX: %s%s%s	Nächstes TX: %s%s%s
+No %s spot: no %s key (web page, Field Ops)	Kein %s-Spot: kein %s-Schlüssel (Webseite, Field Ops)
+No CQ: callsign %s does not fit %s	Kein CQ: Rufzeichen %s passt nicht zu %s
+No QRZ profile: add it on the web page, Field Ops	Kein QRZ-Profil: auf der Webseite anlegen, Field Ops
+No TX	Kein TX
+No data from the base	Keine Daten von der Basis
+No network: WiFi or Ethernet	Kein Netz: WLAN oder Ethernet
+No recordings yet: Rec starts one	Noch keine Aufnahmen: Rec startet eine
+No release on GitHub yet.	Noch keine Version auf GitHub.
+No spectrum, no SWR protection	Kein Spektrum, kein SWR-Schutz
+No transverter/WR12: %d.%03d	Kein Transverter/WR12: %d.%03d
+No transverter: %d.%03d MHz	Kein Transverter: %d.%03d MHz
+No tune	Kein Tunen
+No tune: %s	Kein Tunen: %s
+No tuner: %.1f W transverter	Kein Tuner: %.1f-W-Transverter
+Not a second contact: Learn again	Kein zweiter Kontakt: neu lernen
+Not steady: %.0f to %.0f dB with %s. Nothing changed.	Nicht stabil: %.0f bis %.0f dB mit %s. Nichts geändert.
+Not updated, kept as it was: %s	Nicht aktualisiert, so behalten: %s
+Not while transmitting.	Nicht während des Sendens.
+Nothing came in	Nichts empfangen
+Now, %s	Jetzt, %s
+Now, until %02i:%02i%s %s	Jetzt, bis %02i:%02i%s %s
+Off	Aus
+Off: Ethernet connected	Aus: Ethernet verbunden
+Olivia input rate	Olivia-Eingangsrate
+On	Ein
+On 30 m or 80 m only	Nur auf 30 m oder 80 m
+On a steady signal	Bei einem stabilen Signal
+Only if licensed outside the amateur bands: MARS, CAP	Nur mit Lizenz außerhalb der Amateurbänder: MARS, CAP
+Only one QRZ profile	Nur ein QRZ-Profil
+Operate	Bedienen
+Listen only	Nur hören
+Out of band: Settings > TX Cal	Außerhalb des Bandes: Einstellungen > TX Cal
+PA bias	PA-Ruhestrom
+PADDLE	PADDLE
+PRE on	PRE ein
+PSK receiver rate	PSK-Empfangsrate
+PSK, Olivia, JTTY, RTTY: web Logs page	PSK, Olivia, JTTY, RTTY: Web-Seite Logs
+PTT off	PTT aus
+PTT off: CapsLock+Space for on	PTT aus: CapsLock+Leertaste für ein
+PTT off: keyboard gone	PTT aus: Tastatur weg
+PTT off: no data from the base	PTT aus: keine Daten von der Basis
+PTT off: not on the air	PTT aus: nicht auf Sendung
+PTT off: three minutes on the air	PTT aus: drei Minuten auf Sendung
+PTT on: CapsLock+Space for off	PTT ein: CapsLock+Leertaste für aus
+Pair	Koppeln
+Pair code	Kopplungscode
+Pair: already paired	Koppeln: schon gekoppelt
+Pair: ok	Koppeln: ok
+Pairable	Koppelbar
+Paired	Gekoppelt
+Pairing	Kopplung
+Park	Park
+Parks	Parks
+Parse:	Analyse:
+Per band S-meter cal	S-Meter-Kal. pro Band
+Popups Freq/Info/TX	Popups Freq/Info/TX
+Portrait screen	Hochformat
+Position, time	Position, Zeit
+Power display	Leistungsanzeige
+Pre	Pre
+Preamp	Vorverstärker
+Press DAH	DAH drücken
+Press DIT	DIT drücken
+Project	Projekt
+Public	Öffentlich
+QRSS3: XIT is set (%+i Hz)	QRSS3: XIT ist gesetzt (%+i Hz)
+QRSS3: frequency locked	QRSS3: Frequenz gesperrt
+QRSS3: in CW or CW-R only	QRSS3: nur in CW oder CW-R
+QRSS3: not started	QRSS3: nicht gestartet
+QRSS3: on 30 m or 80 m only	QRSS3: nur auf 30 m oder 80 m
+QRSS3: split or TX shift on	QRSS3: Split oder TX-Ablage ein
+QRZ profile not saved	QRZ-Profil nicht gespeichert
+QRZ profile: %s	QRZ-Profil: %s
+QRZ refused %d: %s	QRZ lehnte %d ab: %s
+QRZ: %d sent, %d already there%s	QRZ: %d gesendet, %d schon da%s
+QSO %d: %s %s %s%s%s, logged without a mode: set it on the Logs page	QSO %d: %s %s %s%s%s, ohne Betriebsart geloggt: auf der Seite Logs setzen
+QSO logged: %s %s %s %s	QSO geloggt: %s %s %s %s
+QSO logged: %s %s %s, without a mode (no app open): set it on the Logs page	QSO geloggt: %s %s %s, ohne Betriebsart (keine App offen): auf der Seite Logs setzen
+QSO not saved: %s	QSO nicht gespeichert: %s
+RF gain 40	HF-Verst. 40
+RF gain, a step	HF-Verstärkung, ein Schritt
+RIT is set (%+d Hz)	RIT ist gesetzt (%+d Hz)
+RX audio	RX-Audio
+Radio	Funkgerät
+Re-spot	Neu spotten
+Reachable as	Erreichbar als
+Reachable as %s.local	Erreichbar als %s.local
+Receive only there	Dort nur Empfang
+Ref...: type your tile	Ref...: dein Feld eingeben
+Region 1	Region 1
+Region 2	Region 2
+Region 3	Region 3
+Released: reset cancelled	Losgelassen: Zurücksetzen abgebrochen
+Reset...	Zurücksetzen...
+Resetting...	Setze zurück...
+Right Alt	Alt rechts
+Right Ctrl	Strg rechts
+Right Shift	Umschalt rechts
+SCREEN REC	BILDSCHIRM-AUFN.
+SD card full	SD-Karte voll
+SD card full, recording saved	SD-Karte voll, Aufnahme gespeichert
+SD card write error: the last file may be damaged	Schreibfehler auf der SD-Karte: die letzte Datei kann beschädigt sein
+SD card: about %d min left	SD-Karte: etwa %d Min übrig
+SWR scan: no data from the base	SWR-Scan: keine Daten von der Basis
+SWR scan: no data from the base for %u ms, stopped	SWR-Scan: %u ms keine Daten von der Basis, gestoppt
+SWR scan: not while transmitting or tuning	SWR-Scan: nicht beim Senden oder Tunen
+Saved %d files	%d Dateien gespeichert
+Scan with a phone and allow Funnel for your tailnet in Tailscale's admin console, or open the link on the web page: Remote > Tailscale	Mit dem Handy scannen und Funnel für dein Tailnet in der Tailscale-Admin-Konsole erlauben, oder den Link auf der Webseite öffnen: Fernbedienung > Tailscale
+Scan with a phone and log in to Tailscale, or open the link on the web page: Remote > Tailscale	Mit dem Handy scannen und bei Tailscale anmelden, oder den Link auf der Webseite öffnen: Fernbedienung > Tailscale
+Scanning %s at %.3f MHz, %d found so far	Scanne %s bei %.3f MHz, bisher %d gefunden
+Scanning. Keep the antenna disconnected.	Scanne. Antenne abgeklemmt lassen.
+Screen Rec	Bildschirmaufnahme
+Screen always off	Bildschirm immer aus
+Screen and audio	Bildschirm und Audio
+Screen off (min)	Bildschirm aus (Min)
+Sent:   	Gesendet:   
+Serial lines	Serielle Leitungen
+Serial port (ttyUSB, ttyACM)	Serielle Schnittstelle (ttyUSB, ttyACM)
+Sessions	Sitzungen
+Set	Setzen
+Set your callsign: Settings > General	Rufzeichen setzen: Einstellungen > Allgemein
+Size limit	Größengrenze
+Some	Einige
+Source	Quelle
+Space	Leertaste
+Span %s	Spanne %s
+Speaker always off	Lautsprecher immer aus
+Speaker always off: Settings > Audio	Lautsprecher immer aus: Einstellungen > Audio
+Spectrum Zoom	Spektrum-Zoom
+Speed:	Tempo:
+Normal	Normal
+Spots: cluster 30 min / RBN 15 min.   	Spots: Cluster 30 Min / RBN 15 Min.   
+Starting Tailscale...	Starte Tailscale...
+Starts in %i:%02i:%02i - TX or PTT: stop	Beginnt in %i:%02i:%02i - TX oder PTT: Stopp
+Starts in %i:%02i:%02i, until %02i:%02i%s - TX or PTT: stop	Beginnt in %i:%02i:%02i, bis %02i:%02i%s - TX oder PTT: Stopp
+Steady carrier in, 	Stetiger Träger rein, 
+Stop TX	TX stoppen
+Stopped. Nothing changed.	Gestoppt. Nichts geändert.
+Stopped: band changed. Check PRE and ATT on the band you left.	Gestoppt: Band gewechselt. PRE und ATT auf dem verlassenen Band prüfen.
+Stopped: nothing transmits until TX Call, CQ or a call is pressed	Gestoppt: nichts wird gesendet, bis TX Call, CQ oder ein Anruf gedrückt wird
+Stopped: power off. Nothing changed.	Gestoppt: ausgeschaltet. Nichts geändert.
+Stopped: the radio transmitted. Nothing changed.	Gestoppt: das Funkgerät hat gesendet. Nichts geändert.
+Stopping Tailscale...	Stoppe Tailscale...
+Stopping...	Stoppe...
+Summit	Gipfel
+Summits	Gipfel
+Swap dit and dah	Dit und Dah tauschen
+Sweep, transmits	Wobbeln, sendet
+TCI SERVER	TCI-SERVER
+TRANSVERTERS	TRANSVERTER
+TUNE %.1f W, %d s at most	TUNE %.1f W, höchstens %d s
+TUNE %.1f W, %d s, ATU off	TUNE %.1f W, %d s, ATU aus
+TUNE over: %d s limit	TUNE vorbei: %d-s-Grenze
+TUNE power, W	TUNE-Leistung, W
+TUNE stopped by the radio	TUNE vom Funkgerät gestoppt
+TUNE stopped%s	TUNE gestoppt%s
+TUNE time limit, s	TUNE-Zeitgrenze, s
+TX not sent: too late into the slot	TX nicht gesendet: zu spät im Slot
+TX off: receive only until TX Call, CQ or a call is pressed	TX aus: nur Empfang, bis TX Call, CQ oder ein Anruf gedrückt wird
+TX or PTT: stop - %i:%02i to go	TX oder PTT: Stopp - noch %i:%02i
+TX outside ham bands	TX außerhalb der Amateurbänder
+TX power %.1f W: transverter %s	TX-Leistung %.1f W: Transverter %s
+TX power %0.0f W on battery	TX-Leistung %0.0f W im Akkubetrieb
+TX power back to %.1f W	TX-Leistung zurück auf %.1f W
+TX shift %s, kHz	TX-Ablage %s, kHz
+TX stopped: SWR 6.0	TX gestoppt: SWR 6.0
+TX stopped: no audio for %d s	TX gestoppt: %d s kein Audio
+TX: no data from the base for %u ms, back to RX	TX: %u ms keine Daten von der Basis, zurück zu RX
+Tailscale: %s	Tailscale: %s
+Test beacon %s	Testbake %s
+Test beacon %s, back on %.3f MHz	Testbake %s, zurück auf %.3f MHz
+Test beacon not sent%s%s	Testbake nicht gesendet%s%s
+The radio stays on %.4f MHz	Das Funkgerät bleibt auf %.4f MHz
+Test beacon on %s, %.3f MHz	Testbake auf %s, %.3f MHz
+Test beacon on %s: %s	Testbake auf %s: %s
+Test beacon on %s: no data from the base	Testbake auf %s: keine Daten von der Basis
+Test beacon on %s: the frequency is locked	Testbake auf %s: die Frequenz ist gesperrt
+Test beacon stopped: %s	Testbake gestoppt: %s
+Test beacon: a CW message or beacon is on (MSG > CW)	Testbake: eine CW-Nachricht oder Bake läuft (MSG > CW)
+Test beacon: the radio is transmitting	Testbake: das Funkgerät sendet
+Text (%M %H %E):	Text (%M %H %E):
+The GPS keeps the clock: no Time Sync needed	Das GPS hält die Uhr: kein Zeitabgleich nötig
+The download failed, the old list is still in use.	Der Download schlug fehl, die alte Liste bleibt in Gebrauch.
+The signal reads %.0f dB: feed one between 	Das Signal liest %.0f dB: eines einspeisen zwischen 
+Then the screen goes dark for a few seconds while the radio software restarts.	Dann wird der Bildschirm einige Sekunden dunkel, während die Software neu startet.
+Tiles	Felder
+Time Sync: %s	Zeitabgleich: %s
+Time Sync: the clock can't be set (%s)	Zeitabgleich: die Uhr kann nicht gestellt werden (%s)
+Time left	Restzeit
+Towers	Türme
+Trusted	Vertrauenswürdig
+Trusted: %s	Vertrauenswürdig: %s
+Tuner did not start	Tuner nicht gestartet
+Tuner stopped	Tuner gestoppt
+Tuner: no data from the base	Tuner: keine Daten von der Basis
+Tuner: no match	Tuner: keine Anpassung
+Turning Funnel off...	Schalte Funnel aus...
+Turning Funnel on...	Schalte Funnel ein...
+Typed in	Eingetippt
+Until	Bis
+Up to date: v%s is the latest release.	Aktuell: v%s ist die neueste Version.
+Updating %s (%d/%d)	Aktualisiere %s (%d/%d)
+Updating...	Aktualisiere...
+Uploading needs a QRZ.com Logbook API key, which QRZ.com only gives with a paid QRZ.com subscription (XML level or higher).	Hochladen braucht einen QRZ.com-Logbook-API-Schlüssel, den QRZ.com nur mit einem bezahlten Abo gibt (XML-Stufe oder höher).
+Use band	Band nutzen
+WALKIE TALKIE	WALKIE TALKIE
+WPA Enterprise (802.1X)	WPA Enterprise (802.1X)
+WPA3-only network: set the router to WPA2 or WPA2/WPA3	Nur-WPA3-Netz: Router auf WPA2 oder WPA2/WPA3 stellen
+WR12 RECEIVER	WR12-EMPFÄNGER
+WR12 on HOST	WR12 an HOST
+WSPR TX: set the QTH locator in Settings	WSPR TX: QTH-Locator in den Einstellungen setzen
+WSPR: TX stopped, TX %% off	WSPR: TX gestoppt, TX %% aus
+Waiting for Tailscale...	Warte auf Tailscale...
+Waterfall 3D	Wasserfall 3D
+Waterfall 3D: %s	Wasserfall 3D: %s
+WiFi %s: %s	WLAN %s: %s
+WiFi %s: join failed (reason %u)	WLAN %s: Verbindung fehlgeschlagen (Grund %u)
+WiFi %s: no longer in range, scan again	WLAN %s: nicht mehr in Reichweite, neu scannen
+Wifi/BT:	WLAN/BT:
+Window %s-%s	Fenster %s-%s
+Winlink in session	Winlink in Sitzung
+Winlink: TX stopped after %d s	Winlink: TX nach %d s gestoppt
+Winlink: TX stopped, %s is open	Winlink: TX gestoppt, %s ist offen
+Winlink: TX stopped, it left %s MHz	Winlink: TX gestoppt, %s MHz verlassen
+Winlink: no QSY to %s MHz, %s	Winlink: kein QSY auf %s MHz, %s
+Winlink: no TX %s for %d minutes, check the antenna	Winlink: kein TX %s seit %d Minuten, Antenne prüfen
+Winlink: no TX, %s	Winlink: kein TX, %s
+With ATT it read S1: raise Attenuator first. Nothing changed.	Mit ATT zeigte es S1: erst den Abschwächer erhöhen. Nichts geändert.
+World Castle	World Castle
+Award	Award
+XIT is set (%+d Hz)	XIT ist gesetzt (%+d Hz)
+Zoom and step per mode	Zoom und Schritt je Betriebsart
+a TX shift is set on this band	auf diesem Band ist eine TX-Ablage gesetzt
+a browser types the code to operate	ein Browser gibt den Code zum Bedienen ein
+activation	Aktivierung
+almost full	fast voll
+asks for a new login	verlangt eine neue Anmeldung
+code %s, two minutes	Code %s, zwei Minuten
+connect failed	Verbindung fehlgeschlagen
+connected with a gateway	mit Gateway verbunden
+connected without a gateway	ohne Gateway verbunden
+dial locked	Abstimmknopf gesperrt
+dropped while joining: signal or router security	beim Verbinden abgebrochen: Signal oder Router-Sicherheit
+east	Ost
+every browser forgotten	alle Browser vergessen
+everything off	alles aus
+failed	fehlgeschlagen
+gone	weg
+handshake failed: password, signal or router security	Handshake fehlgeschlagen: Passwort, Signal oder Router-Sicherheit
+headphones %s disconnected: one pair at a time	Kopfhörer %s getrennt: immer nur ein Paar
+high SWR %s, the hold ends in %d min	hohes SWR %s, die Sperre endet in %d Min
+how do you copy?	wie hörst du mich?
+it sends on %.3f MHz (split or TX shift)	sendet auf %.3f MHz (Split oder TX-Ablage)
+joined, but no address from DHCP	verbunden, aber keine Adresse per DHCP
+keyboard: classic, paired where Scan found it	Tastatur: klassisch, dort gekoppelt, wo Scan sie fand
+learned from %i h on battery, %i charges	gelernt aus %i h Akkubetrieb, %i Ladungen
+link off	Verbindung aus
+link on	Verbindung ein
+listen only: tune and key refused	nur hören: Tunen und Tasten abgelehnt
+mute off	Stumm aus
+mute on	Stumm ein
+near %s MHz	nahe %s MHz
+needs Tailscale connected	braucht verbundenes Tailscale
+new mode	neue Betriebsart
+no TX on %s	kein TX auf %s
+no answer: signal, channel or router security	keine Antwort: Signal, Kanal oder Router-Sicherheit
+no browser paired yet	noch kein Browser gekoppelt
+no data from the base	keine Daten von der Basis
+no reply	keine Antwort
+north	Nord
+north-east	Nordost
+north-west	Nordwest
+not a frequency the radio can tune	keine Frequenz, die das Funkgerät abstimmen kann
+not fitted	nicht eingebaut
+not in range	nicht in Reichweite
+not supported	nicht unterstützt
+nothing	nichts
+on %s	auf %s
+on the air	auf Sendung
+open	offen
+outside the bands	außerhalb der Bänder
+pairing closed: hidden, not pairable	Kopplung geschlossen: versteckt, nicht koppelbar
+pairing open	Kopplung offen
+picture over	Bild fertig
+press again to log out	erneut drücken zum Abmelden
+ready	bereit
+result: connect failed	Ergebnis: Verbindung fehlgeschlagen
+result: connected%s	Ergebnis: verbunden%s
+result: keyboard not found	Ergebnis: Tastatur nicht gefunden
+result: not found	Ergebnis: nicht gefunden
+result: pair failed (%s)	Ergebnis: Kopplung fehlgeschlagen (%s)
+retrying	neuer Versuch
+sent	gesendet
+sent: watch who hears you	gesendet: schau, wer dich hört
+south	Süd
+south-east	Südost
+south-west	Südwest
+split would send on %s, not %s	Split würde auf %s senden, nicht auf %s
+starting values, learning	Startwerte, lernt
+stays on	bleibt an
+stopped	gestoppt
+the Panel alone; pair browsers at home	nur das Panel; Browser zu Hause koppeln
+the WiFi service refused the profile	der WLAN-Dienst lehnte das Profil ab
+the app holds the frequency	die App hält die Frequenz
+the app holds the mode	die App hält die Betriebsart
+the frequency is locked (LOCK)	die Frequenz ist gesperrt (LOCK)
+the helper failed	das Hilfsprogramm schlug fehl
+the mode changed	die Betriebsart hat sich geändert
+the mode is locked	die Betriebsart ist gesperrt
+the radio could not go to Pat's %s MHz	das Funkgerät konnte nicht auf Pats %s MHz gehen
+the radio is busy	das Funkgerät ist beschäftigt
+the radio is on the air	das Funkgerät sendet
+the radio left %s MHz	das Funkgerät hat %s MHz verlassen
+the radio was busy, try again	das Funkgerät war beschäftigt, nochmal versuchen
+the radio was tuned	das Funkgerät wurde abgestimmt
+this band	dieses Band
+tuned	abgestimmt
+unknown	unbekannt
+until stopped	bis zum Stopp
+v%s is available. Install downloads it and restarts the radio software.	v%s ist verfügbar. Installieren lädt sie und startet die Software neu.
+v%s is out; its card image brings %s	v%s ist da; ihr Kartenabbild bringt %s
+viewers	Zuschauer
+west	West
+GENERAL	ALLGEMEIN
+DISPLAY	ANZEIGE
+AUDIO	AUDIO
+WIRELESS	DRAHTLOS
+KEYS	TASTEN
+TX CAL	TX CAL
+INFO	INFO
+WALKIE	WALKIE
+SETTINGS	EINSTELLUNGEN
+TEXT LOG	TEXTLOG
+Steady carrier in, S5 to S9+20. PRE, ATT and RF gain are tried, then put back.	Stetiger Träger rein, S5 bis S9+20. PRE, ATT und HF-Verstärkung werden probiert und dann zurückgestellt.
+VOICE KEYER (TX) - #%06x %s#	SPRACHSPEICHER (TX) - #%06x %s#
+READY	BEREIT
+A mode	A-Modus
+B mode	B-Modus
+Learn	Lernen
+SENT	GESENDET
+YOU KEYED	DU GABST
+SCORE	PUNKTE
+NOT CW	KEIN CW
+Live	Live
+Marks	Marken
+BANDS	BÄNDER
+NO POS	KEINE POS
+Linear	Linear
+POWER	LEISTUNG
+%s.local/remote, port %d	%s.local/remote, Port %d
+Channel not saved	Kanal nicht gespeichert
+Forecast, alerts	Vorhersage, Warnungen
+Internet radio	Internetradio
+Stations, ATC	Sender, Flugfunk
+Voice channels	Sprachkanäle
+Aircraft overhead	Flugzeuge in der Nähe
+Oceanic, VOLMET	Ozeanisch, VOLMET
+Channels by band	Kanäle nach Band
+Auto (Region 1)	Auto (Region 1)
+Auto (Region 2)	Auto (Region 2)
+Auto (Region 3)	Auto (Region 3)
+Birdie Cal	Birdie-Kal.
+Marks:\nOff	Marken:\nAus
+Marks:\nOn	Marken:\nEin
+Marks:\n+ notch	Marken:\n+ Notch
+Fill by level	Füllung nach Pegel
+North America	Nordamerika
+Australia	Australien
+Bridge NA-Europe	Brücke NA-Europa
+Bridge NA-Australia	Brücke NA-Australien
+Bridge Europe-Australia	Brücke Europa-Australien
+Bridge Australia-Pacific	Brücke Australien-Pazifik
+Spanish net	Eigenes Netz
+%s in Spanish	%s auf Deutsch
+Mo	Mo
+Tu	Di
+We	Mi
+Th	Do
+Fr	Fr
+Sa	Sa
+RTTY 45.45 baud	RTTY 45,45 Baud
+Voice, emergencies only	Sprache, nur Notfälle
+ manual	 manuell
+Su	So
+(admin)	(Admin)
+(armed)	(scharf)
+(listen)	(hören)
+- Press Start Auto RX to start Autodecoder.	- Start Auto RX drücken, um den Autodekoder zu starten.
+- Press Start Manual RX to start Manual	- Start Manual RX drücken, um manuell zu starten
+All speeds	Alle Tempi
+Auto RX	Auto-RX
+Auto call every %i s	Automatischer Ruf alle %i s
+Auto:	Auto:
+Awaiting signal...	Warte auf Signal...
+Band up	Band hoch
+Best score %s	Bester Punktestand %s
+Best speed %i WPM	Bestes Tempo %i WPM
+Browser	Browser
+CQ auto:	CQ auto:
+CQ calls in CW.  Log QSO: call [rst sent [rst rcvd]]	CQ ruft in CW.  QSO loggen: Rufzeichen [rst ges. [rst empf.]]
+CW peak Q:	CW-Spitze Q:
+CW peak:	CW-Spitze:
+Calls	Rufzeichen
+Change	Ändern
+Choose TX action	TX-Aktion wählen
+Cluster %s - %s	Cluster %s - %s
+Comp:	Komp:
+DNF auto:	DNF auto:
+DNF freq:	DNF Freq.:
+DNF width:	DNF Breite:
+Decode:	Dekodieren:
+Decoder:	Dekoder:
+Decoding %s signal	Dekodiere %s-Signal
+Denoise	Entrauschen
+Directed	Gerichtet
+Field	Feld
+Filter BW:	Filterbreite:
+Filter high:	Filter hoch:
+Filter low:	Filter tief:
+Force QSO	QSO erzwingen
+Free	Frei
+Freq:	Freq.:
+Full Size	Volle Größe
+Halt	Anhalten
+Hound:	Hound:
+IF shift:	ZF-Shift:
+Iambic:	Iambic:
+Interval %i s	Intervall %i s
+Interval: page 2	Intervall: Seite 2
+Level %i	Stufe %i
+Manual RX	Manuelles RX
+Messages	Nachrichten
+Mic level: keep out of the red	Mikropegel: nicht in den roten Bereich
+Moni level:	Monitorpegel:
+My speed	Mein Tempo
+NB level:	NB-Pegel:
+NB width:	NB-Breite:
+NR level:	NR-Pegel:
+Next call in %i s	Nächster Ruf in %i s
+Next level at %i%%	Nächste Stufe bei %i%%
+No license	Ohne Lizenz
+Practice	Übung
+Preset	Voreinstellung
+Press Stop Manual RX to render received picture	Stop Manual RX drücken, um das empfangene Bild zu zeichnen
+QSK time:	QSK-Zeit:
+RBN, beacon	RBN, Bake
+RF gain:	HF-Verst.:
+RX Pics	RX-Bilder
+Ratio:	Verhältnis:
+Reset	Zurücksetzen
+Restart OFF	Neustart AUS
+Restart ON	Neustart EIN
+Retries:	Wiederholungen:
+SSTV Autodecoder is running.	Der SSTV-Autodekoder läuft.
+SSTV Manual decoder is running	Der manuelle SSTV-Dekoder läuft
+SSTV pictures and texts installed	SSTV-Bilder und -Texte installiert
+Scale:	Skala:
+Screen	Bildschirm
+Searching the line syncs for the SSTV mode	Suche die Zeilensynchronisation für die SSTV-Betriebsart
+Show:	Zeigen:
+Small	Klein
+Span:	Spanne:
+Spot	Spot
+Squelch:	Squelch:
+Stand by.	Bereit.
+Start here	Hier beginnen
+Stations	Stationen
+Step:	Schritt:
+Sync	Sync
+TX power:	TX-Leistung:
+TX setup	TX-Einstellung
+Text	Text
+Tone:	Ton:
+Train:	Training:
+Trainer	Trainer
+Tuner:	Tuner:
+Type	Typ
+Upload	Hochladen
+View	Ansicht
+Volume:	Lautstärke:
+WF ref:	WF-Ref.:
+WR12 not in bypass	WR12 nicht im Bypass
+WR12 receiving	WR12 empfängt
+Zoom	Zoom
+a TCI client	ein TCI-Client
+logged in	angemeldet
+not answering, let go	antwortet nicht, losgelassen
+let go	losgelassen
+one at a time	immer nur einer
+paused after wrong keys	pausiert nach falschen Schlüsseln
+prompt: Off	Hinweis: Aus
+prompt: On	Hinweis: Ein
+retry in 30 min	neuer Versuch in 30 Min
+the radio's operator	der Funker am Gerät
+two from the internet already	schon zwei aus dem Internet
+via Funnel	über Funnel
+hold: down	halten: ab
+profile %d	Profil %d
+Position from %s%s	Position aus %s%s
+Run complete - final score %s	Durchgang fertig - Endstand %s
+Score %d - MFK to call CQ again	Punkte %d - MFK für erneutes CQ
+Turn the knob to steer - MFK to start	Knopf drehen zum Lenken - MFK zum Starten
+%s is empty	%s ist leer
+%d new	%d neu
+%s line syncs found	%s Zeilensyncs gefunden
+%s mode	%s-Modus
+Activation	Aktivierung

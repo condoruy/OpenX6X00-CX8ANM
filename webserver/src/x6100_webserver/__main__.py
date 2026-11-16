@@ -449,7 +449,7 @@ def serve():
     settings.TCI_CONF = opts.tci_conf
     settings.CHANNELS_FILE = opts.channels_file
     if opts.https_port and not (opts.debug and "BOTTLE_CHILD" not in os.environ):   # not in the reloader's parent
-        start_https(i18n_web.Spanish(apps.app), opts.host, opts.https_port, opts.cert_dir)
+        start_https(i18n_web.Translate(apps.app), opts.host, opts.https_port, opts.cert_dir)
     adopt_old_ssh_keys()
     follow_sshd_config()
     settings.FUNNEL_DIR = opts.funnel_dir
@@ -459,7 +459,7 @@ def serve():
         threading.Thread(target=follow_funnel_name, args=(opts.funnel_dir, name), daemon=True).start()
     settings.HTTP_PORT = opts.port
     # CX8ANM: las páginas en español cuando la radio está en español (i18n_web.py)
-    bottle.run(app=i18n_web.Spanish(apps.app), server=ThreadedServer, host=opts.host, port=opts.port, debug=opts.debug, reloader=opts.debug)
+    bottle.run(app=i18n_web.Translate(apps.app), server=ThreadedServer, host=opts.host, port=opts.port, debug=opts.debug, reloader=opts.debug)
 
 
 serve()

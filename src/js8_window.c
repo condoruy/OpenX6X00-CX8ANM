@@ -12,6 +12,7 @@
 #define _GNU_SOURCE     /* pthread_setname_np */
 #include "js8_window.h"
 #include "ghostnet.h"
+#include "i18n.h"
 #include "wifi.h"
 #include "board.h"
 #include "js8_map.h"
@@ -629,7 +630,11 @@ static void format_row(const js8_rx_msg_t *msg, char *out, size_t out_size)
         int n = snprintf(out, out_size, "%02d:%02d:%02d %+3d %4.0f%s  %s%s%s%s", utc / 10000, utc / 100 % 100,
                          utc % 100, msg->snr, msg->freq_hz, letter, open, msg->text, close, tail);
         const char *es = trans_find(msg);
-        if (es && n > 0 && (size_t)n < out_size) snprintf(out + n, out_size - n, "\n          ES: %s", es);
+        if (es && n > 0 && (size_t)n < out_size) {
+            static const char *code[] = {"EN", "ES", "DE", "FR", "IT"};
+            uint8_t            lang   = i18n_get_lang();
+            snprintf(out + n, out_size - n, "\n          %s: %s", code[lang < 5 ? lang : 1], es);
+        }
     } else {
         snprintf(out, out_size, "%02d:%02d:%02d  TX %4.0f%s  %s", utc / 10000, utc / 100 % 100, utc % 100,
                  msg->freq_hz, letter, msg->text);

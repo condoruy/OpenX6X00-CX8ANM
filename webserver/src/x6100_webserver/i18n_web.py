@@ -1,15 +1,17 @@
-"""CX8ANM: the configurator in Spanish when the radio's language is Spanish (Settings > Interface > Language).
+"""CX8ANM: the configurator in the radio's language (Settings > Interface > Language): Spanish, German, French or
+Italian; English is the source.
 
 The pages, the configurator's own scripts and the messages of its JSON answers are written in English; this
-WSGI middleware puts each text it knows (i18n_es.txt: English<TAB>Spanish, one per line) in their place as
-they leave the server:
+WSGI middleware puts each text it knows (i18n_es.txt, i18n_de.txt, i18n_fr.txt, i18n_it.txt: English<TAB>the
+translation, one per line) in their place as they leave the server:
   - HTML: text between tags and the placeholder / title / aria-label / alt / label / value attributes;
   - JavaScript (inline <script> and the configurator's own files under /static/js): string literals whose
     text, spaces at the ends aside, is in the table. A literal of one word only when it is not compared
     anywhere in the page (== 'Off', case 'Ready':): those are states, not texts;
   - JSON: the values of message / error / msg / detail.
-Everything else (pictures, audio, video, streams, downloads, WebSockets) passes as it is. Another language than
-Spanish, or no table: nothing is changed.
+Everything else (pictures, audio, video, streams, downloads, WebSockets) passes as it is. English, or a language
+with no table: nothing is changed. t() gives a text in the radio's language to the configurator's own code (data the
+pages show that is not a message, such as names in a list).
 """
 import html
 import json
@@ -25,12 +27,13 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 _OWN_JS = ('/static/js/edit_flow.js', '/static/js/list_editor.js', '/static/js/radio_link.js',
            '/static/js/radio_session.js')
 LANG_ES = 1
+LANGS = {1: 'es', 2: 'de', 3: 'fr', 4: 'it'}
 
 
-def _load():
+def _load(code='es'):
     table = {}
     try:
-        with open(os.path.join(_HERE, 'i18n_es.txt'), encoding='utf-8') as f:
+        with open(os.path.join(_HERE, 'i18n_%s.txt' % code), encoding='utf-8') as f:
             for line in f:
                 line = line.rstrip('\n')
                 if not line or line.startswith('#') or '\t' not in line:
@@ -43,14 +46,16 @@ def _load():
     return table
 
 
-TABLE = _load()
+TABLES = {code: _load(code) for code in LANGS.values()}
+TABLE = TABLES['es']        # the one in use for this request (set by lang_table())
 
 _lang = {'t': 0.0, 'v': None}
 _lang_lock = threading.Lock()
+_local = threading.local()
 
 
-def spanish():
-    """The radio's language from params.db, read at most every 5 s."""
+def radio_lang():
+    """The radio's language code from params.db ('en', 'es', 'de', 'fr', 'it'), read at most every 5 s."""
     now = time.monotonic()
     with _lang_lock:
         if now - _lang['t'] < 5 and _lang['v'] is not None:
@@ -66,8 +71,19 @@ def spanish():
                 v = int(row[0])
         except (sqlite3.Error, ValueError):
             pass
-        _lang['t'], _lang['v'] = now, v == LANG_ES
+        _lang['t'], _lang['v'] = now, LANGS.get(v, 'en')
         return _lang['v']
+
+
+def spanish():
+    return radio_lang() == 'es'
+
+
+def _table():
+    t = getattr(_local, 'table', None)
+    if t is None:
+        t = TABLES.get(radio_lang(), {})
+    return t
 
 
 def tr(text):
@@ -76,7 +92,7 @@ def tr(text):
     if not core:
         return text
     key = ' '.join(core.split())
-    v = TABLE.get(key)
+    v = _table().get(key)
     if v is None:
         return text
     lead = text[:len(text) - len(text.lstrip())]
@@ -144,6 +160,11 @@ def tr_html(page):
     return re.sub(r'\x00(\d+)\x00', lambda m: held[int(m.group(1))], page)
 
 
+def t(text):
+    """A text of the configurator's own code in the radio's language (English when there is none)"""
+    return tr(text) if isinstance(text, str) else text
+
+
 def _tr_markup(text):
     """A text node: looked up as the browser shows it (&rarr; as →), put back escaped."""
     if '&' not in text:
@@ -168,7 +189,7 @@ def _tr_json(v):
     return v
 
 
-class Spanish:
+class Translate:
     """WSGI middleware around the configurator."""
 
     def __init__(self, app):
@@ -185,8 +206,11 @@ class Spanish:
         return None
 
     def __call__(self, environ, start_response):
-        if not TABLE or environ.get('REQUEST_METHOD') == 'HEAD' or not spanish():
+        table = TABLES.get(radio_lang())
+        if not table or environ.get('REQUEST_METHOD') == 'HEAD':
+            _local.table = None
             return self.app(environ, start_response)
+        _local.table = table
         path = environ.get('PATH_INFO', '')
         held = {}
         chunks = []
@@ -227,3 +251,6 @@ class Spanish:
             headers.append(('Cache-Control', 'no-cache'))
         start_response(held['status'], headers, held['exc_info'])
         return [body]
+
+
+Spanish = Translate     # the old name

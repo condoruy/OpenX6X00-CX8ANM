@@ -1,0 +1,1346 @@
+# OpenX6X00-CX8ANM web configurator: English<TAB>Italiano
+Backup	Backup
+Save the radio settings to your computer, and put them back after flashing a new image.	Salva le impostazioni della radio sul computer e rimettile dopo aver scritto una nuova immagine.
+Download backup	Scarica il backup
+Tick the parts to save in the file	Spunta le parti da salvare nel file
+Restore	Ripristina
+Puts a backup file back on the radio	Rimette un file di backup sulla radio
+Choose a backup file. You can pick which parts to restore; the radio screen restarts (about 5 s) when settings are replaced.	Scegli un file di backup. Puoi scegliere quali parti ripristinare; lo schermo della radio si riavvia (circa 5 s) quando le impostazioni vengono sostituite.
+Part	Parte
+In the file	Nel file
+On the radio now	Ora sulla radio
+Restore selected	Ripristina la selezione
+Settings	Impostazioni
+Memories and channels	Memorie e canali
+Cluster servers, filters and alerts	Server cluster, filtri e avvisi
+Voice keyer messages	Messaggi della memoria vocale
+WiFi networks and passwords	Reti WiFi e password
+(and the Ethernet setting)	(e l'impostazione Ethernet)
+Boot picture	Immagine di avvio
+Can't read the radio	Impossibile leggere la radio
+Select at least one part	Scegli almeno una parte
+Preparing the backup…	Preparazione del backup…
+Backup of	Backup di
+Upload failed	Caricamento fallito
+Replace the selected parts on the radio? A copy of the current files is kept in /mnt/backup_before_restore.	Sostituire le parti scelte sulla radio? Una copia dei file attuali resta in /mnt/backup_before_restore.
+Restoring…	Ripristino…
+Restore failed	Ripristino fallito
+Bands	Bande
+Band edges and default modes shown on the radio. Active bands are reached with the band up/down buttons. The radio skips a band it cannot tune: 4m, 2m and 70cm only come with a transverter (Settings > General) or, on the X6200, the WR12 (Settings > General, or Display here); 2m and 70cm with the WR12 are to receive only. A TX shift (kHz, 0 off) makes the radio transmit that far from where it listens, in split: an FM repeater's input, a QO-100 station's IF; only on a band the radio transmits on, and only where the whole band, shifted, still does.	Limiti delle bande e modi predefiniti mostrati sulla radio. Le bande attive si raggiungono con i tasti banda su/giù. La radio salta una banda che non può sintonizzare: 4 m, 2 m e 70 cm solo con un transverter (Impostazioni > Generale) o, sull'X6200, con il WR12 (Impostazioni > Generale, o Display qui); 2 m e 70 cm con il WR12 solo in ricezione. Uno shift TX (kHz, 0 off) fa trasmettere la radio a quella distanza da dove ascolta, in split: l'ingresso di un ripetitore FM, la FI di una stazione QO-100; solo su una banda su cui la radio trasmette, e solo dove anche tutta la banda spostata lo fa.
+Band list	Elenco bande
+Name, edges, default mode, TX shift and the Active flag	Nome, limiti, modo predefinito, shift TX e l'indicatore Attiva
+Add band	Aggiungi banda
+Name	Nome
+Start, MHz	Inizio, MHz
+Stop, MHz	Fine, MHz
+Mode	Modo
+TX shift, kHz	Shift TX, kHz
+Active	Attiva
+, the last one it had	, l'ultima che aveva
+Band plan on the radio:	Piano di banda sulla radio:
+(Settings > General there, or Display here). The edges of 160m, 80m,	(Impostazioni > Generale lì, o Display qui). I limiti di 160 m, 80 m,
+40m SSB and 6m follow its region (80m to 4 MHz and 40m SSB to 7.3 MHz in Region 2 and the US, 80m to 3.9 MHz in Region 3),	40 m SSB e 6 m seguono la sua regione (80 m fino a 4 MHz e 40 m SSB fino a 7,3 MHz in Regione 2 e negli USA, 80 m fino a 3,9 MHz in Regione 3),
+unless they were changed here or another band is where they would go.	a meno che non siano state cambiate qui o un'altra banda sia lì.
+New	Nuovo
+at the next band key or knob turn into the band	al prossimo tasto di banda o giro di manopola nella banda
+- X6100 WebServer	- X6100 WebServer
+configurator	configuratore
+The radio did not answer (HTTP N)	La radio non ha risposto (HTTP N)
+No reply from the radio in	Nessuna risposta dalla radio in
+s: reload the page to see what was saved	s: ricarica la pagina per vedere cosa è stato salvato
+The radio's web server could not be reached (WiFi?): reload the page	Il server web della radio non è raggiungibile (WiFi?): ricarica la pagina
+The radio's web server failed (HTTP	Il server web della radio non è riuscito (HTTP
+Download failed:	Download fallito:
+Servers the radio can use (APP → Cluster), the filters and the alerts. The one in use is marked; the radio reconnects when you change it. Filters and alerts apply to the next spots. A deleted server or alert can be brought back for twenty seconds.	Server che la radio può usare (APP → Cluster), i filtri e gli avvisi. Quello in uso è segnato; la radio si ricollega quando lo cambi. Filtri e avvisi valgono per i prossimi spot. Un server o un avviso eliminati si possono recuperare per venti secondi.
+Link	Collegamento
+Takes effect: within a few seconds	Ha effetto: entro pochi secondi
+The radio logs in to one server. A cluster network takes a call on a few nodes at most, and a second login with the same call on a node ends the first: give the radio its own login (your call with -2) when a logger uses your call too	La radio accede a un server. Una rete cluster accetta un nominativo su pochi nodi al massimo, e un secondo accesso con lo stesso nominativo su un nodo chiude il primo: dai alla radio un accesso suo (il tuo nominativo con -2) quando anche un logger usa il tuo nominativo
+Cluster link	Collegamento cluster
+Off: the radio holds no cluster login	Off: la radio non ha accesso al cluster
+On the radio	Sulla radio
+What the link does now, as APP → Cluster shows it	Cosa fa ora il collegamento, come mostra APP → Cluster
+Login	Accedi
+your call	il tuo nominativo
+Save	Salva
+Servers	Server
+Takes effect: the radio reconnects within a few seconds	Ha effetto: la radio si ricollega entro pochi secondi
+Telnet servers; Use switches the radio to one	Server telnet; Usa passa la radio su uno di essi
+Host	Host
+Port	Porta
+Add server	Aggiungi server
+Name, host name and telnet port	Nome, nome host e porta telnet
+Filters	Filtri
+Takes effect: at the next spots	Ha effetto: ai prossimi spot
+Spots hidden here disappear from APP Cluster, the cluster column and the waterfall marks	Gli spot nascosti qui spariscono da APP Cluster, dalla colonna cluster e dai segni della cascata
+Modes, bands and activity are also on the radio: Settings → Cluster.	Modi, bande e attività sono anche sulla radio: Impostazioni → Cluster.
+Modes	Modi
+(none ticked = all bands)	(nessuna spunta = tutte le bande)
+Activity	Attività
+(none ticked = all spots)	(nessuna spunta = tutti gli spot)
+Max age	Età massima
+Off	Off
+Skip spotters	Salta spotter
+e.g. K1TTT-# , *-3	es. K1TTT-# , *-3
+Heard in	Ascoltato in
+(the spotter's country, by its prefix; empty = all. Alerts still come through)	(il paese dello spotter, dal prefisso; vuoto = tutti. Gli avvisi passano comunque)
+e.g. PA, ON	es. PA, ON
+Alerts	Allerte
+Callsigns or prefixes you are looking for.	Nominativi o prefissi che cerchi.
+matches anything: VP8*, */P, 3Y0J.	corrisponde a tutto: VP8*, */P, 3Y0J.
+Popup on the radio	Popup sulla radio
+When a spot matches an alert	Quando uno spot corrisponde a un avviso
+Beep	Bip
+Pattern	Schema
+Only bands	Solo bande
+Only mode	Solo modo
+Last seen	Visto l'ultima volta
+e.g. VP8*	es. VP8*
+(none = all)	(nessuno = tutti)
+Any	Qualsiasi
+Add	Aggiungi
+Brought back	Recuperato
+All	Tutte
+Turn on	Accendi
+Turn off	Spegni
+Saved	Salvato
+No word from the radio yet: is it starting?	Ancora nessuna risposta dalla radio: si sta avviando?
+Not taken up by the radio yet (	Non ancora preso dalla radio (
+CW messages	Messaggi CW
+The messages of MSG → CW on the radio, sent with TX or as a beacon. Up to 64 characters each. A row is saved with its own Save, or all at once; a deleted message can be brought back for twenty seconds.	I messaggi di MSG → CW sulla radio, inviati con TX o come beacon. Fino a 64 caratteri ciascuno. Una riga si salva con il suo Salva, o tutte insieme; un messaggio eliminato si può recuperare per venti secondi.
+Messages	Messaggi
+Up to 64 characters each	Fino a 64 caratteri ciascuno
+Message	Messaggio
+the next time MSG → CW opens on the radio	alla prossima apertura di MSG → CW sulla radio
+Delete	Elimina
+It is gone from MSG → CW on the radio.	È sparito da MSG → CW sulla radio.
+Brought back (at the end of the list)	Recuperato (in fondo alla lista)
+Digital modes	Modi digitali
+Frequencies offered by the FT8/FT4 and JS8 apps.	Frequenze offerte dalle app FT8/FT4 e JS8.
+Frequencies	Frequenze
+Label, dial frequency, mode and app	Etichetta, frequenza di sintonia, modo e app
+Add frequency	Aggiungi frequenza
+Label	Etichetta
+Freq, MHz	Freq., MHz
+Type	Tipo
+the digital mode "	il modo digitale "
+at the next frequency step in the app	al prossimo passo di frequenza nell'app
+Display	Schermo
+How the radio's screen looks (Settings → Display), and a few station options of the other tabs. Every change is applied on the radio as you make it and each row says so (Applied on the radio, or why not); Theme, Spectrum and Spectrum height restart the radio's screen for a few seconds.	Come appare lo schermo della radio (Impostazioni → Display) e alcune opzioni di stazione delle altre schede. Ogni modifica viene applicata subito sulla radio e ogni riga lo dice (Applicato sulla radio, o perché no); Tema, Spettro e Altezza spettro riavviano lo schermo della radio per qualche secondo.
+Takes effect: at the next start	Ha effetto: al prossimo avvio
+On the screen while the radio starts: the built-in logo, or a picture of your own	Sullo schermo all'avvio: il logo integrato, o un'immagine tua
+The picture the radio starts with	L'immagine con cui parte la radio
+A PNG of 800x480 pixels, the screen's size, up to 2 MB. It is kept on the card's DATA partition, so updates leave it as it is, and the Backup takes it along. Default goes back to the built-in logo.	Un PNG di 800x480 pixel, la dimensione dello schermo, fino a 2 MB. Resta sulla partizione DATA della scheda, quindi gli aggiornamenti lo lasciano com'è, e il Backup lo porta con sé. Predefinito torna al logo integrato.
+Your picture, a PNG of 800x480	La tua immagine, un PNG di 800x480
+Upload	Carica
+Default	Predefinito
+Theme	Tema
+Colours, buttons and fonts of every screen	Colori, pulsanti e caratteri di ogni schermata
+The radio's screen restarts with the new one	Lo schermo della radio si riavvia con quello nuovo
+The signal meter in the top bar	L'indicatore di segnale nella barra in alto
+Bars, or a needle on a dial	Barre, o un ago su un quadrante
+Bars	Barre
+Needle	Lancetta
+Colours	Colori
+Theme as it is, or green → yellow → red along the scale or with the signal	Tema così com'è, o verde → giallo → rosso lungo la scala o con il segnale
+Scale	Scala
+Level	Livello
+Needle lamp	Luce lancetta
+An amber dial lit from behind, as the old analog meters	Un quadrante ambra retroilluminato, come i vecchi strumenti analogici
+Meter colour	Colore dell'indicatore
+With the theme colours: the bars or the needle scale up to S9	Con i colori del tema: le barre o la scala dell'ago fino a S9
+The SWR bar while transmitting; yellow and red above 2 and 3 stay	La barra del ROS in trasmissione; giallo e rosso sopra 2 e 3 restano
+Spectrum and waterfall	Spettro e cascata
+How the waterfall moves and reads	Come la cascata si muove e si legge
+Spectrum	Spettro
+The spectrum above the waterfall; the radio's screen restarts	Lo spettro sopra la cascata; lo schermo della radio si riavvia
+Spectrum fill	Riempimento spettro
+The area under the trace filled	L'area sotto la traccia riempita
+Spectrum peaks	Picchi dello spettro
+The peaks held for a moment	I picchi tenuti per un momento
+Spectrum height	Altezza spettro
+Taller spectrum, shorter waterfall; the radio's screen restarts	Spettro più alto, cascata più corta; lo schermo della radio si riavvia
+Trace colour	Colore della traccia
+The theme's, or your own	Quello del tema, o il tuo
+Fill colour	Colore di riempimento
+As the trace, or your own	Come la traccia, o il tuo
+As trace	Come la traccia
+Fill gradient	Riempimento sfumato
+The fill fading to the background at the bottom	Il riempimento sfuma nello sfondo in basso
+Waterfall colours	Colori della cascata
+The theme's, or one of these	Quelli del tema, o uno di questi
+Classic	Classico
+Grey	Grigio
+Fire	Fuoco
+Ice	Ghiaccio
+Rainbow	Arcobaleno
+Centered keeps the VFO in the middle, Fixed keeps the span	Centrato tiene il VFO al centro, Fisso tiene lo span
+Centered	Centrata
+Fixed	Fissa
+Jump at	Salta a
+Fixed: the view moves on when the VFO line is 40% of the span from the centre, or when the passband or the line reaches the screen's edge (100 Hz from it)	Fisso: la vista si sposta quando la linea del VFO è al 40% dello span dal centro, o quando la banda passante o la linea raggiunge il bordo dello schermo (a 100 Hz)
+Passband	Banda passante
+Line	Linea
+Jump to	Vai a
+Fixed: the line back in the centre, at the other edge to tune on across the screen, or kept at the edge with the view scrolling along	Fisso: la linea torna al centro, all'altro bordo per continuare a sintonizzare attraverso lo schermo, o resta al bordo con la vista che scorre
+Center	Centro
+Other edge	Altro bordo
+Scroll	Scorri
+Speed	Velocità
+Lines a second, slow to fast	Righe al secondo, da lento a veloce
+Auto level	Livello auto
+Follows the noise floor by itself	Segue da solo il rumore di fondo
+Auto level offset	Offset livello auto
+Darker or brighter than the noise	Più scuro o più chiaro del rumore
+Center line	Linea centrale
+A line on the VFO	Una linea sul VFO
+Zoom with the waterfall instead of the span	Zoom con la cascata invece dello span
+Smooth scroll	Scorrimento fluido
+Scrolls by pixels instead of lines	Scorre a pixel invece che a righe
+The last seconds as traces one behind the other, the newest in front; not with Amber Trey, whose display covers the waterfall	Gli ultimi secondi come tracce una dietro l'altra, la più recente davanti; non con Amber Trey, il cui display copre la cascata
+3D: by signal strength, the waterfall's, or blue	3D: per intensità del segnale, quelli della cascata, o blu
+Strength	Intensità
+Waterfall	Cascata
+Blue	Blu
+3D: the traces shown, every third line	3D: le tracce mostrate, una riga su tre
+3D: seen from the front (tall traces) to from above (more depth)	3D: vista di fronte (tracce alte) fino a vista dall'alto (più profondità)
+3D: how much above the noise floor is cut away	3D: quanto sopra il rumore di fondo viene tagliato
+3D: the dB above the noise floor at the full height; less makes weak signals taller	3D: i dB sopra il rumore di fondo a piena altezza; meno rende più alti i segnali deboli
+3D: the newest trace's peaks held a moment	3D: i picchi della traccia più recente tenuti per un momento
+3D: the traces move back smoothly, 30 pictures a second; off: a step at each line, less CPU	3D: le tracce scorrono indietro in modo fluido, 30 immagini al secondo; off: un passo a ogni riga, meno CPU
+On the waterfall	Sulla cascata
+What is drawn over it	Cosa viene disegnato sopra
+Band plan	Band plan
+The plan's segments on top	I segmenti del piano in alto
+Cluster spots	Spot del cluster
+The calls at their frequencies	I nominativi sulle loro frequenze
+Cluster column	Colonna del cluster
+The spot list on the right	L'elenco degli spot a destra
+Backlight	Retroilluminazione
+Screen and button lights	Luci dello schermo e dei pulsanti
+Brightness	Luminosità
+Brightness when idle	Luminosità a riposo
+Idle after	Riposo dopo
+Seconds without a key or the knob	Secondi senza tasti né manopola
+Button lights	Luci dei pulsanti
+Always off	Sempre spento
+Always on	Sempre acceso
+Temporarily on	Acceso temporaneamente
+Screen off after	Schermo spento dopo
+Minutes without a key or the knob, 0 never; the next key wakes it	Minuti senza tasti né manopola, 0 mai; il tasto successivo lo risveglia
+Screen always off	Schermo sempre spento
+A radio run from the knob or a browser; POWER shows the screen for a while	Una radio usata dalla manopola o da un browser; POWER mostra lo schermo per un po'
+Remote station	Stazione remota
+A radio run from a browser or a TCI client	Una radio usata da un browser o da un client TCI
+Speaker always off	Altoparlante sempre spento
+The speaker and the TX monitor stay silent whatever the volume; the sound to the browser, TCI and Bluetooth headphones goes on	L'altoparlante e il monitor TX restano muti qualunque sia il volume; l'audio verso il browser, TCI e le cuffie Bluetooth continua
+Receiver	Ricevitore
+What the radio receives above HF	Cosa riceve la radio sopra l'HF
+Xiegu's WR12 receiver on the HOST port: 54 MHz-1 GHz to receive, never to transmit. The radio tunes it and listens through it from 54 MHz up, and transmits nothing meanwhile; the band keys and the band plan take its bands (2 m, 70 cm)	Il ricevitore WR12 di Xiegu sulla porta HOST: 54 MHz-1 GHz in ricezione, mai in trasmissione. La radio lo sintonizza e ascolta attraverso di esso da 54 MHz in su, senza trasmettere nulla nel frattempo; i tasti banda e il piano di banda prendono le sue bande (2 m, 70 cm)
+Transmitter	Trasmettitore
+Where the radio may transmit (Settings → TX Cal)	Dove la radio può trasmettere (Impostazioni → TX Cal)
+TX outside ham bands	TX fuori dalle bande amatoriali
+Off: PTT, the apps, CW, the tuners and the SWR scan only on the amateur bands and a transverter's range; the hand mic, VOX and the KEY jack held at 0 W elsewhere. On: wherever the radio can transmit, only for operators licensed there (MARS, CAP). Receive-only ranges stay receive only	Off: PTT, le app, il CW, gli accordatori e la scansione ROS solo sulle bande amatoriali e nella gamma di un transverter; microfono, VOX e presa KEY tenuti a 0 W altrove. On: ovunque la radio possa trasmettere, solo per operatori autorizzati lì (MARS, CAP). Le gamme di sola ricezione restano di sola ricezione
+Text and info	Testo e info
+What the screen shows bigger	Cosa mostra lo schermo più grande
+VFO A and VFO B each keep their own band, frequency and mode; A=B copies everything	VFO A e VFO B tengono ciascuno banda, frequenza e modo propri; A=B copia tutto
+The radio's own carriers found by Birdie Cal: marked on the waterfall, and notched out of the passband	Le portanti proprie della radio trovate dalla calibrazione birdie: segnate sulla cascata e tolte dalla banda passante con il notch
+Marks	Segni
+Mode from band plan	Modo secondo il piano di banda
+Turning the knob into another band plan segment sets its mode: CW there, the sideband in the phone part	Girare la manopola in un altro segmento del piano di banda imposta il suo modo: CW lì, la banda laterale nella parte fonia
+Zoom and step per mode	Zoom e passo per modo
+Each mode keeps its own waterfall zoom and tuning step; off: one zoom and one step for every mode, a mode change keeps them	Ogni modo tiene zoom della cascata e passo di sintonia propri; off: un solo zoom e un solo passo per tutti i modi, un cambio di modo li mantiene
+Power display	Visualizzazione potenza
+The box at the top right: the battery's charge with the time left or to full, the battery's and the supply's voltages, the two in turn every 5 s, or the charge with the supply's voltage	Il riquadro in alto a destra: la carica della batteria con il tempo rimasto o fino al pieno, le tensioni di batteria e alimentatore, le due a turno ogni 5 s, o la carica con la tensione dell'alimentatore
+Volts	Volt
+Alternate	Alternato
+Icon menus	Menu a icone
+APP, Modes and the Settings rail as grids of icons; off: the old text menus	APP, Modi e la barra Impostazioni come griglie di icone; off: i vecchi menu di testo
+Knob info	Info manopole
+The value shown while a knob turns	Il valore mostrato quando gira una manopola
+Hide buttons	Nascondi i pulsanti
+The main screen's five buttons and the knob lines over them hidden after so long without a key, the waterfall down to the bottom; any key brings them back, F1-F5 only that	I cinque pulsanti della schermata principale e le righe delle manopole sopra nascosti dopo un po' senza tasti, la cascata fino in fondo; qualsiasi tasto li riporta, F1-F5 solo quello
+Decoder text	Testo decodificato
+CW and RTTY text: large, or compact with more lines	Testo CW e RTTY: grande, o compatto con più righe
+Large	Grande
+Compact	Compatto
+Magnify frequency	Ingrandisci frequenza
+Big frequency while tuning	Frequenza grande durante la sintonia
+Magnify info	Ingrandisci info
+A short note when a key switches the VFO, split, the AGC, PRE, ATT or the ATU	Una breve nota quando un tasto cambia VFO, split, AGC, PRE, ATT o ATU
+The big panel while transmitting: power, SWR and ALC, the frequency and the time on the air (the radio's Popups TX). Off, the S-meter box shows the readings instead (the apps keep their TX strip); a TUNE for an external tuner still brings up the panel	Il pannello grande in trasmissione: potenza, ROS e ALC, la frequenza e il tempo in onda (i Popup TX della radio). Off: il riquadro dell'S-meter mostra i valori (le app tengono la loro striscia TX); un TUNE per un accordatore esterno mostra comunque il pannello
+Applied on the radio	Applicato sulla radio
+Theme set: the radio's screen is restarting	Tema impostato: lo schermo della radio si sta riavviando
+Applied: the radio's screen restarts	Applicato: lo schermo della radio si riavvia
+Own	Personale
+S-meter preview	Anteprima S-meter
+, the last one it had: no GPS, locator or callsign now	, l'ultima che aveva: ora niente GPS, locator o nominativo
+, no GPS, locator or callsign	, niente GPS, locator o nominativo
+In use:	In uso:
+(Auto would take	(Auto prenderebbe
+Takes effect: now, the screen restarts	Ha effetto: ora, lo schermo si riavvia
+Read from the radio	Letto dalla radio
+Radio not reachable	Radio non raggiungibile
+The radio starts with the built-in logo.	La radio parte con il logo integrato.
+Your picture	La tua immagine
+, but the radio can't show it and starts with the built-in logo:	, ma la radio non può mostrarla e parte con il logo integrato:
+The radio starts with your picture (	La radio parte con la tua immagine (
+Choose a picture first	Prima scegli un'immagine
+Saved: the radio starts with it from the next start	Salvato: la radio parte con essa dal prossimo avvio
+Remove your boot picture? The radio starts with the built-in logo again.	Rimuovere la tua immagine di avvio? La radio partirà di nuovo con il logo integrato.
+Removed: the built-in logo from the next start	Rimossa: il logo integrato dal prossimo avvio
+Field Ops	SOTA/POTA
+POTA, SOTA, WWBOTA, HOTA, WWFF, TOTA, WCA, MOTA, LH (lighthouses), Tiles and LLOTA (lakes and lagoons) portable operation: reference lists for the radio, QRZ Logbook upload, HOTA and WWFF spots, activation logs.	Attività portatile POTA, SOTA, WWBOTA, HOTA, WWFF, TOTA, WCA, MOTA, LH (fari), Tiles e LLOTA (laghi e lagune): liste di riferimento per la radio, caricamento su QRZ Logbook, spot HOTA e WWFF, log delle attivazioni.
+QRZ Logbook	QRZ Logbook
+Takes effect: at the next upload	Ha effetto: al prossimo caricamento
+Up to three profiles, a callsign with its Logbook API key (QRZ.com, Logbook, Settings): the active one takes the uploads. The radio's log page can switch the active profile too. Uploading needs a QRZ.com Logbook API key, which QRZ.com only gives with a paid QRZ.com subscription (XML level or higher).	Fino a tre profili, un nominativo con la sua chiave API Logbook (QRZ.com, Logbook, Settings): quello attivo riceve i caricamenti. Anche la pagina log della radio può cambiare il profilo attivo. Il caricamento richiede una chiave API QRZ.com Logbook, che QRZ.com dà solo con un abbonamento a pagamento (livello XML o superiore).
+Profile 1	Profilo 1
+active	attivo
+Callsign	Nominativo
+New key (empty = keep)	Nuova chiave (vuoto = tieni)
+Remove	Rimuovi
+Profile 2	Profilo 2
+Profile 3	Profilo 3
+HOTA spots	Spot HOTA
+Takes effect: at the next spot	Ha effetto: al prossimo spot
+cqhota.app takes spots with your own key: cqhota.app, My account, Integration API key. Without it HOTA spots go to the DX cluster only. Key:	cqhota.app accetta spot con la tua chiave: cqhota.app, My account, Integration API key. Senza di essa gli spot HOTA vanno solo al DX cluster. Chiave:
+Integration key	Chiave di integrazione
+A new key replaces the stored one; empty keeps it. Remove takes it away.	Una nuova chiave sostituisce quella salvata; vuoto la tiene. Rimuovi la toglie.
+WWFF spots	Spot WWFF
+The WWFF Spotline (spots.wwff.co) takes spots with your own API key, asked to the Spotline team. Without it WWFF spots go to the DX cluster only. Key:	La WWFF Spotline (spots.wwff.co) accetta spot con la tua chiave API, chiesta al team Spotline. Senza di essa gli spot WWFF vanno solo al DX cluster. Chiave:
+API key	Chiave API
+Reference lists	Liste di riferimento
+Update the lists	Aggiorna le liste
+Activation logs	Log delle attivazioni
+Download or delete the logs of the activations	Scarica o elimina i log delle attivazioni
+File	File
+Size	Dimensione
+Date	Data
+No list yet: press Update (needs internet on the radio).	Ancora nessuna lista: premi Aggiorna (serve internet sulla radio).
+Downloading…	Scaricamento…
+No logs yet	Ancora nessun log
+Failed	Fallito
+Saved: used at the next upload	Salvato: usato al prossimo caricamento
+Remove profile	Rimuovi il profilo
+) and its key?	) e la sua chiave?
+Removed	Rimosso
+Nothing typed: the stored key stays. Remove takes it away.	Niente digitato: la chiave salvata resta. Rimuovi la toglie.
+Saved: the new key is used at the next spot	Salvato: la nuova chiave viene usata al prossimo spot
+Remove the	Rimuovere la chiave
+key? Spots then go to the DX cluster only, until a new key is saved.	? Gli spot andranno solo al DX cluster finché non viene salvata una nuova chiave.
+Delete the log ""? Download it first if you still need it: this cannot be undone.	Eliminare il log ""? Scaricalo prima se ti serve ancora: non si può annullare.
+Files	File
+Download files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc). A	Scarica file dalla partizione DATA della scheda SD (log ADI, schermate, registrazioni, ecc.). Un
+downloaded while the radio writes it may come out damaged (the radio's copy is not touched): open it with any SQLite3 tool to check.	scaricato mentre la radio lo scrive può risultare danneggiato (la copia della radio non viene toccata): aprilo con uno strumento SQLite3 per controllare.
+folders · files	cartelle · file
+- X6100 from away	- X6100 da lontano
+OpenX6X00 · the radio from away, through Tailscale Funnel ·	OpenX6X00 · la radio da lontano, tramite Tailscale Funnel ·
+Screen	Schermo
+Gallery	Galleria
+Screen recordings (AVI), RX audio recordings, screenshots, SSTV and WeFax pictures stored on the radio. Tap files to select them, then download them as a ZIP or delete them together. Screen recordings can be converted to MP4 in this browser.	Registrazioni dello schermo (AVI), registrazioni audio RX, schermate, immagini SSTV e WeFax salvate sulla radio. Tocca i file per selezionarli, poi scaricali come ZIP o eliminali insieme. Le registrazioni dello schermo si possono convertire in MP4 in questo browser.
+In-browser conversion needs a secure page. Open	La conversione nel browser richiede una pagina sicura. Apri
+the HTTPS version of this page	la versione HTTPS di questa pagina
+: the radio uses a self-signed certificate, so the browser shows a warning once. Accept it (Advanced, then Proceed) and the option appears.	: la radio usa un certificato autofirmato, quindi il browser mostra un avviso una volta. Accettalo (Avanzate, poi Procedi) e l'opzione compare.
+Drop pictures here or	Trascina qui le immagini o
+Choose files	Scegli i file
+PNG files up to 4 MB are sent as they are; JPEG and other pictures are converted to PNG in this browser. A file with the same name is kept: the new one gets -1, -2... at the end.	I file PNG fino a 4 MB vengono inviati così; JPEG e altre immagini vengono convertite in PNG in questo browser. Un file con lo stesso nome resta: il nuovo prende -1, -2... alla fine.
+Select all	Seleziona tutto
+None	Nessuno
+Download ZIP	Scarica ZIP
+This folder is empty.	Questa cartella è vuota.
+Screen recording	Registrazione dello schermo
+Screenshot	Schermata
+WeFax received	WeFax ricevuti
+WeFax to send	WeFax da inviare
+All files	Tutti i file
+Screenshots	Schermate
+Screen recordings	Registrazioni dello schermo
+Not an AVI file	Non è un file AVI
+No video frames	Nessun fotogramma video
+Download failed	Download fallito
+This browser cannot encode H.264	Questo browser non sa codificare H.264
+This browser cannot encode audio: the MP4 has no sound.	Questo browser non sa codificare l'audio: l'MP4 non ha suono.
+Open	Apri
+Download	Scarica
+Download original	Scarica l'originale
+Convert to MP4 (in browser)	Converti in MP4 (nel browser)
+Conversion failed:	Conversione fallita:
+Delete failed	Eliminazione fallita
+not a picture this browser can read	non è un'immagine che questo browser sa leggere
+Can't read the list	Impossibile leggere l'elenco
+Everything the configurator can change on the radio.	Tutto ciò che il configuratore può cambiare sulla radio.
+Bands editor	Editor delle bande
+Adds, changes and removes bands; Active binds a band to the up/down keys.	Aggiunge, cambia e rimuove bande; Attiva lega una banda ai tasti su/giù.
+Digital modes editor	Editor dei modi digitali
+Adds, changes and removes the FT8/FT4 and JS8 frequencies.	Aggiunge, cambia e rimuove le frequenze FT8/FT4 e JS8.
+The telnet DX cluster server used by the Cluster app.	Il server DX cluster telnet usato dall'app Cluster.
+Remote	Remoto
+The radio in the browser: its screen live, the keys and knobs, the audio both ways. From a phone, a tablet or a PC.	La radio nel browser: lo schermo dal vivo, i tasti e le manopole, l'audio nei due sensi. Da un telefono, un tablet o un PC.
+TCI server	Server TCI
+Control, meters and audio for the VFO-Knob and other TCI clients: turn it on, set its port.	Controllo, misure e audio per il VFO-Knob e altri client TCI: accendilo, imposta la porta.
+SSH keys	Chiavi SSH
+The keys that may log in to the radio over SSH: lists, adds and removes them. Passwords are not taken.	Le chiavi che possono accedere alla radio via SSH: le elenca, le aggiunge e le rimuove. Le password non sono accettate.
+Update	Aggiorna
+Installs a newer OpenX6X00 from GitHub, or a bundle file, with automatic rollback.	Installa un OpenX6X00 più recente da GitHub, o da un file pacchetto, con ritorno automatico.
+Memories	Memorie
+Reads, edits and clears the MEM slots and the named channels.	Legge, modifica e cancella gli slot MEM e i canali con nome.
+File browser	Browser dei file
+Downloads files from the SD card: ADIF log, screenshots, recordings.	Scarica file dalla scheda SD: log ADIF, schermate, registrazioni.
+Screen and RX recordings and screenshots, with thumbnails; AVI to MP4 in the browser.	Registrazioni dello schermo e RX e schermate, con miniature; da AVI a MP4 nel browser.
+Saves settings, memories, QSO log and more, and restores them after a new image.	Salva impostazioni, memorie, log QSO e altro, e li ripristina dopo una nuova immagine.
+Time editor	Editor dell'ora
+Shows the radio clock and sets it by hand, by NTP or by timezone.	Mostra l'orologio della radio e lo imposta a mano, via NTP o per fuso orario.
+Every QSO on the radio, day by day: the day's logs (FT8, FT4, JS8 and the phone's logger) and the POTA/SOTA activations. Edit a QSO in place, delete QSOs or whole days, export what the filter shows as ADIF or CSV. Below them,	Ogni QSO della radio, giorno per giorno: i log del giorno (FT8, FT4, JS8 e il logger del telefono) e le attivazioni POTA/SOTA. Modifica un QSO sul posto, elimina QSO o giorni interi, esporta ciò che mostra il filtro come ADIF o CSV. Sotto,
+the keyboard modes' text	il testo dei modi tastiera
+Filter and export	Filtra ed esporta
+Export, and Delete shown, work on the QSOs the filter shows	Esporta, ed Elimina i mostrati, agiscono sui QSO che il filtro mostra
+Call, name, QTH, grid, reference…	Nominativo, nome, QTH, locator, riferimento…
+All bands	Tutte le bande
+All modes	Tutti i modi
+From	Da
+To	A
+Export ADIF	Esporta ADIF
+Export CSV	Esporta CSV
+Delete shown	Elimina i mostrati
+Keyboard modes' text	Testo dei modi tastiera
+What PSK31, PSK63, Olivia, Contestia and JTTY received and sent, and what RTTY received, a line each with the UTC time, the frequency, the mode and the app's signal figure; a file a UTC day. On or off, and the size limit (the oldest day goes): Settings > General > TEXT LOG on the radio	Ciò che PSK31, PSK63, Olivia, Contestia e JTTY hanno ricevuto e inviato, e ciò che RTTY ha ricevuto, una riga ciascuno con l'ora UTC, la frequenza, il modo e il valore di segnale dell'app; un file per giorno UTC. On o off, e il limite di dimensione (il giorno più vecchio se ne va): Impostazioni > Generale > LOG TESTO sulla radio
+Day (UTC)	Giorno (UTC)
+Call	Nominativo
+Band	Banda
+Sent	Inviato
+Rcvd	Ric.
+Ref	Rif
+Comment	Commento
+No QSO matches the filter	Nessun QSO corrisponde al filtro
+No QSOs yet	Ancora nessun QSO
+No date	Nessuna data
+Download the file	Scarica il file
+Delete this day's QSOs shown	Elimina i QSO mostrati di questo giorno
+all QSOs of	tutti i QSO del
+of QSOs shown	dei QSO mostrati
+Edit	Modifica
+Cancel	Annulla
+The activation running on the radio is in the list: end it first	L'attivazione in corso sulla radio è nell'elenco: chiudila prima
+Delete ? This cannot be undone: export first if you still need them.	Eliminare? Non si può annullare: esporta prima se ti servono ancora.
+Nothing to export	Niente da esportare
+Read it in a new tab	Leggilo in una nuova scheda
+Delete this day's text	Elimina il testo di questo giorno
+No text yet: open PSK, Olivia, JTTY or RTTY on the radio	Ancora nessun testo: apri PSK, Olivia, JTTY o RTTY sulla radio
+Delete the text of ? Download it first if you still need it: this cannot be undone.	Eliminare il testo del ? Scaricalo prima se ti serve ancora: non si può annullare.
+the QSOs shown	i QSO mostrati
+The macro buttons of the PSK31, Olivia and JTTY windows and the JS8 INFO and STATUS answers. The radio reads them the next time the window opens: close and reopen it to see a change. A row is saved with its own Save, or all at once; a deleted macro can be brought back for twenty seconds.	I pulsanti macro delle finestre PSK31, Olivia e JTTY e le risposte JS8 INFO e STATUS. La radio li legge alla prossima apertura della finestra: chiudila e riaprila per vedere una modifica. Una riga si salva con il suo Salva, o tutte insieme; una macro eliminata si può recuperare per venti secondi.
+Text	Testo
+The answers to INFO? and STATUS?, up to 64 characters each, empty for none	Le risposte a INFO? e STATUS?, fino a 64 caratteri ciascuna, vuoto per nessuna
+the next time the window opens on the radio	alla prossima apertura della finestra sulla radio
+the next time the JS8 window opens on the radio	alla prossima apertura della finestra JS8 sulla radio
+Move up	Sposta su
+Its text:	Il suo testo:
+macros are used, delete one first	macro sono in uso, eliminane una prima
+Unsaved	Non salvato
+MEM slots are the radio's MEM 1-9 buttons (hold to save, tap to load). Channels are the named list in APP → Channels. A row is saved with its own Save, or all at once; a cleared slot or a deleted channel can be brought back for twenty seconds.	Gli slot MEM sono i pulsanti MEM 1-9 della radio (tieni premuto per salvare, tocca per caricare). I canali sono l'elenco con nome in APP → Canali. Una riga si salva con il suo Salva, o tutte insieme; uno slot svuotato o un canale eliminato si possono recuperare per venti secondi.
+MEM slots	Slot MEM
+The MEM 1-9 buttons: hold to save, tap to load	I pulsanti MEM 1-9: tieni premuto per salvare, tocca per caricare
+Channels	Canali
+The named list in APP → Channels. A name that starts with WEFAX also puts the channel in the WeFax app's Freq. list: give it the dial, 1.5 kHz below the fax station (7.7935 for a station on 7.795 MHz)	L'elenco con nome in APP → Canali. Un nome che inizia con WEFAX mette il canale anche nell'elenco Freq. dell'app WeFax: dagli la frequenza di sintonia, 1,5 kHz sotto la stazione fax (7,7935 per una stazione su 7,795 MHz)
+at the next tap of the MEM button	al prossimo tocco del pulsante MEM
+on the radio within a few seconds, unless APP → Channels is open there: a change made in it then writes its list over the page's changes	sulla radio entro pochi secondi, a meno che APP → Canali sia aperto lì: una modifica fatta lì sovrascrive allora le modifiche della pagina
+Clear	Cancella
+button then holds nothing.	pulsante allora non contiene nulla.
+That channel is no longer in the list: nothing was changed	Quel canale non è più nell'elenco: nulla è cambiato
+Up	Su
+Down	Giù
+It is gone from APP → Channels on the radio.	È sparito da APP → Canali sulla radio.
+At most	Al massimo
+Network	Rete
+The radio's name on the LAN, the other names it answers to, and a USB Ethernet adapter: DHCP, or a fixed address for networks that need one. The same settings as Settings → Wireless on the radio. WiFi's settings are not changed; a cable with a gateway holds WiFi off while it is connected, one without leaves the internet on WiFi.	Il nome della radio nella LAN, gli altri nomi a cui risponde, e un adattatore Ethernet USB: DHCP, o un indirizzo fisso per le reti che lo richiedono. Le stesse impostazioni di Impostazioni → Wireless sulla radio. Le impostazioni WiFi non cambiano; un cavo con gateway tiene spento il WiFi finché è collegato, uno senza lascia internet sul WiFi.
+Network name	Nome della rete
+Takes effect: now, reachable under the new name in a few seconds	Ha effetto: ora, raggiungibile con il nuovo nome entro pochi secondi
+Any browser on the LAN reaches the radio as	Ogni browser nella LAN raggiunge la radio come
+(mDNS, announced by Avahi), on WiFi and Ethernet alike. The name is kept on the DATA partition.	(mDNS, annunciato da Avahi), sia in WiFi sia in Ethernet. Il nome resta sulla partizione DATA.
+Letters, digits and '-', up to 32	Lettere, cifre e '-', fino a 32
+Apply	Applica
+Other names	Altri nomi
+Takes effect: at once	Ha effetto: subito
+These pages change settings and open the Files page, and the Panel, the Screen page and the Winlink mailbox connect, only when opened by one of the radio's own names: by any other name a page from another site could do the same through your browser. Its own names now:	Queste pagine cambiano impostazioni e aprono la pagina File, e il Pannello, la pagina Schermo e la casella Winlink si collegano, solo se aperte con uno dei nomi propri della radio: con qualsiasi altro nome una pagina di un altro sito potrebbe fare lo stesso tramite il tuo browser. I suoi nomi ora:
+its address	il suo indirizzo
+Names your own DNS or a reverse proxy gives the radio, separated by spaces, up to	Nomi che il tuo DNS o un reverse proxy dà alla radio, separati da spazi, fino a
+: whole names, not addresses (those count already), no wildcards. Only names of your own: a page opened by a name on this list can change everything here, so never add one a web site or a message asks for.	: nomi interi, non indirizzi (quelli valgono già), niente caratteri jolly. Solo nomi tuoi: una pagina aperta con un nome di questo elenco può cambiare tutto qui, quindi non aggiungerne mai uno chiesto da un sito o da un messaggio.
+No Ethernet adapter connected.	Nessun adattatore Ethernet collegato.
+Adapter	Adattatore
+Takes effect: now, the adapter reconnects	Ha effetto: ora, l'adattatore si ricollega
+Status	Stato
+DHCP takes the address from the network	DHCP prende l'indirizzo dalla rete
+Static	Statico
+IP address	Indirizzo IP
+For example 192.168.1.20	Per esempio 192.168.1.20
+Netmask	Maschera
+255.255.255.0 or /24	255.255.255.0 o /24
+Gateway	Gateway
+Optional. Leave it empty and internet stays on WiFi	Facoltativo. Lascialo vuoto e internet resta sul WiFi
+Optional	Facoltativo
+This image has no Avahi: the name is set, .local needs a newer card image	Questa immagine non ha Avahi: il nome è impostato, .local richiede un'immagine della scheda più recente
+Set. Reachable as	Impostato. Raggiungibile come
+Not set	Non impostato
+its Tailscale name (	il suo nome Tailscale (
+From your network, by its domain:	Dalla tua rete, con il suo dominio:
+Applied	Applicato
+Not applied	Non applicato
+No address in use	Nessun indirizzo in uso
+Applied. The adapter reconnects in a few seconds	Applicato. L'adattatore si ricollega entro pochi secondi
+Apply failed	Applicazione fallita
+The radio from away, through Tailscale Funnel: the spectrum and the waterfall, every switch and level, the audio both ways. Only a browser paired with the radio at home gets in; you remain the control operator of every transmission. The	La radio da lontano, tramite Tailscale Funnel: lo spettro e la cascata, ogni interruttore e livello, l'audio nei due sensi. Entra solo un browser associato a casa; resti l'operatore responsabile di ogni trasmissione. La
+page shows the radio's own display.	pagina mostra il display della radio stessa.
+The radio worked from the browser: the spectrum and the waterfall live, tap or drag to tune, pinch to zoom, every switch and level at hand, the DX spots, the audio both ways. Phone, tablet or PC, on the same network as the radio. The	La radio comandata dal browser: lo spettro e la cascata dal vivo, tocca o trascina per sintonizzare, pizzica per lo zoom, ogni interruttore e livello a portata di mano, gli spot DX, l'audio nei due sensi. Telefono, tablet o PC, sulla stessa rete della radio. La
+page shows the radio's own display instead. No login: anyone on the network can reach this page.	pagina mostra invece il display della radio. Nessun accesso: chiunque nella rete può raggiungere questa pagina.
+Sound	Audio
+The browser's microphone transmits while PTT is held	Il microfono del browser trasmette finché tieni premuto il PTT
+Mic	Micro
+Dark or light (for the sun)	Scuro o chiaro (per il sole)
+Light	Chiaro
+The waterfall's colours	I colori della cascata
+The panel alone, the height of the screen	Solo il pannello, all'altezza dello schermo
+Fullscreen	Schermo intero
+This browser's access to the radio, and who controls it	L'accesso di questo browser alla radio, e chi la controlla
+The page's links to the radio: link, spectrum, sound, microphone; this browser's access; who controls the radio	I collegamenti della pagina con la radio: collegamento, spettro, audio, microfono; l'accesso di questo browser; chi controlla la radio
+Battery	Batteria
+Tap: type a frequency	Tocca: scrivi una frequenza
+Connecting...	Connessione...
+BAND	BANDA
+MODE	MODO
+STEP	PASSO
+LOCK	BLOCCO
+off	spento
+FILTER	FILTRO
+knob	manopola
+A low-power carrier for a tuner of its own at the antenna, at the radio's TUNE power and time limit (Settings > TX Cal); press again to stop	Una portante a bassa potenza per un accordatore proprio all'antenna, alla potenza TUNE e al limite di tempo della radio (Impostazioni > TX Cal); premi di nuovo per fermare
+external tuner	accordatore esterno
+PTT (hold)	PTT (tieni premuto)
+Keys	Tasti
+TX Call: armed, the queued message goes out in its slot; off, the app only listens and decodes (a dry run)	TX Call: armato, il messaggio in coda parte nel suo slot; spento, l'app ascolta e decodifica soltanto (prova a vuoto)
+Call CQ every slot of ours until a station answers, or CQ off	Chiama CQ in ogni nostro slot finché una stazione risponde, o CQ spento
+Answer by itself a station that calls you, and carry the QSO through; it never calls CQ on its own	Rispondi da solo a una stazione che ti chiama, e porta avanti il QSO; non chiama mai CQ da solo
+Hold the TX offset: do not move onto the station answered	Tieni l'offset TX: non spostarti sulla stazione a cui rispondi
+Stop the transmission, drop the queued message, CQ off, TX off: nothing transmits until armed again	Ferma la trasmissione, scarta il messaggio in coda, CQ spento, TX spento: nulla viene trasmesso finché non riarmi
+Clear this list (the radio's is not touched)	Svuota questo elenco (quello della radio non viene toccato)
+CLEAR	SVUOTA
+What the app does now and next	Cosa fa l'app ora e dopo
+Listening	In ascolto
+Queued	In coda
+Next slot	Prossimo slot
+Sending	Invio
+Logged	Registrato
+The app is closed: Open starts it on the radio.	L'app è chiusa: Apri la avvia sulla radio.
+All of it runs on the radio: CQ and AUTO go on calling and answering when this page closes or loses its link. TX off makes a dry run: the app listens, decodes and queues, and nothing keys the transmitter. A tap on a CQ or a call queues one reply for the next slot of ours and arms TX.	Tutto gira sulla radio: CQ e AUTO continuano a chiamare e rispondere quando questa pagina si chiude o perde il collegamento. TX spento fa una prova a vuoto: l'app ascolta, decodifica e mette in coda, e nulla manipola il trasmettitore. Un tocco su un CQ o una chiamata mette in coda una risposta per il nostro prossimo slot e arma il TX.
+last call	ultima chiamata
+The radio's CW decoder (Settings > CW): its text as it comes, in CW mode.	Il decodificatore CW della radio (Impostazioni > CW): il suo testo come arriva, in modo CW.
+CALL	NOMINATIVO
+Name (optional)	Nome (facoltativo)
+A QSO by hand (voice, CW, or PSK, Olivia, Contestia, JTTY, RTTY) on the radio's frequency, into the day's ADIF log on the radio (the web Logs page lists it). Its mode is the one of the app open on the radio, else the radio's; in USB-D or LSB-D with no app, away from FT8 and FT4, it has none: set it on the Logs page. FT8, FT4, FT2 and JS8 log their own QSOs. Each QSO is confirmed by the radio: one sent into a dropped connection is asked about when the link is back, and never logged twice.	Un QSO a mano (voce, CW, o PSK, Olivia, Contestia, JTTY, RTTY) sulla frequenza della radio, nel log ADIF del giorno sulla radio (la pagina web Logs lo elenca). Il suo modo è quello dell'app aperta sulla radio, altrimenti quello della radio; in USB-D o LSB-D senza app, lontano da FT8 e FT4, non ne ha: impostalo nella pagina Logs. FT8, FT4, FT2 e JS8 registrano i propri QSO. Ogni QSO viene confermato dalla radio: uno inviato in una connessione caduta viene richiesto quando il collegamento torna, e mai registrato due volte.
+No spots yet: the cluster is set on the radio (Cluster page).	Ancora nessuno spot: il cluster si imposta sulla radio (pagina Cluster).
+Tap: screen on/off	Tocca: schermo on/off
+VOL push	VOL premi
+MFK push	MFK premi
+The radio's front keys, for its menus and apps: what they open shows on the Screen tab.	I tasti frontali della radio, per i suoi menu e app: ciò che aprono si vede nella scheda Schermo.
+Panorama: tap or drag to tune, pinch (or the mouse wheel with Ctrl) to zoom, the wheel to tune by the step. Tap the frequency to type one, a spot to tune to it. Keyboard: ← → tune (Shift: ten steps), [ ] volume, Space PTT. Sound starts on a tap (browsers ask for one).	Panorama: tocca o trascina per sintonizzare, pizzica (o la rotella del mouse con Ctrl) per lo zoom, la rotella per sintonizzare a passi. Tocca la frequenza per scriverne una, uno spot per sintonizzarti. Tastiera: ← → sintonia (Shift: dieci passi), [ ] volume, Spazio PTT. L'audio parte con un tocco (i browser lo chiedono).
+Mic needs an https page:	Il microfono richiede una pagina https:
+https://this radio/panel	https://questa radio/panel
+(the browser warns of the radio's own certificate: accept it, once for that address).	(il browser avvisa del certificato proprio della radio: accettalo, una volta per quell'indirizzo).
+A browser only watches until it is paired with a code shown on the radio; one paired browser (or the radio's own keys, or a TCI client) controls the radio at a time, and the others take control on purpose.	Un browser si limita a guardare finché non è associato con un codice mostrato sulla radio; un solo browser associato (o i tasti della radio, o un client TCI) controlla la radio alla volta, e gli altri prendono il controllo di proposito.
+Take control first	Prima prendi il controllo
+On the air	In onda
+The radio does not answer: nothing is sent until it does	La radio non risponde: nulla viene inviato finché non risponde
+Dark	Scuro
+No link to the radio: nothing is sent	Nessun collegamento con la radio: nulla viene inviato
+Asked for, the radio has not confirmed it yet (it is on	Richiesto, la radio non l'ha ancora confermato (è su
+LOCK is on (or an app holds the frequency): the radio stays on	LOCK è acceso (o un'app tiene la frequenza): la radio resta su
+Filter	Filtro
+Around the key tone of	Attorno al tono di
+: the high edge alone, the low one is 0	: solo il bordo alto, quello basso è 0
+Both edges	Entrambi i bordi
+Tuning step	Passo di sintonia
+No spots: the cluster is set on the radio (Cluster page).	Nessuno spot: il cluster si imposta sulla radio (pagina Cluster).
+Close	Chiudi
+tap a call	tocca un nominativo
+No callsign set on the radio (Settings > Station): the app decodes but never transmits.	Nessun nominativo impostato sulla radio (Impostazioni > Stazione): l'app decodifica ma non trasmette mai.
+On the air now:	Ora in onda:
+more without an answer, then it stops)	altri senza risposta, poi si ferma)
+(repeats until answered)	(ripete finché non rispondono)
+Stopped: the transmission and the queued message are dropped, CQ is off, TX is off. Nothing transmits until CQ, a tap on a call or TX arms it again	Fermato: la trasmissione e il messaggio in coda sono scartati, CQ spento, TX spento. Nulla viene trasmesso finché CQ, un tocco su una chiamata o TX non lo riarma
+; AUTO stays on and answers callers once armed.	; AUTO resta acceso e risponde a chi chiama una volta armato.
+, until a station answers or CQ off	, finché una stazione risponde o CQ spento
+more tries without an answer	altri tentativi senza risposta
+; Hound mode, the TX offset is the Fox's	; modo Hound, l'offset TX è quello del Fox
+CQ armed: the next CQ goes out in	CQ armato: il prossimo CQ parte tra
+In a QSO with no message due: the radio waits for the other station	In un QSO senza messaggi in sospeso: la radio aspetta l'altra stazione
+, AUTO answers its next message	, AUTO risponde al suo prossimo messaggio
+, tap its next message to answer	, tocca il suo prossimo messaggio per rispondere
+AUTO: a station calling you is answered by itself.	AUTO: a una stazione che ti chiama si risponde da solo.
+AUTO off: a station calling you waits for your tap.	AUTO spento: una stazione che ti chiama aspetta il tuo tocco.
+CQ calls, a tap on a CQ answers it.	Chiamate CQ, un tocco su un CQ risponde.
+TX off (dry run): CQ or a tap arms it.	TX spento (prova a vuoto): CQ o un tocco lo arma.
+waiting for the connection	in attesa della connessione
+refused (see the radio)	rifiutato (vedi la radio)
+QSO not logged (see the radio)	QSO non registrato (vedi la radio)
+not logged: the radio holds another QSO under this number, check the Logs page	non registrato: la radio ha un altro QSO con questo numero, controlla la pagina Logs
+no answer: check the Logs page before sending again	nessuna risposta: controlla la pagina Logs prima di inviare di nuovo
+not confirmed: the radio has no record of it, check the Logs page	non confermato: la radio non ne ha traccia, controlla la pagina Logs
+Send again	Invia di nuovo
+A call sign first	Prima un nominativo
+Bad message:	Messaggio errato:
+Connected	Connesso
+The radio restarted: what it shows now is its fresh state	La radio si è riavviata: ciò che mostra ora è il suo stato nuovo
+The link dropped: the transmission is over. Press PTT again when it is back	Il collegamento è caduto: la trasmissione è finita. Premi di nuovo PTT quando torna
+Connection lost: keys released, press again when it is back	Connessione persa: tasti rilasciati, premi di nuovo quando torna
+Connection lost	Connessione persa
+The radio does not answer: the transmission is ended here. Press PTT again when it answers	La radio non risponde: la trasmissione finisce qui. Premi di nuovo PTT quando risponde
+The radio does not answer: keys released, press again when it answers	La radio non risponde: tasti rilasciati, premi di nuovo quando risponde
+What is shown is from	Ciò che si vede è di
+Nothing from the radio yet.	Ancora niente dalla radio.
+No spectrum from the radio...	Nessuno spettro dalla radio...
+The radio does not answer.	La radio non risponde.
+This browser is not paired for use away from home. At home, on the Panel, press Use away from home: it opens this page with this browser's key. Or open this page once with Tailscale on, and pair it here as at home.	Questo browser non è associato per l'uso fuori casa. A casa, nel Pannello, premi Usa fuori casa: apre questa pagina con la chiave di questo browser. Oppure apri questa pagina una volta con Tailscale acceso, e associalo qui come a casa.
+Try again	Riprova
+The browser remote is off on the radio.	Il controllo da browser è spento sulla radio.
+Settings > General > BROWSER REMOTE, or	Impostazioni > Generale > CONTROLLO DA BROWSER, o
+Turn it on	Accendilo
+Turning on...	Accensione...
+The radio is not reachable.	La radio non è raggiungibile.
+It may be off, restarting, or on another address since a network change.	Forse è spenta, si sta riavviando, o ha un altro indirizzo dopo un cambio di rete.
+Connection lost.	Connessione persa.
+The radio is installing an update (	La radio sta installando un aggiornamento (
+): this page comes back when it has restarted.	): questa pagina torna quando si è riavviata.
+Trying again in	Nuovo tentativo tra
+Trying again...	Nuovo tentativo...
+Try now	Prova ora
+TCI off on the radio	TCI spento sulla radio
+Not on this radio	Non su questa radio
+Transmission ended: the sound link dropped. Press PTT again when it is back	Trasmissione finita: il collegamento audio è caduto. Premi di nuovo PTT quando torna
+No microphone access in this browser	Nessun accesso al microfono in questo browser
+Microphone: open the https page (link below)	Microfono: apri la pagina https (link sotto)
+Asking the browser for the microphone...	Chiedo il microfono al browser...
+Microphone ready: PTT transmits the browser's microphone	Microfono pronto: PTT trasmette il microfono del browser
+The microphone went away: transmission ended	Il microfono è sparito: trasmissione finita
+Microphone refused:	Microfono rifiutato:
+Microphone off: PTT transmits the microphone at the radio	Microfono spento: PTT trasmette il microfono della radio
+The radio's own screen from away, through Tailscale Funnel, with its keys and knobs and the audio both ways. Only a browser paired with the radio at home gets in; you remain the control operator of every transmission. The	Lo schermo della radio da lontano, tramite Tailscale Funnel, con i suoi tasti e manopole e l'audio nei due sensi. Entra solo un browser associato a casa; resti l'operatore responsabile di ogni trasmissione. Il
+works the radio natively.	comanda la radio direttamente.
+The radio in your browser: the screen live, the keys and knobs as on the front panel, the audio both ways. What the radio shows and does, you see and do here, from a phone, a tablet or a PC on the same network. Hold PTT to transmit. Anyone on the network can watch this page; a browser operates the radio only once it is paired with a code shown on the radio, and one paired browser (or the radio's own keys, or a TCI client) controls the radio at a time.	La radio nel tuo browser: lo schermo dal vivo, i tasti e le manopole come sul frontale, l'audio nei due sensi. Ciò che la radio mostra e fa, lo vedi e lo fai qui, da un telefono, un tablet o un PC sulla stessa rete. Tieni premuto PTT per trasmettere. Chiunque nella rete può guardare questa pagina; un browser comanda la radio solo dopo essere stato associato con un codice mostrato sulla radio, e un solo browser associato (o i tasti della radio, o un client TCI) controlla la radio alla volta.
+Picture: Sharp is the whole screen as it is; Fast is half the size and about three times the frames on a slow WiFi link	Immagine: Nitida è lo schermo intero com'è; Veloce è metà dimensione con circa tre volte i fotogrammi su un WiFi lento
+Picture: sharp	Immagine: nitida
+Picture: balanced	Immagine: bilanciata
+Picture: fast	Immagine: veloce
+The page's links to the radio: link, picture, sound, microphone; this browser's access; who controls the radio	I collegamenti della pagina con la radio: collegamento, immagine, audio, microfono; l'accesso di questo browser; chi controlla la radio
+push	premi
+MAIN	PRINCIPALE
+Keyboard: F1–F5, ← → the main knob, Shift + ← → faster, [ ] volume, PageUp/PageDown the MFK, Enter the MFK push, Space PTT. Knobs: drag around the ring, or the mouse wheel over it. Sound starts on a tap (browsers ask for one).	Tastiera: F1–F5, ← → la manopola principale, Shift + ← → più veloce, [ ] volume, PagSu/PagGiù il MFK, Invio la pressione MFK, Spazio PTT. Manopole: trascina attorno all'anello, o la rotella del mouse sopra. L'audio parte con un tocco (i browser lo chiedono).
+https://this radio/remote	https://questa radio/remote
+The radio restarted	La radio si è riavviata
+The picture is from	L'immagine è di
+No picture from the radio yet.	Ancora nessuna immagine dalla radio.
+No picture from the radio...	Nessuna immagine dalla radio...
+This browser is not paired for use away from home. At home, on the Panel, press Use away from home: it opens the Panel with this browser's key, and this page has it too. Or open this page once with Tailscale on, and pair it here as at home.	Questo browser non è associato per l'uso fuori casa. A casa, nel Pannello, premi Usa fuori casa: apre il Pannello con la chiave di questo browser, e anche questa pagina la avrà. Oppure apri questa pagina una volta con Tailscale acceso, e associalo qui come a casa.
+Picture	Immagine
+SSH on the radio takes keys only: password logins are off, since every radio came with the same root password. Add the public key of each computer you log in from;	SSH sulla radio accetta solo chiavi: gli accessi con password sono spenti, perché ogni radio aveva la stessa password di root. Aggiungi la chiave pubblica di ogni computer da cui accedi;
+then logs in with it.	poi accede con essa.
+Takes effect: at the next login	Ha effetto: al prossimo accesso
+Root's keys	Chiavi di root
+Fingerprint	Impronta
+No key yet: SSH lets nobody in. Add one below.	Ancora nessuna chiave: SSH non fa entrare nessuno. Aggiungine una qui sotto.
+Add a key	Aggiungi una chiave
+The public half: the one line of the	La metà pubblica: l'unica riga del
+Public key	Chiave pubblica
+No key yet? On your computer,	Ancora nessuna chiave? Sul tuo computer,
+makes one; paste the line of	ne crea una; incolla la riga di
+here (on Windows, in PowerShell,	qui (su Windows, in PowerShell,
+copies it). Taken: ssh-ed25519, ecdsa-sha2-nistp256, -nistp384 and -nistp521, and ssh-rsa of	la copia). Accettate: ssh-ed25519, ecdsa-sha2-nistp256, -nistp384 e -nistp521, e ssh-rsa da
+bits or more, one key at a time, with no options before it. Step by step for Windows, a Mac, Linux and PuTTY:	bit o più, una chiave alla volta, senza opzioni davanti. Passo per passo per Windows, Mac, Linux e PuTTY:
+the manual	il manuale
+Good to know	Buono a sapersi
+Where the keys are kept	Dove sono tenute le chiavi
+The keys are root's, in	Le chiavi sono di root, in
+. A copy goes to	. Una copia va in
+on the DATA partition after each change here and at every clean power-off, so a new card image takes them back.	sulla partizione DATA dopo ogni modifica qui e a ogni spegnimento corretto, quindi una nuova immagine della scheda le riprende.
+Removing a key does not end a session already open with it; the next login needs another key.	Rimuovere una chiave non chiude una sessione già aperta con essa; il prossimo accesso richiede un'altra chiave.
+This page answers only to the radio's address or its own names (	Questa pagina risponde solo all'indirizzo della radio o ai suoi nomi propri (
+, and the others on System > Network): a page from another site cannot add a key through your browser.	, e gli altri in Sistema > Rete): una pagina di un altro sito non può aggiungere una chiave tramite il tuo browser.
+It is the only key: SSH then lets nobody in until a key is added here.	È l'unica chiave: SSH allora non fa entrare nessuno finché non ne aggiungi una qui.
+SSH no longer lets it in.	SSH non la fa più entrare.
+Remove the key	Rimuovi la chiave
+\n\nIt has options, so it is not offered back: add it again by hand.	\n\nHa delle opzioni, quindi non viene riproposta: aggiungila di nuovo a mano.
+of at most	su al massimo
+None yet	Ancora nessuna
+Added: it logs in from now on	Aggiunta: da ora accede
+Tailscale puts the radio on your own private network, your tailnet. With Tailscale on a laptop or a phone you reach the radio from anywhere as if you were at home: these pages, the Panel and the Screen page, and TCI. Nothing is opened on your router. When you turn it on, the radio downloads Tailscale once from Tailscale's site (37 MB) and asks you to log in with your Tailscale account. Tailscale's log upload is off.	Tailscale mette la radio sulla tua rete privata, la tua tailnet. Con Tailscale su un portatile o un telefono raggiungi la radio da ovunque come se fossi a casa: queste pagine, il Pannello e la pagina Schermo, e TCI. Sul router non si apre nulla. Quando lo accendi, la radio scarica Tailscale una volta dal sito di Tailscale (37 MB) e ti chiede di accedere con il tuo account Tailscale. L'invio dei log di Tailscale è spento.
+On the radio, in userspace mode	Sulla radio, in modalità userspace
+Enabled	Attivato
+Starts with the radio, also after a new card image	Parte con la radio, anche dopo una nuova immagine della scheda
+Log in	Accedi
+Opens Tailscale's login in a new tab. The radio's screen shows the same link as a code for a phone (Settings > Wireless)	Apre l'accesso a Tailscale in una nuova scheda. Lo schermo della radio mostra lo stesso link come codice per un telefono (Impostazioni > Wireless)
+Log in to Tailscale	Accedi a Tailscale
+On your tailnet	Sulla tua tailnet
+From a laptop or a phone with Tailscale on	Da un portatile o un telefono con Tailscale acceso
+Log out	Esci
+Takes effect: within seconds	Ha effetto: in pochi secondi
+The browser Panel on the internet, for a phone or a PC without Tailscale	Il Pannello browser su internet, per un telefono o un PC senza Tailscale
+Only the Panel and the Screen page, and only for browsers paired at home. Needs Tailscale connected	Solo il Pannello e la pagina Schermo, e solo per i browser associati a casa. Serve Tailscale collegato
+Allow Funnel	Consenti Funnel
+Your tailnet does not allow it yet: HTTPS certificates and Funnel are turned on in Tailscale's admin console. The radio's screen shows the same link as a code (Settings > Wireless)	La tua tailnet non lo consente ancora: i certificati HTTPS e Funnel si accendono nella console di amministrazione di Tailscale. Lo schermo della radio mostra lo stesso link come codice (Impostazioni > Wireless)
+Allow in Tailscale	Consenti in Tailscale
+On the internet	Su internet
+Open it in a browser paired here: on the Panel at home press	Aprilo in un browser associato qui: nel Pannello a casa premi
+Use away from home	Usa fuori casa
+, and keep the page it opens	, e tieni la pagina che apre
+What goes on the internet: the Panel and the Screen page, at https://<name>.<tailnet>.ts.net/panel. Not these pages, not TCI programs, not the Winlink mailbox, not SSH.	Cosa va su internet: il Pannello e la pagina Schermo, su https://<name>.<tailnet>.ts.net/panel. Non queste pagine, non i programmi TCI, non la casella Winlink, non SSH.
+Nothing is shown or sent to a browser from the internet before it presents the key of a browser paired at home. Pairing is refused over Funnel: pair at home (or once over Tailscale), then Use away from home.	Nulla viene mostrato o inviato a un browser da internet prima che presenti la chiave di un browser associato a casa. L'associazione via Funnel è rifiutata: associa a casa (o una volta via Tailscale), poi Usa fuori casa.
+The name becomes public: every Funnel name gets an HTTPS certificate, and certificates are listed in public logs that scanners read. Anyone can find the address; only paired browsers get in.	Il nome diventa pubblico: ogni nome Funnel riceve un certificato HTTPS, e i certificati sono elencati in log pubblici letti dagli scanner. Chiunque può trovare l'indirizzo; entrano solo i browser associati.
+Sound takes about 50 kB/s each way, the spectrum about 15 kB/s; Tailscale relays it when it must.	L'audio richiede circa 50 kB/s per verso, lo spettro circa 15 kB/s; Tailscale lo inoltra quando serve.
+You remain the control operator of every transmission made from away, as the rules of your licence say.	Resti l'operatore responsabile di ogni trasmissione fatta da lontano, come dicono le regole della tua licenza.
+While Funnel is on, port 443 on your tailnet is the Panel's (with a real certificate); these pages stay at http://<name>/. A funnel set up by hand (	Finché Funnel è acceso, la porta 443 della tua tailnet è del Pannello (con un certificato vero); queste pagine restano su http://<name>/. Un funnel impostato a mano (
+) is taken off the internet: the radio's switch alone puts it there.	) viene tolto da internet: solo l'interruttore della radio lo mette lì.
+Before you turn it on	Prima di accenderlo
+Everyone on your tailnet reaches the radio as if they were on its own network: these pages have no login, TCI clients need none, and SSH takes the keys added on System > SSH. Share the radio's machine in Tailscale only with people you would let in at home.	Chiunque sulla tua tailnet raggiunge la radio come se fosse sulla sua rete: queste pagine non hanno accesso, i client TCI non ne chiedono, e SSH prende le chiavi aggiunte in Sistema > SSH. Condividi la macchina della radio in Tailscale solo con persone che faresti entrare in casa.
+The browser's microphone needs a secure page: open	Il microfono del browser richiede una pagina sicura: apri
+with the radio's name and accept its certificate, as at home.	con il nome della radio e accetta il suo certificato, come a casa.
+Remote and Panel still ask for pairing before they operate, exactly as on the home network.	Remoto e Pannello chiedono comunque l'associazione prima di operare, esattamente come sulla rete di casa.
+The login stays on the radio. A new card image keeps Tailscale on, but asks for a new login.	L'accesso resta sulla radio. Una nuova immagine della scheda tiene acceso Tailscale, ma chiede un nuovo accesso.
+You are connected through Tailscale: this cuts your connection to the radio, and only the radio itself or its home network can bring it back.\n\n	Sei collegato tramite Tailscale: questo interrompe il tuo collegamento con la radio, e solo la radio stessa o la sua rete di casa possono ripristinarlo.\n\n
+on the radio, in userspace mode	sulla radio, in modalità userspace
+Configurator	Configuratore
+Waits for Tailscale	Aspetta Tailscale
+Done	Fatto
+This page came over your tailnet by https. With Funnel on, port 443 there is the Panel's: open these pages at http://	Questa pagina è arrivata dalla tua tailnet in https. Con Funnel acceso, la porta 443 lì è del Pannello: apri poi queste pagine su http://
+/ afterwards.\n\nTurn Funnel on?	/ dopo.\n\nAccendere Funnel?
+Turning Funnel on...	Accensione di Funnel...
+Turning Funnel off...	Spegnimento di Funnel...
+Turn Tailscale off?	Spegnere Tailscale?
+Turning Tailscale on...	Accensione di Tailscale...
+Turning Tailscale off...	Spegnimento di Tailscale...
+Log the radio out of Tailscale? It asks for a new login while Tailscale is on.	Far uscire la radio da Tailscale? Chiederà un nuovo accesso finché Tailscale è acceso.
+Logging out...	Uscita...
+TCI (Transceiver Control Interface, version 2.0) is the protocol of Expert Electronics' SDRs that AetherSDR and other programs serve: one WebSocket carries the frequency, mode, filter, AGC, PTT, the S-meter and the TX meters, and the audio both ways. The radio serves it here, so a	TCI (Transceiver Control Interface, versione 2.0) è il protocollo degli SDR di Expert Electronics servito da AetherSDR e altri programmi: un WebSocket porta frequenza, modo, filtro, AGC, PTT, S-meter e misure TX, e l'audio nei due sensi. La radio lo serve qui, così un
+or any TCI client tunes it over the network, hears it and keys it. There is no login or pairing for TCI clients: enable it only on a network you trust, and choose below whether a client may operate the radio or only listen. An operating client takes control of the radio the moment it tunes or keys, as a knob would; a browser that was operating sees "TCI client active" and takes control back on purpose.	o qualsiasi client TCI la sintonizza in rete, la ascolta e la manipola. Per i client TCI non c'è accesso né associazione: accendilo solo su una rete fidata, e scegli sotto se un client può operare la radio o solo ascoltare. Un client che opera prende il controllo della radio appena sintonizza o manipola, come una manopola; un browser che operava vede "TCI client active" e riprende il controllo di proposito.
+Server	Server
+Takes effect: on the radio within a few seconds	Ha effetto: sulla radio entro pochi secondi
+On ws://<radio IP>:<port>/	Su ws://<IP della radio>:<porta>/
+Listens for TCI clients on the network	Ascolta i client TCI in rete
+50001 is what TCI clients expect	50001 è quello che si aspettano i client TCI
+Clients may	I client possono
+Operate: tune, change mode, key, as before. Listen only: hear and follow the radio; tuning and keying are answered with the state as it is	Operare: sintonizzare, cambiare modo, manipolare, come prima. Solo ascolto: sentire e seguire la radio; a sintonia e manipolazione si risponde con lo stato così com'è
+Operate	Operare
+Listen only	Solo ascolto
+Saved: the radio applies it within a few seconds	Salvato: la radio lo applica entro pochi secondi
+Time	Ora
+Radio clock, timezone and time synchronisation.	Orologio della radio, fuso orario e sincronizzazione dell'ora.
+Time information	Informazioni sull'ora
+This browser's clock and the radio's	L'orologio di questo browser e quello della radio
+Local time	Ora locale
+Loading Local Time...	Caricamento dell'ora locale...
+Server time	Ora del server
+Fetching Server Time...	Lettura dell'ora del server...
+Server timezone	Fuso orario del server
+Fetching Server Timezone...	Lettura del fuso del server...
+Sync Local Time to Server	Sincronizza l'ora locale sul server
+Manually update server time	Aggiorna a mano l'ora del server
+Sets the radio clock to the date and time you type	Imposta l'orologio della radio su data e ora che scrivi
+Input time (format: YYYY-MM-DD HH:MM:SS)	Inserisci l'ora (formato: AAAA-MM-GG HH:MM:SS)
+Input Time	Inserisci l'ora
+Manually Update Time	Aggiorna l'ora a mano
+Update server time by NTP	Aggiorna l'ora del server via NTP
+Needs internet on the radio	Serve internet sulla radio
+Select or input NTP server	Scegli o inserisci un server NTP
+Input Custom NTP Server Address	Inserisci un indirizzo di server NTP
+Update Time	Aggiorna l'ora
+Set server timezone	Imposta il fuso del server
+The radio's local time zone	Il fuso orario locale della radio
+Select timezone or input custom timezone	Scegli un fuso o inseriscine uno
+e.g., Asia/Shanghai	es. Asia/Shanghai
+Set Timezone	Imposta il fuso
+Unknown	Sconosciuto
+Error fetching timezone	Errore nella lettura del fuso
+Server time updated manually.	Ora del server aggiornata a mano.
+Manual time update failed:	Aggiornamento manuale dell'ora fallito:
+Manual time update failed. Please check the time format and try again.	Aggiornamento manuale dell'ora fallito. Controlla il formato dell'ora e riprova.
+Please input a valid time.	Inserisci un'ora valida.
+Please input custom NTP server address!	Inserisci un indirizzo di server NTP!
+Update time successfully with	Ora aggiornata con
+Update time failed with	Aggiornamento dell'ora fallito con
+Time update failed. Please check the NTP server address or network connection!	Aggiornamento dell'ora fallito. Controlla l'indirizzo del server NTP o la connessione di rete!
+Please select or input a timezone.	Scegli o inserisci un fuso orario.
+Timezone updated successfully!	Fuso orario aggiornato!
+Failed to update timezone:	Impostazione del fuso fallita:
+Failed to update timezone. Please try again.	Impostazione del fuso fallita. Riprova.
+The radio installs a newer OpenX6X00 by itself: the GUI, the web pages, the helpers and their data, from the project's GitHub releases or from a bundle file. The files are checked against the project's signature, the previous version is kept, and the radio software restarts at the end (about a minute). A version that does not come up is put back automatically. The kernel and the WiFi driver still come with a card image.	La radio installa da sola un OpenX6X00 più recente: la GUI, le pagine web, i programmi di supporto e i loro dati, dalle versioni GitHub del progetto o da un file pacchetto. I file vengono verificati con la firma del progetto, la versione precedente viene tenuta, e il software della radio si riavvia alla fine (circa un minuto). Una versione che non parte viene ripristinata automaticamente. Il kernel e il driver WiFi arrivano ancora con un'immagine della scheda.
+Version	Versione
+What runs now, and the latest release	Cosa gira ora, e l'ultima versione
+Running	In uso
+Latest release	Ultima versione
+Card image	Immagine della scheda
+What the update cannot carry (the kernel, the WiFi driver) comes with a card image	Ciò che l'aggiornamento non può portare (il kernel, il driver WiFi) arriva con un'immagine della scheda
+Check	Controlla
+Install	Installa
+Bundle file	File pacchetto
+An OpenX6X00-x6100-vX.Y.Z-update.tar.gz or OpenX6X00-x6200-vX.Y.Z-update.tar.gz from the releases page, for a radio without internet	Un OpenX6X00-x6100-vX.Y.Z-update.tar.gz o OpenX6X00-x6200-vX.Y.Z-update.tar.gz dalla pagina delle versioni, per una radio senza internet
+Install the file	Installa il file
+Previous version	Versione precedente
+The files of the version before the last update are kept until the next one	I file della versione prima dell'ultimo aggiornamento restano fino al prossimo
+Last update	Ultimo aggiornamento
+Go back to the previous version	Torna alla versione precedente
+a newer one is out	ne è uscita una più recente
+up to date	aggiornato
+This version's card image brings	L'immagine della scheda di questa versione porta
+: write it from the releases page; settings and logs stay on the card	: scrivila dalla pagina delle versioni; impostazioni e log restano sulla scheda
+(installed, waiting for its first minute)	(installata, in attesa del primo minuto)
+(back to v	(di nuovo a v
+Checking the files:	Controllo dei file:
+no release yet	ancora nessuna versione
+Up to date	Aggiornato
+also has a new card image, bringing	ha anche una nuova immagine della scheda, che porta
+Download and install the latest release? The radio software restarts at the end.	Scaricare e installare l'ultima versione? Il software della radio si riavvia alla fine.
+Put the previous version's files back and restart?	Rimettere i file della versione precedente e riavviare?
+Choose a file first	Prima scegli un file
+Every QSO the radio logs, in every mode (FT8, FT4, FT2, JS8, voice, CW, Field Ops activations), goes to your	Ogni QSO che la radio registra, in ogni modo (FT8, FT4, FT2, JS8, voce, CW, attivazioni Field Ops), va anche al tuo
+as well, a few seconds after it is logged; the radio's own logs stay as they are. Without a network the QSOs wait on the SD card and go when the radio is back online. The display says what happened: "Wavelog: DL1ABC uploaded".	, pochi secondi dopo la registrazione; i log della radio restano come sono. Senza rete i QSO aspettano sulla scheda SD e partono quando la radio torna online. Il display dice cosa è successo: "Wavelog: DL1ABC uploaded".
+Takes effect: at the next QSO	Ha effetto: al prossimo QSO
+Your Wavelog's address and a read & write API key: in Wavelog, your account menu, API Keys, Create a read & write key (it starts with wl; in Wavelog 3.1 and later under Legacy API Keys (API v1)). The API tokens further down that page, wl2_... (API v2), don't work here yet. The QSOs go into the station profile chosen here, or, with Automatic, into the profile with the callsign the radio logged them with. Switched on, the QSOs from that moment on are sent, not the log from before	L'indirizzo del tuo Wavelog e una chiave API di lettura e scrittura: in Wavelog, il menu del tuo account, API Keys, Create a read & write key (inizia con wl; in Wavelog 3.1 e successivi sotto Legacy API Keys (API v1)). I token API più in basso in quella pagina, wl2_... (API v2), qui non funzionano ancora. I QSO vanno nel profilo di stazione scelto qui o, con Automatico, nel profilo con il nominativo con cui la radio li ha registrati. Una volta acceso, vengono inviati i QSO da quel momento, non il log di prima
+Upload to Wavelog	Carica su Wavelog
+Each QSO, a few seconds after it is logged	Ogni QSO, pochi secondi dopo la registrazione
+Wavelog URL	URL di Wavelog
+The address you open Wavelog with, without /index.php	L'indirizzo con cui apri Wavelog, senza /index.php
+Key:	Chiave:
+. A new key replaces the stored one; empty keeps it, for the same server only: with the URL of another one, type its key too. Remove takes it away and stops the upload.	. Una nuova chiave sostituisce quella salvata; vuoto la tiene, solo per lo stesso server: con l'URL di un altro, scrivi anche la sua chiave. Rimuovi la toglie e ferma il caricamento.
+Station profile	Profilo di stazione
+Automatic: each QSO goes to the profile with the radio's callsign, so changing the callsign on the radio (DF8MH, DF8MH/P) is all it takes. Load reads the profiles of the key from Wavelog	Automatico: ogni QSO va nel profilo con il nominativo della radio, quindi basta cambiare il nominativo sulla radio (DF8MH, DF8MH/P). Carica legge i profili della chiave da Wavelog
+Load	Carica
+Check the certificate	Verifica il certificato
+Off only for a Wavelog at home with a self-signed certificate	Off solo per un Wavelog di casa con certificato autofirmato
+Test connection	Prova la connessione
+Send now	Invia ora
+Automatic: by the radio's callsign	Automatico: secondo il nominativo della radio
+No profile	Nessun profilo
+Last run:	Ultima esecuzione:
+: Automatic takes them by callsign	: Automatico li assegna per nominativo
+Saved: the upload is off	Salvato: il caricamento è spento
+Remove the Wavelog API key? The upload stops until a new key is saved.	Rimuovere la chiave API di Wavelog? Il caricamento si ferma finché non viene salvata una nuova chiave.
+Removed: the upload is off	Rimossa: il caricamento è spento
+Nothing new to send	Niente di nuovo da inviare
+The upload is off	Il caricamento è spento
+Winlink email over HF from the radio alone, with no computer:	E-mail Winlink in HF dalla sola radio, senza computer:
+is the mail program, its mailbox a web page you open on a phone or a laptop on the radio's network; ARDOP is the modem, or Mercury or XARA (both experimental; XARA speaks VARA HF), through the radio's own audio. When Pat calls a gateway, the radio tunes to it and switches to USB-D. Off by default: when off, Pat and the modem do not run.	è il programma di posta, la sua casella una pagina web che apri su un telefono o un portatile sulla rete della radio; ARDOP è il modem, o Mercury o XARA (entrambi sperimentali; XARA parla VARA HF), tramite l'audio della radio. Quando Pat chiama un gateway, la radio si sintonizza lì e passa in USB-D. Spento per impostazione: allora Pat e il modem non girano.
+Pat and the modem on the radio: ARDOP (ardopcf), Mercury (x6x00-mercury) or XARA (xara)	Pat e il modem sulla radio: ARDOP (ardopcf), Mercury (x6x00-mercury) o XARA (xara)
+Mailbox	Casella
+Pat's own page, on port	La pagina di Pat, sulla porta
+of the radio: write and read your mail, choose a gateway and connect	della radio: scrivi e leggi la posta, scegli un gateway e collegati
+Open the mailbox	Apri la casella
+Before you connect	Prima di collegarti
+The radio as Winlink will use it: anything in red keeps it from transmitting, or from being heard well	La radio come la userà Winlink: tutto ciò che è in rosso le impedisce di trasmettere, o di essere ascoltata bene
+Frequency	Frequenza
+Power	Potenza
+SWR hold	Blocco ROS
+Last no TX	Ultimo senza TX
+Connections	Connessioni
+What Pat and the modem are doing, and how the last connection went	Cosa fanno Pat e il modem, e com'è andata l'ultima connessione
+Service	Servizio
+Pat and the modem running	Pat e il modem in funzione
+Modem	Modem
+ARDOP on the radio's audio	ARDOP sull'audio della radio
+Session	Sessione
+Pat calling a gateway, or connected to one	Pat chiama un gateway, o è collegato a uno
+Pat's, the modem's and the radio's, as one text file for a bug report, the passwords masked. Gateways and the subjects of your mail are in it	Quelli di Pat, del modem e della radio, in un file di testo per una segnalazione, con le password nascoste. Ci sono i gateway e gli oggetti della tua posta
+Last connection	Ultima connessione
+None since Pat started	Nessuna dall'avvio di Pat
+Station	Stazione
+Takes effect: Pat restarts with it	Ha effetto: Pat si riavvia con essa
+Your Winlink account, the modem and what it may use. Pat's mailbox has its own Settings page for the rest	Il tuo account Winlink, il modem e cosa può usare. La casella di Pat ha una sua pagina di impostazioni per il resto
+Your Winlink account. Empty: the radio's callsign	Il tuo account Winlink. Vuoto: il nominativo della radio
+Sent to the gateway, and the distances in Pat's gateway list. Empty: the radio's QTH	Inviato al gateway, e le distanze nella lista dei gateway di Pat. Vuoto: il QTH della radio
+Winlink password	Password Winlink
+Password:	Password:
+. A new one replaces it, also one set in Pat's own Settings; empty keeps it. It stays on the radio and is never shown again	. Una nuova la sostituisce, anche una impostata nelle impostazioni di Pat; vuoto la tiene. Resta sulla radio e non viene mai più mostrata
+New password (empty = keep)	Nuova password (vuoto = tieni)
+ARDOP: the gateways in Pat's list. Mercury: faster on a good path, but only with a station that runs Mercury 1.9.20 or later (station to station, or one of the few gateways that run it), dialled by hand in Pat as VARA HF. XARA: speaks VARA HF, so the VARA HF gateways in Pat's list answer it (Connect, VARA HF), at VARA's free speed unless you tick your VARA HF licence below. Mercury and XARA cost the radio more processor and heat. One runs at a time	ARDOP: i gateway nella lista di Pat. Mercury: più veloce su un buon percorso, ma solo con una stazione che usa Mercury 1.9.20 o successivo (stazione a stazione, o uno dei pochi gateway che lo usano), composto a mano in Pat come VARA HF. XARA: parla VARA HF, quindi i gateway VARA HF della lista di Pat gli rispondono (Connect, VARA HF), alla velocità gratuita di VARA a meno che spunti la tua licenza VARA HF qui sotto. Mercury e XARA costano alla radio più processore e calore. Ne gira uno alla volta
+XARA (experimental, VARA-compatible)	XARA (sperimentale, compatibile VARA)
+ARDOP bandwidth	Larghezza di banda ARDOP
+The widest ARDOP may use, also with a gateway the list shows wider (Pat says so in its log). 500 Hz suits the radio's few watts and a crowded band; 200 Hz is the most robust, but a gateway fixed at 500 Hz or wider refuses it; 1000 and 2000 Hz are faster on a good path, with a gateway that runs them	La più larga che ARDOP può usare, anche con un gateway che la lista mostra più largo (Pat lo dice nel suo log). 500 Hz va bene per i pochi watt della radio e una banda affollata; 200 Hz è il più robusto, ma un gateway fisso a 500 Hz o più lo rifiuta; 1000 e 2000 Hz sono più veloci su un buon percorso, con un gateway che li usa
+Mercury bandwidth	Larghezza di banda Mercury
+What Pat asks Mercury for, unless a connection names another. 2300 Hz uses all of Mercury's modes; 500 Hz keeps it within about 560 Hz, its most robust mode then a 500 Hz MFSK at half the speed (27 s a frame); 2750 Hz is 2300's modes for now. The narrower of the two stations' is used	Cosa chiede Pat a Mercury, salvo che una connessione ne indichi un'altra. 2300 Hz usa tutti i modi di Mercury; 500 Hz lo tiene in circa 560 Hz, il suo modo più robusto allora un MFSK da 500 Hz a metà velocità (27 s per frame); 2750 Hz per ora sono i modi di 2300. Si usa la più stretta delle due stazioni
+XARA bandwidth	Larghezza di banda XARA
+What Pat asks XARA for, unless a connection names another: VARA HF's 500, 2300 or 2750 Hz. Call a gateway at the bandwidth Pat's VARA HF list gives it; 2300 Hz is the usual one, 500 Hz keeps to about 520 Hz on a crowded band	Cosa chiede Pat a XARA, salvo che una connessione ne indichi un'altra: i 500, 2300 o 2750 Hz di VARA HF. Chiama un gateway alla larghezza che gli dà la lista VARA HF di Pat; 2300 Hz è la solita, 500 Hz resta in circa 520 Hz su una banda affollata
+VARA HF licence	Licenza VARA HF
+Tick only if you hold a VARA HF licence of your own; the radio does not check it. Off: VARA's free speed levels (1 to 4). On: XARA calls as a registered VARA station does, and the link may use every speed level	Spunta solo se hai una tua licenza VARA HF; la radio non la verifica. Off: i livelli di velocità gratuiti di VARA (da 1 a 4). On: XARA chiama come una stazione VARA registrata, e il collegamento può usare ogni livello
+The mailbox has no login of its own: anyone on the radio's network, and on your tailnet with Tailscale on, can read and send your mail and make the radio transmit. Turn Winlink off on a network you do not trust.	La casella non ha un accesso suo: chiunque sulla rete della radio, e sulla tua tailnet con Tailscale acceso, può leggere e inviare la tua posta e far trasmettere la radio. Spegni Winlink su una rete di cui non ti fidi.
+The mailbox answers only to the radio's address or its own name, and refuses pages from other sites: a web page you happen to visit cannot use it through your browser.	La casella risponde solo all'indirizzo della radio o al suo nome proprio, e rifiuta pagine di altri siti: una pagina web che visiti per caso non può usarla tramite il tuo browser.
+In the mailbox: Connect, ARDOP, then the gateway list (with your locator, the nearest first) gives each gateway's call and frequency. The radio tunes there in USB-D when Pat connects, and back afterwards.	Nella casella: Connect, ARDOP, poi la lista dei gateway (con il tuo locator, il più vicino prima) dà nominativo e frequenza di ciascuno. La radio si sintonizza lì in USB-D quando Pat si collega, e poi torna.
+Keep the mailbox open while Pat connects: it asks there whether to go ahead on a busy frequency, and for the password when none is set, and gives up when nobody answers.	Tieni aperta la casella mentre Pat si collega: lì chiede se procedere su una frequenza occupata, e la password se non è impostata, e rinuncia se nessuno risponde.
+Close the radio's digital apps (FT8, PSK, RTTY...) first: while one is open Winlink does not transmit or tune.	Chiudi prima le app digitali della radio (FT8, PSK, RTTY...): finché una è aperta Winlink non trasmette né sintonizza.
+Start at 500 Hz, or 200 Hz on a weak path: at the radio's few watts a 200 Hz call connected where the gateway list's 2000 Hz did not. The bandwidth above is the widest, also for a gateway the list shows wider.	Inizia a 500 Hz, o 200 Hz su un percorso debole: con i pochi watt della radio una chiamata a 200 Hz si è collegata dove i 2000 Hz della lista non ci riuscivano. La larghezza sopra è la più larga, anche per un gateway che la lista mostra più largo.
+The password is kept on the radio's system partition: not in the Backup, not on the Files page. A new card image asks for it again. The mail itself is on the SD card (	La password resta sulla partizione di sistema della radio: non nel Backup, non nella pagina File. Una nuova immagine della scheda la richiede. La posta stessa è sulla scheda SD (
+) and stays.	) e resta.
+Sessions with gateways work: reported on an X6100 on 80 m and from the UK to Germany on 40 m, and an X6200 got as far as the login.	Le sessioni con i gateway funzionano: segnalate su un X6100 in 80 m e dal Regno Unito alla Germania in 40 m, e un X6200 è arrivato fino all'accesso.
+Mercury is experimental: tested between two stations on a PC, not yet on the air; on an X6100 it takes about one of the radio's four processor cores (not measured on an X6200 yet). In the mailbox: Connect, VARA HF, then the other station's call and frequency by hand: the VARA HF gateway list shows VARA gateways, which do not answer Mercury. ARDOP's gateways do not answer it either.	Mercury è sperimentale: provato tra due stazioni su PC, non ancora in onda; su un X6100 usa circa uno dei quattro core del processore (non ancora misurato su un X6200). Nella casella: Connect, VARA HF, poi nominativo e frequenza dell'altra stazione a mano: la lista dei gateway VARA HF mostra gateway VARA, che non rispondono a Mercury. Nemmeno quelli ARDOP.
+XARA is experimental: a VARA-compatible modem by another author (MIT licence), not VARA itself. Tested between two stations on a PC, not yet on the air from a radio or with a VARA gateway, and its processor load on the radios is not measured yet. In the mailbox: Connect, VARA HF, then a gateway from Pat's VARA HF list. It needs your callsign (up to 7 letters and digits, an SSID from -1 to -19). The VARA HF licence box is your own statement; the radio does not check it.	XARA è sperimentale: un modem compatibile VARA di un altro autore (licenza MIT), non VARA stesso. Provato tra due stazioni su PC, non ancora in onda da una radio né con un gateway VARA, e il suo carico sul processore delle radio non è ancora misurato. Nella casella: Connect, VARA HF, poi un gateway della lista VARA HF di Pat. Serve il tuo nominativo (fino a 7 lettere e cifre, un SSID da -1 a -19). La casella licenza VARA HF è una tua dichiarazione; la radio non la verifica.
+Starting	Avvio
+Stopped	Fermato
+Ready	Pronto
+Waiting for the radio's audio	In attesa dell'audio della radio
+Ready, but it fell behind the receiver lately: see Pat's log	Pronto, ma di recente è rimasto indietro rispetto al ricevitore: vedi il log di Pat
+VARA's free speed levels	Livelli di velocità gratuiti di VARA
+Idle	Inattivo
+Calling a gateway	Chiama un gateway
+Calling	Chiamata
+Delivered	Consegnato
+Shown while Winlink is on.	Mostrato finché Winlink è acceso.
+Shown once	Mostrato una volta
+is on the radio's audio (the GUI running,	è sull'audio della radio (la GUI in funzione,
+Transmits on the same frequency, as Winlink must	Trasmette sulla stessa frequenza, come deve Winlink
+Pat's QSY to a gateway sets USB-D	Il QSY di Pat verso un gateway imposta USB-D
+Covers	Copre
+Does not cover	Non copre
+Hz at	Hz a
+, as the X6200 runs on its battery	, perché l'X6200 va a batteria
+W: Winlink sends at most	W: Winlink trasmette al massimo
+The radio's PWR; Winlink at most	La PWR della radio; Winlink al massimo
+Close it: no Winlink TX or QSY while it holds the radio	Chiudila: niente TX o QSY di Winlink finché tiene la radio
+LOCK is on: Pat's QSY is not made	LOCK è acceso: il QSY di Pat non viene fatto
+No app holds the radio	Nessuna app tiene la radio
+5 minutes without TX on a band after high SWR stops a Winlink transmission there	5 minuti senza TX su una banda dopo che un ROS alto ha fermato lì una trasmissione Winlink
+High SWR stopped a Winlink transmission	Un ROS alto ha fermato una trasmissione Winlink
+until the hold ends. Check the antenna and the tuner	finché il blocco finisce. Controlla l'antenna e l'accordatore
+In the last 10 minutes	Negli ultimi 10 minuti
+on the radio's audio	sull'audio della radio
+The mailbox is open in	La casella è aperta in
+No browser has the mailbox open: during a connection Pat asks there what it needs (a busy channel, the password)	Nessun browser ha la casella aperta: durante una connessione Pat lì chiede ciò che gli serve (un canale occupato, la password)
+Last connection:	Ultima connessione:
+Once Pat runs	Quando Pat gira
+When Winlink is on	Quando Winlink è acceso
+Pat and ARDOP are not on this radio yet: they come with the update that brings Winlink.	Pat e ARDOP non sono ancora su questa radio: arrivano con l'aggiornamento che porta Winlink.
+XARA is not on this radio yet: it comes with the update that brings it. Choose ARDOP or Mercury meanwhile.	XARA non è ancora su questa radio: arriva con l'aggiornamento che lo porta. Nel frattempo scegli ARDOP o Mercury.
+This page was opened by a name the radio does not know as its own. Open it by the radio's address or its .local name to change Winlink; the mailbox only opens by those names too.	Questa pagina è stata aperta con un nome che la radio non riconosce come suo. Aprila con l'indirizzo della radio o il suo nome .local per cambiare Winlink; anche la casella si apre solo con quei nomi.
+No callsign: set yours below, or the radio's in Settings > General.	Nessun nominativo: imposta il tuo qui sotto, o quello della radio in Impostazioni > Generale.
+No Winlink password on the radio: when the gateway asks for it, Pat asks in the mailbox and gives up after a minute (\"context deadline exceeded\"). Set it below before you connect, or keep the mailbox open to type it there. A new account's first connection needs none.	Nessuna password Winlink sulla radio: quando il gateway la chiede, Pat la chiede nella casella e rinuncia dopo un minuto (\"context deadline exceeded\"). Impostala qui sotto prima di collegarti, o tieni aperta la casella per scriverla lì. Il primo collegamento di un nuovo account non ne ha bisogno.
+Your callsign	Il tuo nominativo
+Turning Winlink on...	Accensione di Winlink...
+Turning Winlink off: a connection in progress ends first...	Spegnimento di Winlink: prima finisce una connessione in corso...
+On	On
+Saved: Pat restarts with it	Salvato: Pat si riavvia con esso
+N unsaved · Save all · Discard	N non salvati · Salva tutto · Scarta
+Takes effect: ...	Ha effetto: ...
+Changed on the radio	Cambiato sulla radio
+Changed on the radio meanwhile: Save keeps yours,	Cambiato sulla radio nel frattempo: Salva tiene il tuo,
+Save all	Salva tutto
+\n\nUndo is offered for twenty seconds afterwards.	\n\nAnnulla viene offerto per venti secondi dopo.
+Takes effect:	Ha effetto:
+Added	Aggiunto
+Not brought back:	Non recuperato:
+Save or close the row being edited first	Prima salva o chiudi la riga in modifica
+Flowing	In flusso
+Connected, but nothing has come through: what is shown is old	Collegato, ma non è passato nulla: ciò che si vede è vecchio
+Not connected	Non collegato
+Control taken at the radio: Take control to operate from here again	Controllo preso alla radio: Prendi il controllo per operare di nuovo da qui
+A TCI client took control: Take control to operate from here again	Un client TCI ha preso il controllo: Prendi il controllo per operare di nuovo da qui
+Control taken by	Controllo preso da
+Control released	Controllo rilasciato
+In control: this browser operates the radio	Al controllo: questo browser opera la radio
+Paired as	Associato come
+the admin: this browser may operate and manage the others	l'admin: questo browser può operare e gestire gli altri
+an operator: this browser may operate the radio	un operatore: questo browser può operare la radio
+No code on the radio's screen now:	Ora nessun codice sullo schermo della radio:
+This browser only watches: Pair it to operate	Questo browser guarda soltanto: associalo per operare
+The radio is operated at the radio: Take control first	La radio è operata alla radio: prima prendi il controllo
+A TCI client operates the radio: Take control first	Un client TCI opera la radio: prima prendi il controllo
+Controlled by	Controllata da
+: Take control first	: prima prendi il controllo
+at the radio	alla radio
+Access	Accesso
+View only · Pair to operate	Solo visione · Associa per operare
+This browser only watches. Pair it with a code shown on the radio to operate	Questo browser guarda soltanto. Associalo con un codice mostrato sulla radio per operare
+This browser is paired and may operate the radio	Questo browser è associato e può operare la radio
+In control · Release	Al controllo · Rilascia
+This browser controls the radio. Release lets another take it without a takeover	Questo browser controlla la radio. Rilascia permette a un altro di prenderla senza subentrare
+Nobody controls the radio: the first to tune or key takes it	Nessuno controlla la radio: il primo che sintonizza o manipola la prende
+At the radio · Take control	Alla radio · Prendi il controllo
+Someone used the radio's own keys or knobs. Take control to operate from here	Qualcuno ha usato i tasti o le manopole della radio. Prendi il controllo per operare da qui
+TCI client · Take control	Client TCI · Prendi il controllo
+A TCI client (a VFO knob, a program) operates the radio. Take control to operate from here	Un client TCI (una manopola VFO, un programma) opera la radio. Prendi il controllo per operare da qui
+· Take control	· Prendi il controllo
+Another browser operates the radio. Take control moves it here (not while the radio transmits)	Un altro browser opera la radio. Prendi il controllo lo porta qui (non mentre la radio trasmette)
+This browser on the internet, through Tailscale Funnel: a key of its own for the Panel away from home	Questo browser su internet, tramite Tailscale Funnel: una chiave propria per il Pannello fuori casa
+The radio's Panel is on the internet at	Il Pannello della radio è su internet a
+through Tailscale Funnel. Only a browser paired here gets in, with a key of its own.	tramite Tailscale Funnel. Entra solo un browser associato qui, con una chiave propria.
+This makes that key for this browser (\"	Questo crea quella chiave per questo browser (\"
+(away)\", with the same rights), and opens the Panel there in this browser: keep that page (a bookmark), it remembers the key. A new key replaces the one made before. Sessions lists it, and Revoke ends it, as any browser.	(fuori casa)\", con gli stessi diritti), e apre lì il Pannello in questo browser: tieni quella pagina (un segnalibro), ricorda la chiave. Una nuova chiave sostituisce quella creata prima. Sessioni la elenca, e Revoca la chiude, come qualsiasi browser.
+Make the key and open	Crea la chiave e apri
+Open the Panel away from home	Apri il Pannello fuori casa
+The key is made. Open the Panel on the internet in this browser, and keep that page: it remembers the key. The key is in the link, after '#', which no server sees, and the page takes it out of the address bar.	La chiave è creata. Apri il Pannello su internet in questo browser, e tieni quella pagina: ricorda la chiave. La chiave è nel link, dopo '#', che nessun server vede, e la pagina la toglie dalla barra degli indirizzi.
+This browser	Questo browser
+Paired as \"	Associato come \"
+admin: operates the radio and manages the paired browsers	admin: opera la radio e gestisce i browser associati
+operator: operates the radio	operatore: opera la radio
+Unpair this browser	Dissocia questo browser
+Unpair this browser? It only watches until it is paired again.	Dissociare questo browser? Guarderà soltanto finché non sarà associato di nuovo.
+Take control	Prendi il controllo
+Someone used the radio's own keys or knobs, so the radio is operated at the radio.	Qualcuno ha usato i tasti o le manopole della radio, quindi la radio è operata lì.
+A TCI client (a VFO knob, a logging program) operates the radio.	Un client TCI (una manopola VFO, un programma di log) opera la radio.
+\" operates the radio from another browser.	\" opera la radio da un altro browser.
+Another place operates the radio.	Un altro posto opera la radio.
+One place at a time operates the radio; this browser only watches until it takes control.	Un solo posto alla volta opera la radio; questo browser guarda soltanto finché non prende il controllo.
+Take control moves it here. The button at the top (\"Take control\") does the same at any time; at the radio, a key or a knob takes it back.	Prendi il controllo lo porta qui. Il pulsante in alto (\"Prendi il controllo\") fa lo stesso in qualsiasi momento; alla radio, un tasto o una manopola lo riprende.
+Not now	Non ora
+for example Kitchen phone	per esempio Telefono cucina
+This browser only watches until it is paired, once. A six-digit code is now on the radio's screen for two minutes (Settings › General › BROWSER REMOTE › Pair code shows it again). Type it here, and a name for this browser.	Questo browser guarda soltanto finché non viene associato, una volta. Un codice di sei cifre è ora sullo schermo della radio per due minuti (Impostazioni › Generale › CONTROLLO DA BROWSER › Codice di associazione lo mostra di nuovo). Scrivilo qui, con un nome per questo browser.
+Code	Codice
+This browser's name	Nome di questo browser
+Pair this browser	Associa questo browser
+Pair	Associa
+The radio is transmitting: control cannot move now	La radio sta trasmettendo: il controllo non può spostarsi ora
+Asking the radio...	Chiedo alla radio...
+No browser is paired.	Nessun browser è associato.
+Unpair	Dissocia
+Revoke	Revoca
+Unpair this browser?	Dissociare questo browser?
+Its connections close now and it only watches until it is paired again.	Le sue connessioni si chiudono ora e guarderà soltanto finché non sarà associato di nuovo.
+Paired browsers	Browser associati
+Each paired browser may operate the radio; the admin (the first paired) manages this list. Revoke closes a browser's connections at once.	Ogni browser associato può operare la radio; l'admin (il primo associato) gestisce questo elenco. Revoca chiude subito le connessioni di un browser.
+Wait: the radio is still unkeying	Aspetta: la radio sta ancora rilasciando
+The radio is transmitting already	La radio sta già trasmettendo
+The radio does not answer: no transmission until it does	La radio non risponde: nessuna trasmissione finché non risponde
+Microphone not ready: no transmission (the radio's own microphone is not used in its place)	Microfono non pronto: nessuna trasmissione (il microfono della radio non viene usato al suo posto)
+No link to the radio: no transmission	Nessun collegamento con la radio: nessuna trasmissione
+The radio did not key (no TX confirmed in 1.5 s)	La radio non è andata in trasmissione (nessun TX confermato in 1,5 s)
+On the air (	In onda (
+The radio ended the transmission	La radio ha terminato la trasmissione
+The radio unkeyed:	La radio ha rilasciato:
+The link dropped: the transmission is over	Il collegamento è caduto: la trasmissione è finita
+microphone at the radio	microfono della radio
+press again to transmit	premi di nuovo per trasmettere
+TX (not this browser)	TX (non questo browser)
+the radio is on the air	la radio è in onda
+The radio does not answer: no tune until it does	La radio non risponde: nessun accordo finché non risponde
+No link to the radio: no tune	Nessun collegamento con la radio: nessun accordo
+The radio did not start the tune (see its screen)	La radio non ha avviato l'accordo (vedi il suo schermo)
+TUNE on the air: press TUNE again to stop	TUNE in onda: premi di nuovo TUNE per fermare
+The tune is over	L'accordo è finito
+The radio stopped the tune:	La radio ha fermato l'accordo:
+The link dropped: the radio stops the tune within 3 s	Il collegamento è caduto: la radio ferma l'accordo entro 3 s
+press to stop	premi per fermare
+No tune	Niente accordo
+from the radio: press to stop	dalla radio: premi per fermare
+NTP update successful	Aggiornamento NTP riuscito
+Server time updated manually	Ora del server aggiornata a mano
+Timezone updated successfully	Fuso orario aggiornato
+Access denied.	Accesso negato.
+Not found	Non trovato
+Invalid port: 1024-65535	Porta non valida: 1024-65535
+Cross-site request refused	Richiesta tra siti rifiutata
+No frame	Nessun fotogramma
+Operating	Operatività
+System	Sistema
+Internet radio	Radio Internet
+Flights	Voli
+Cluster	Cluster
+Weather	Meteo
+the built-in logo	il logo integrato
+the GPS	il GPS
+the locator	il locator
+the callsign	il nominativo
+the band "	la banda "
+the server "	il server "
+the alert "	l'avviso "
+the message "	il messaggio "
+the macro "	la macro "
+the channel	il canale
+the key	la chiave
+\n... and 	\n... e 
+Up to 12, name up to 23 characters, text up to 199. <MYCALL>, <CALL>, <RST> and <RSTR> are filled in when sent	Fino a 12, nome fino a 23 caratteri, testo fino a 199. <MYCALL>, <CALL>, <RST> e <RSTR> vengono riempiti all'invio
+F1 to F8, text up to 80 characters. %M is your call, %H the DX call, %E 599 and the serial number	Da F1 a F8, testo fino a 80 caratteri. %M è il tuo nominativo, %H quello del DX, %E 599 e il numero progressivo
+The radio's CW decoder (Settings > CW): its text as it comes, in CW mode.	Il decodificatore CW della radio (Impostazioni > CW): il suo testo come arriva, in modo CW.
+Opens Tailscale's login in a new tab. The radio's screen shows the same link as a code for a phone (Settings > Wireless)	Apre l'accesso a Tailscale in una nuova scheda. Lo schermo della radio mostra lo stesso link come codice per un telefono (Impostazioni > Wireless)
+A low-power carrier for a tuner of its own at the antenna, at the radio's TUNE power and time limit (Settings > TX Cal); press again to stop	Una portante a bassa potenza per un accordatore proprio all'antenna, alla potenza TUNE e al limite di tempo della radio (Impostazioni > TX Cal); premi di nuovo per fermare
+AUTO answers you	AUTO ti risponde
+nothing yet	ancora niente
+with options:	con opzioni:
+this browser	questo browser
+view only	solo visione
+the radio's microphone	il microfono della radio
+is available	è disponibile
+none yet	ancora nessuno
+: choose one, then Save	: scegline uno, poi Salva
+Saved: the next QSO goes to Wavelog	Salvato: il prossimo QSO va a Wavelog
+, the transverter's TX power limit	, il limite di potenza TX del transverter
+PWR is	PWR è
+ago	fa
+in use	in uso
+Radio GUI not reachable	Impossibile parlare con la radio (lo schermo principale è acceso?)
+An update is already running	Un aggiornamento è già in corso
+Another backup operation is running	Un'altra operazione di backup è in corso
+Invalid key: 1-128 printable characters, no spaces	Chiave non valida: da 1 a 128 caratteri stampabili, senza spazi
+Invalid name: 1-31 characters, no '|'	Nome non valido: da 1 a 31 caratteri, niente '|'
+Letters, digits and '-', 1 to 32 characters, not starting or ending with '-'	Lettere, cifre e '-', da 1 a 32 caratteri, senza iniziare o finire con '-'
+Locator: 4 or 6 characters (JO20 or JO20ab); empty for the radio's QTH	Locator: 4 o 6 caratteri (JO20 o JO20ab); vuoto per il QTH della radio
+Name not set	Nome non impostato
+No uploaded backup: choose the file again	Nessun backup caricato: scegli di nuovo il file
+Not a PNG picture the radio can read: an unknown kind of PNG	Non è un'immagine PNG che la radio sa leggere: un tipo di PNG sconosciuto
+Not a PNG picture: it has no picture data	Non è un'immagine PNG: non ha dati di immagine
+Not a PNG picture: its header is missing	Non è un'immagine PNG: manca l'intestazione
+Not a day of the text log	Non è un giorno del log testo
+Not an X6100 backup: manifest.json is missing or has an unknown version	Non è un backup X6100: manifest.json manca o ha una versione sconosciuta
+Rejected by the radio	Rifiutato dalla radio
+Tailscale Funnel only carries the Panel and the Screen page (Remote > Tailscale)	Tailscale Funnel porta solo il Pannello e la pagina Schermo (Remoto > Tailscale)
+That is a private key, which stays on your computer: paste the line of the .pub file	Questa è una chiave privata, che resta sul tuo computer: incolla la riga del file .pub
+That key is not there any more: reload the page	Quella chiave non c'è più: ricarica la pagina
+That macro is gone, reload the page	Quella macro non c'è più, ricarica la pagina
+The URL starts with http:// or https://, no spaces	L'URL inizia con http:// o https://, senza spazi
+The backup shown is not the one on the radio any more: choose the file again	Il backup mostrato non è più quello sulla radio: scegli di nuovo il file
+Can't save: channels.json is nested too deep for the page	Impossibile salvare: channels.json è troppo annidato per la pagina
+Fill by level	Riempimento per livello
+The fill in the waterfall's colours by signal level, weak at the bottom and strong at the top, like an SDR	Il riempimento con i colori della cascata secondo il livello del segnale, debole in basso e forte in alto, come un SDR
+Already updating, wait a moment	Aggiornamento già in corso, aspetta un momento
+No data: is the radio on the internet?	Nessun dato: la radio ha internet?
+Unknown country	Paese sconosciuto
+Invalid QTH locator	Locator QTH non valido
+Nothing to change	Niente da cambiare
+Not saved	Non salvato
+Reminder: between 1 and 120 minutes	Promemoria: tra 1 e 120 minuti
+Invalid day	Giorno non valido
+Duration: between 5 and 240 minutes	Durata: tra 5 e 240 minuti
+Frequency: between 1800 and 54000 kHz	Frequenza: tra 1800 e 54000 kHz
+Check the numbers	Controlla i numeri
+Time like 21:00	L'ora come 21:00
+Invalid mode	Modo non valido
+The regional group is like @GNURYMO	Il gruppo regionale è come @GNURYMO
+Invalid location mode	Modo di posizione non valido
+Latitude and longitude are numbers, like -34.9 and -56.16	Latitudine e longitudine sono numeri, come -34.9 e -56.16
+Latitude between -90 and 90, longitude between -180 and 180	Latitudine tra -90 e 90, longitudine tra -180 e 180
+Not saved: %s	Non salvato: %s
+OpenX6X00-CX8ANM (Cóndor Tecnológico) · based on	OpenX6X00-CX8ANM (Cóndor Tecnológico) · basato su
+(7.107 MHz and the groups). The official nets are in English. For them the radio translates the messages that come in and, if you want, yours before they go out (with WiFi). There is no GhostNet net in your language yet: you can set up your own below.	(7.107 MHz e i gruppi). Le reti ufficiali sono in inglese. Per esse la radio traduce i messaggi in arrivo e, se vuoi, i tuoi prima di partire (con il WiFi). Non c'è ancora una rete GhostNet nella tua lingua: puoi crearne una tua qui sotto.
+An hour after each net starts there are broadcasts on 7.077 MHz at 45.45 baud for whoever could not check in: JS8 → Freq → GhostNet: nets, translation, RTTY → RTTY.	Un'ora dopo l'inizio di ogni rete ci sono trasmissioni su 7.077 MHz a 45,45 baud per chi non è riuscito a fare il check-in: JS8 → Freq → GhostNet: reti, traduzione, RTTY → RTTY.
+Winlink over VARA and Ion2G ALE are PC programs: they don’t run inside the radio, but you can use them with a PC connected. The official document:	Winlink su VARA e Ion2G ALE sono programmi per PC: non girano dentro la radio, ma puoi usarli con un PC collegato. Il documento ufficiale:
+The groups are added by themselves with "GhostNet mode" in JS8. The translation uses the internet (MyMemory, free, with a daily limit).	I gruppi si aggiungono da soli con "Modo GhostNet" in JS8. La traduzione usa internet (MyMemory, gratis, con un limite giornaliero).
+What came to the GhostNet groups (or on its frequencies) while JS8 was open, with its translation.	Ciò che è arrivato ai gruppi GhostNet (o sulle sue frequenze) mentre JS8 era aperto, con la sua traduzione.
+GhostNet is a set of HF nets for passing information without depending on the internet or mobile phones, mostly with	GhostNet è un insieme di reti HF per passare informazioni senza dipendere da internet o dai cellulari, soprattutto con
+On the amateur bands messages may not be encrypted: everything goes in the clear and with your callsign.	Sulle bande amatoriali i messaggi non possono essere cifrati: tutto va in chiaro e con il tuo nominativo.
+A net of your own in your language, at its local time, to coordinate with other radio amateurs of the region.	Una rete tua nella tua lingua, alla sua ora locale, per coordinarti con altri radioamatori della regione.
+The latest that came to @GSTFLASH. GhostNet asks to pass it on at once to whoever can help.	L'ultimo arrivato a @GSTFLASH. GhostNet chiede di passarlo subito a chi può aiutare.
+A notice on the radio’s screen, in any app, before each net ticked.	Un avviso sullo schermo della radio, in qualsiasi app, prima di ogni rete spuntata.
+7.190 MHz LSB only in serious emergencies, in the last 5 minutes of the window.	7.190 MHz LSB solo in emergenze gravi, negli ultimi 5 minuti della finestra.
+Nothing yet. Open JS8 in GhostNet mode and the messages will show up here.	Ancora niente. Apri JS8 in modo GhostNet e i messaggi compariranno qui.
+Just enough: if you have a lot, turn it down so you don’t cover those who transmit with little.	Quanto basta: se ne hai molta, abbassala per non coprire chi trasmette con poca.
+. Pick a free offset; heartbeats go below 1000 Hz.	. Scegli un offset libero; gli heartbeat vanno sotto i 1000 Hz.
+In the radio’s time. ★ = with a reminder on the radio’s screen.	Nell'ora della radio. ★ = con un promemoria sullo schermo della radio.
+; @GN + country + state for your area (for example @GNURYMO is Montevideo).	; @GN + paese + stato per la tua zona (per esempio @GNURYMO è Montevideo).
+In the net’s window send a short message to the group, for example	Nella finestra della rete invia un breve messaggio al gruppo, per esempio
+and your regional group. Listening needs no licence; transmitting does.	e il tuo gruppo regionale. Ascoltare non richiede licenza; trasmettere sì.
+the first OK translates and shows it; the second sends it	il primo OK traduce e lo mostra; il secondo lo invia
+). ★ = with a reminder on the radio’s screen.	). ★ = con un promemoria sullo schermo della radio.
+@GHOSTNET for everyday traffic;	@GHOSTNET per il traffico di ogni giorno;
+Who checked in, by the last time.	Chi ha fatto il check-in, per l'ultima volta.
+they come with the translation under them	arrivano con la traduzione sotto
+Clear the GhostNet message log?	Svuotare il log dei messaggi GhostNet?
+it shows in the list and in the reminders	compare nell'elenco e nei promemoria
+in kHz; 7107 is GhostNet’s on 40 m	in kHz; 7107 è quella di GhostNet in 40 m
+: the radio goes to 7.107 MHz and joins	: la radio va su 7.107 MHz e si unisce a
+Saved: the radio uses it at once	Salvato: la radio lo usa subito
+A summary of GhostNet version 1.5.	Un riassunto di GhostNet versione 1.5.
+In the radio’s time (	Nell'ora della radio (
+translate them	tradurli
+Groups and translation	Gruppi e traduzione
+Messages in English	Messaggi in inglese
+Clear the log	Svuota il log
+Could not save	Impossibile salvare
+send in English	invia in inglese
+the radio’s time	l'ora della radio
+Listen first.	Prima ascolta.
+None yet.	Ancora nessuna.
+How to take part	Come partecipare
+Next nets	Prossime reti
+. On the radio:	. Sulla radio:
+Nothing yet.	Ancora niente.
+In JS8 choose	In JS8 scegli
+Day and time	Giorno e ora
+automatic	automatico
+Last time	Ultima volta
+Wednesday	mercoledì
+Mine	I miei
+Groups.	Gruppi.
+sent	inviato
+for	per
+Saturday	sabato
+now:	ora:
+Groups	Gruppi
+When	Quando
+now	adesso
+What	Cosa
+yes	sì
+Your tower, approach or ATIS streams. They come first in the radio’s Airband list, before the directory’s. Paste the audio address the stream’s site gives (for example the .pls link to listen in another player). Respect each site’s terms of use.	I tuoi stream di torre, avvicinamento o ATIS. Compaiono per primi nella lista Banda aerea della radio, prima di quelli dell'elenco. Incolla l'indirizzo audio che dà il sito dello stream (per esempio il link .pls per ascoltare in un altro lettore). Rispetta le condizioni d'uso di ogni sito.
+The favourite stations of APP → Internet radio. Add one with its name and the address of its audio (the one ending in .mp3, .aac, .pls or .m3u, or the one the station’s page gives to "listen in another player"). The radio shows them the next time you go through Favourites with the List key.	Le stazioni preferite di APP → Radio Internet. Aggiungine una con il suo nome e l'indirizzo del suo audio (quello che finisce in .mp3, .aac, .pls o .m3u, o quello che dà la pagina della stazione per "ascoltare in un altro lettore"). La radio le mostra la prossima volta che passi per i Preferiti con il tasto Lista.
+separated by tabs or semicolons. Those already there are not repeated.	separati da tabulazioni o punti e virgola. Quelle già presenti non si ripetono.
+Text file: one station a line,	File di testo: una stazione per riga,
+name, address, format, kbps and country	nome, indirizzo, formato, kbps e paese
+Airband (air traffic control)	Banda aerea (controllo del traffico aereo)
+Could not import	Impossibile importare
+, lines with errors:	, righe con errori:
+Address	Indirizzo
+Country	Paese
+chosen. The official alerts come from the country’s service (INUMET in Uruguay, SMN in Argentina, INMET in Brazil, NWS in the United States, MeteoAlarm in Europe); in the other countries they are	scelto. Le allerte ufficiali vengono dal servizio del paese (INUMET in Uruguay, SMN in Argentina, INMET in Brasile, NWS negli Stati Uniti, MeteoAlarm in Europa); negli altri paesi sono
+The weather and the alerts for where the radio is, the same as APP → Weather. The position comes from the	Il meteo e le allerte per dove si trova la radio, come APP → Meteo. La posizione viene dal
+This browser gives no location (on the radio, open it with https://)	Questo browser non dà la posizione (sulla radio, aprila con https://)
+the radio’s: it also changes the time zone and the internet radio	quello della radio: cambia anche il fuso orario e la radio Internet
+position: that one is used. The locator counts when there is no GPS.	posizione: si usa quella. Il locator vale quando non c'è GPS.
+(no answer: notices calculated from the forecast)	(nessuna risposta: avvisi calcolati dalla previsione)
+notices calculated from the forecast (not official)	avvisi calcolati dalla previsione (non ufficiali)
+Region 1 (Europe, Africa, Middle East)	Regione 1 (Europa, Africa, Medio Oriente)
+Fetching the weather… (up to a minute)	Recupero del meteo… (fino a un minuto)
+the radio’s QTH (4 or 6 characters)	il QTH della radio (4 o 6 caratteri)
+only to shorten the list of countries	solo per accorciare l'elenco dei paesi
+Asking the browser for the location…	Chiedo la posizione al browser…
+Saved on the radio · updated	Salvato sulla radio · aggiornato
+The locator is like GF15 or GF15wc	Il locator è come GF15 o GF15wc
+notices calculated from the forecast	avvisi calcolati dalla previsione
+Saving and fetching the weather…	Salvo e recupero il meteo…
+This device’s location	Posizione di questo dispositivo
+The radio has a	La radio ha una
+and else from the capital of the	e altrimenti dalla capitale del
+no location: Montevideo	nessuna posizione: Montevideo
+No alerts in force for	Nessuna allerta in vigore per
+Region 3 (Asia, Oceania)	Regione 3 (Asia, Oceania)
+, which are not official.	, che non sono ufficiali.
+Could not update	Impossibile aggiornare
+Save and update	Salva e aggiorna
+if it has one, else from the	se ne ha uno, altrimenti dal
+Open-Meteo, 5 days	Open-Meteo, 5 giorni
+Region 2 (Americas)	Regione 2 (Americhe)
+No data yet.	Ancora nessun dato.
+the country’s capital	la capitale del paese
+Country’s capital	Capitale del paese
+the radio’s GPS	il GPS della radio
+Dew point	Punto di rugiada
+No location:	Nessuna posizione:
+· feels like	· percepita
+IARU region	Regione IARU
+Forecast	Previsioni
+forecast	previsione
+Location	Posizione
+Pressure	Pressione
+Gusts	Raffiche
+Now	Ora
+/ max	/ max
+· min	· min
+country	paese
+on the radio. It comes from open networks of volunteers’ ADS-B receivers (airplanes.live, adsb.lol): only the aircraft some nearby receiver picks up are seen. It updates every 15 seconds.	sulla radio. Vengono da reti aperte di ricevitori ADS-B di volontari (airplanes.live, adsb.lol): si vedono solo gli aerei che capta qualche ricevitore vicino. Si aggiorna ogni 15 secondi.
+The aircraft over the chosen area, as on Flightradar: the same data as	Gli aerei sopra la zona scelta, come su Flightradar: gli stessi dati di
+No aircraft seen in this area now.	Nessun aereo visto in questa zona ora.
+No data (is there internet?)	Nessun dato (c'è internet?)
+Chosen on the map	Scelto sulla mappa
+to centre it there.	per centrare lì.
+Tap the map	Tocca la mappa
+Registration	Immatricolazione
+Zello channels on the radio: APP → Zello. You listen on the speaker (or Bluetooth headphones) and talk with the radio’s side PTT or the Talk button, through the	Canali Zello sulla radio: APP → Zello. Ascolti dall'altoparlante (o dalle cuffie Bluetooth) e parli con il PTT laterale della radio o il pulsante Parla, tramite il
+The radio signs its own connection permit with this key, so	La radio firma il proprio permesso di connessione con questa chiave, quindi
+Zello asks everyone to use their own keys (they are free):	Zello chiede a ognuno di usare le proprie chiavi (sono gratis):
+whole (with the BEGIN and END lines) and paste them here.	intera (con le righe BEGIN ed END) e incollale qui.
+Saved. On the radio: APP → Zello → Reload channels	Salvato. Sulla radio: APP → Zello → Ricarica i canali
+Up to 20, one a line, written as in Zello	Fino a 20, uno per riga, scritti come in Zello
+Fill in the developer profile and save it.	Compila il profilo sviluppatore e salvalo.
+. What you say goes to Zello, not on the air.	. Ciò che dici va a Zello, non in onda.
+the radio’s clock has to be right	l'orologio della radio deve essere giusto
+saved (leave it empty to keep it)	salvata (lascia vuoto per tenerla)
+hand microphone without pressing its PTT	microfono a mano senza premere il suo PTT
+with your Zello user name and password.	con il tuo nome utente e password di Zello.
+The same as in the phone app	Lo stesso dell'app del telefono
+(with internet it sets itself).	(con internet si imposta da solo).
+your Zello user name	il tuo nome utente Zello
+Could not test	Impossibile provare
+Test the connection	Prova la connessione
+and the	e la
+The Private Key has to include the BEGIN and END lines	La Private Key deve includere le righe BEGIN ed END
+The address has to start with http:// or https://	L'indirizzo deve iniziare con http:// o https://
+That station is gone (reload the page)	Quella stazione non c'è più (ricarica la pagina)
+The kbps are a number (for example 128)	I kbps sono un numero (per esempio 128)
+That address is already in the list	Quell'indirizzo è già nell'elenco
+The position is missing	Manca la posizione
+the country only: open Weather with WiFi to add the state	solo il paese: apri Meteo con il WiFi per aggiungere lo stato
+English. The weekly one, on Thursday nights there.	Inglese. Quella settimanale, il giovedì sera lì.
+English. Saturdays, to pass messages between regions.	Inglese. Il sabato, per passare messaggi tra regioni.
+Voice, emergencies only (last 5 min)	Voce, solo emergenze (ultimi 5 min)
+choose the country in the radio’s Settings	scegli il paese nelle Impostazioni della radio
+English. The weekly one, on Thursdays.	Inglese. Quella settimanale, il giovedì.
+In your language: the one you set below.	Nella tua lingua: quella che imposti qui sotto.
+country and state (from Weather)	paese e stato (da Meteo)
+North America-Australia bridge	Ponte Nord America-Australia
+Australia-South Pacific bridge	Ponte Australia-Pacifico meridionale
+North America-Europe bridge	Ponte Nord America-Europa
+English. Saturdays.	Inglese. Il sabato.
+North America net	Rete Nord America
+in your language	nella tua lingua
+APP → Modes → JS8 → Freq → GhostNet mode	APP → Modi → JS8 → Freq → Modo GhostNet
+@GSTFLASH for emergencies only	@GSTFLASH solo per emergenze
+Stations heard	Stazioni ascoltate
+Freq → GhostNet mode	Freq → Modo GhostNet
+Emergency: @GSTFLASH	Emergenza: @GSTFLASH
+Frequency and mode	Frequenza e modo
+Regional group	Gruppo regionale
+minutes before	minuti prima
+Reminders	Promemoria
+Reminder	Promemoria
+No encryption.	Nessuna cifratura.
+Checking in.	Fare il check-in.
+Own net	Rete propria
+Saving…	Salvataggio…
+Power.	Potenza.
+on	acceso
+Sunday	domenica
+Friday	venerdì
+Tuesday	martedì
+Use it	Usala
+Thursday	giovedì
+Monday	lunedì
+Voice.	Voce.
+Net	Rete
+Import a file	Importa un file
+Favourites	Preferiti
+Export	Esporta
+Format	Formato
+The device’s location is in: now Save	La posizione del dispositivo è inserita: ora Salva
+(https:// is needed)	(serve https://)
+coordinates typed in	coordinate inserite a mano
+QTH locator	Locatore QTH
+Visibility	Visibilità
+Humidity	Umidità
+Rain	Pioggia
+Wind	Vento
+Clouds	Nuvole
+Sun	Sole
+My locator (QTH)	Il mio locator (QTH)
+My locator (	Il mio locator (
+APP → Flights	APP → Voli
+Distance	Distanza
+Searching…	Ricerca…
+Centre	Centro
+Altitude	Altitudine
+Flight	Volo
+Heading	Rotta
+Private Key saved (paste another to change it)	Private Key salvata (incollane un'altra per cambiarla)
+Radioaficionados Uruguay Another channel	Radioaficionados Uruguay Altro canale
+Developer keys	Chiavi sviluppatore
+The Private Key is missing	Manca la Private Key
+Private Key loaded	Private Key caricata
+Zello account	Account Zello
+. Copy the	. Copia l'
+Go to	Vai su
+User name	Nome utente
+Password	Password
+Location from	Posizione da
+where the weather and the alerts are for	per dove valgono il meteo e le allerte
+Automatic: GPS, else the locator, else the country	Automatica: GPS, altrimenti il locator, altrimenti il paese
+The grid locator	Il grid locator
+The radio's GPS (else the locator)	Il GPS della radio (altrimenti il locator)
+Coordinates typed in	Coordinate inserite a mano
+Coordinates	Coordinate
+decimal degrees; south and west negative	gradi decimali; sud e ovest negativi
+Europe net	Rete Europa
+Australia net	Rete Australia
+Europe-Australia bridge	Ponte Europa-Australia
+Winlink VARA (from a PC)	Winlink VARA (da un PC)
+Ion2G ALE (from a PC)	Ion2G ALE (da un PC)
+RTTY 45.45 baud	RTTY 45,45 baud
+chosen by hand	scelto a mano
+OpenX6X00 by RF.Guru	OpenX6X00 di RF.Guru

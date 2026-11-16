@@ -1,16 +1,14 @@
-% rebase('base.html', title='Radio por Internet')
-<h2><svg class="i"><use href="#i-speaker"/></svg>Radio por Internet</h2>
-<p class="sub">Las emisoras favoritas de APP &rarr; Radio Internet. Agregá una con su nombre y la dirección del audio
-(la que termina en .mp3, .aac, .pls o .m3u, o la que da la página de la emisora para "escuchar en otro reproductor").
-La radio las muestra la próxima vez que pasás por Favoritas con la tecla Lista.</p>
+% rebase('base.html', title='Internet radio')
+<h2><svg class="i"><use href="#i-speaker"/></svg>Internet radio</h2>
+<p class="sub">The favourite stations of APP → Internet radio. Add one with its name and the address of its audio (the one ending in .mp3, .aac, .pls or .m3u, or the one the station’s page gives to "listen in another player"). The radio shows them the next time you go through Favourites with the List key.</p>
 
 <section class="dp-card">
-<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-speaker"/></svg></span><div><h3>Favoritas</h3><p id="count"></p></div><div class="dp-x"><button id="add" class="primary"><svg class="i"><use href="#i-plus"/></svg>Agregar</button></div></div>
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-speaker"/></svg></span><div><h3>Favourites</h3><p id="count"></p></div><div class="dp-x"><button id="add" class="primary"><svg class="i"><use href="#i-plus"/></svg>Add</button></div></div>
 <div class="dp-body tbl">
 <div class="table-wrap">
 <table id="stations">
   <thead>
-    <tr><th>Nombre</th><th>Dirección</th><th>Formato</th><th>kbps</th><th>País</th><th></th></tr>
+    <tr><th>Name</th><th>Address</th><th>Format</th><th>kbps</th><th>Country</th><th></th></tr>
   </thead>
   <tbody></tbody>
 </table>
@@ -20,20 +18,19 @@ La radio las muestra la próxima vez que pasás por Favoritas con la tecla Lista
 </section>
 
 <section class="dp-card">
-<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-speaker"/></svg></span><div><h3>Banda aérea (control de tránsito aéreo)</h3><p id="atc-count"></p></div><div class="dp-x"><button id="atc-add" class="primary"><svg class="i"><use href="#i-plus"/></svg>Agregar</button></div></div>
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-speaker"/></svg></span><div><h3>Airband (air traffic control)</h3><p id="atc-count"></p></div><div class="dp-x"><button id="atc-add" class="primary"><svg class="i"><use href="#i-plus"/></svg>Add</button></div></div>
 <div class="dp-body tbl">
-<p class="sub" style="margin: 0 0 8px">Tus emisoras de torre, aproximación o ATIS. Aparecen primero en la lista Banda aérea de la radio, antes que las del directorio.
-Pegá la dirección del audio que da el sitio de la emisora (por ejemplo, el enlace .pls para escuchar en otro reproductor). Respetá las condiciones de uso de cada sitio.</p>
+<p class="sub" style="margin: 0 0 8px">Your tower, approach or ATIS streams. They come first in the radio’s Airband list, before the directory’s. Paste the audio address the stream’s site gives (for example the .pls link to listen in another player). Respect each site’s terms of use.</p>
 <div class="table-wrap">
 <table id="atc">
   <thead>
-    <tr><th>Nombre</th><th>Dirección</th><th>Formato</th><th>kbps</th><th>País</th><th></th></tr>
+    <tr><th>Name</th><th>Address</th><th>Format</th><th>kbps</th><th>Country</th><th></th></tr>
   </thead>
   <tbody></tbody>
 </table>
 </div>
-<div class="actions"><button id="atc-import"><svg class="i"><use href="#i-plus"/></svg>Importar archivo</button> <a id="atc-export" href="/api/iradio-atc/export" download>Exportar</a> <input type="file" id="atc-file" accept=".txt,.tsv,.csv,text/plain" hidden> <span class="status" id="atc-status"></span></div>
-<p class="sub" style="margin: 6px 0 0">Archivo de texto: una emisora por línea, <b>nombre, dirección, formato, kbps y país</b> separados por tabulador o por punto y coma. Las que ya están no se repiten.</p>
+<div class="actions"><button id="atc-import"><svg class="i"><use href="#i-plus"/></svg>Import a file</button> <a id="atc-export" href="/api/iradio-atc/export" download>Export</a> <input type="file" id="atc-file" accept=".txt,.tsv,.csv,text/plain" hidden> <span class="status" id="atc-status"></span></div>
+<p class="sub" style="margin: 6px 0 0">Text file: one station a line, <b>name, address, format, kbps and country</b> separated by tabs or semicolons. Those already there are not repeated.</p>
 </div>
 </section>
 
@@ -60,8 +57,8 @@ var call = function(L, type, url, payload) {
     data: payload ? JSON.stringify(payload) : undefined,
     contentType: "application/json; charset=utf-8",
     dataType: "json",
-    success: function(r) { render(L, r); showStatus(L, "Guardado"); },
-    error: function(xhr) { showStatus(L, xhr.responseJSON ? xhr.responseJSON.msg : "No se pudo guardar", true); }
+    success: function(r) { render(L, r); showStatus(L, "Saved"); },
+    error: function(xhr) { showStatus(L, xhr.responseJSON ? xhr.responseJSON.msg : "Could not save", true); }
   });
 }
 
@@ -81,12 +78,12 @@ var stationRow = function(L, s, i) {
   row.append($("<td>").css("min-width", "12em").append(name), $("<td>").css("width", "60%").append(url),
              $("<td>").append(codec), $("<td>").append(kbps), $("<td>").append(cc));
   const actions = $("<td class='action-cell'>").appendTo(row);
-  actions.append(button("save", "si-disk", "Guardar").on("click", function() {
+  actions.append(button("save", "si-disk", "Save").on("click", function() {
     const d = {name: name.val(), url: url.val().trim(), codec: codec.val(), kbps: kbps.val(), cc: cc.val()};
     if (i === null) call(L, "POST", L.api, d);
     else call(L, "PUT", L.api + "/" + i, d);
   }));
-  actions.append(" ", button("remove", "si-trash", "Quitar").on("click", function() {
+  actions.append(" ", button("remove", "si-trash", "Remove").on("click", function() {
     if (i === null) row.remove();
     else call(L, "DELETE", L.api + "/" + i);
   }));
@@ -121,10 +118,10 @@ $("#atc-file").on("change", function() {
         render(lists.atc, r);
         let t = r.added + " agregadas";
         if (r.skipped) t += ", " + r.skipped + " ya estaban";
-        if (r.bad && r.bad.length) t += ", líneas con error: " + r.bad.join(", ");
+        if (r.bad && r.bad.length) t += ", lines with errors: " + r.bad.join(", ");
         showStatus(lists.atc, t, r.bad && r.bad.length > 0 && !r.added);
       },
-      error: function(xhr) { showStatus(lists.atc, xhr.responseJSON ? xhr.responseJSON.msg : "No se pudo importar", true); }
+      error: function(xhr) { showStatus(lists.atc, xhr.responseJSON ? xhr.responseJSON.msg : "Could not import", true); }
     });
   };
   rd.readAsText(f, "utf-8");

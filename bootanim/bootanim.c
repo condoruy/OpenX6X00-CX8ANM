@@ -16,7 +16,11 @@
  *  that is missing, damaged or not 800x480 gives ours, never a dark start.
  *
  *  With Settings > Audio > Boot sound on (read from the GUI's params.db),
- *  "CQ CQ" in CW plays on the speaker with the animation.
+ *  a satellite link sound plays on the speaker with the animation (CX8ANM:
+ *  hiss, data bursts, the lock sweep and the "connected" chime; was "CQ CQ").
+ *
+ *  CX8ANM: the station's callsign (Settings, params.db) shows at the top of
+ *  the logo, the last thing to fade in; on the owner's own picture too.
  *
  *  Started in the background by /etc/init.d/S00bootanim. Any failure just
  *  skips that part: the boot never waits for it.
@@ -52,6 +56,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "callfont.h"
+
 #define W        800    /* the logo, landscape */
 #define H        480
 #define SLOW(ms) ((ms) * 28 / 19)   /* the 1.9 s of steps played over 2.8 s */
@@ -74,7 +80,9 @@ static int64_t now_ms(void) {
 
 /* ---- Boot sound ----------------------------------------------------------- */
 
+#ifndef PARAMS_DB
 #define PARAMS_DB   "/mnt/params.db"
+#endif
 #define AUDIO_BUSY  "/tmp/x6100-bootanim.audio" /* while the codec is open: S49bootanim waits */
 #define RATE        44100
 #define TONE_HZ     600
@@ -89,7 +97,7 @@ static int64_t now_ms(void) {
 #else
 #define VOL_MAX     55
 #endif
-#define SOUND_MAX_MS 5700     /* CQ CQ is 5.16 s with the lead: the sound never runs longer than this */
+#define SOUND_MAX_MS 5700     /* the link sound is 4.7 s with the lead: the sound never runs longer than this */
 
 /* The base unit, through the GUI's own control library: base_control_init()
  * sends every register with the library's defaults (RX, PTT off), as the GUI
@@ -124,7 +132,7 @@ static int key_up(void) {
     key_line = l;
     return 1;
 }
-static int16_t cq[RATE * 6];  /* "CQ CQ" is 5.16 s with the lead */
+static int16_t cq[RATE * 6];  /* the boot sound, lead included */
 static int     cq_len;
 
 /* A setting as saved by the GUI (def when it has none), -1 when the DB can't be read */
@@ -143,25 +151,79 @@ static int saved(const char *name, int def) {
     return val;
 }
 
-/* "-.-. --.-" keyed: ' ' adds 2 dits to the 1 after each element (3 between letters, 7 for "   ") */
-static void cw(const char *code) {
-    const int dit = RATE * DIT_MS / 1000, edge = RATE * EDGE_MS / 1000;
+/* CX8ANM: a satellite link coming up, 3.2 s after the lead: the hiss of the downlink rising with a faint
+ * carrier drifting (Doppler), the handshake's data bursts (two-tone FSK), the lock sweep and the chime */
+static uint32_t rnd = 0x6100cafe;
+static float noise(void) {
+    rnd = rnd * 1664525u + 1013904223u;
+    return (float)(int32_t)rnd / 2147483648.0f;
+}
 
-    cq_len = RATE * LEAD_MS / 1000;
-    for (const char *c = code; *c; c++) {
+static float env_in_out(int i, int len, int edge) {
+    if (i < edge) return 0.5f - 0.5f * cosf(M_PI * i / edge);
+    if (i >= len - edge) return 0.5f - 0.5f * cosf(M_PI * (len - i) / edge);
+    return 1.0f;
+}
+
+static void link_sound(void) {
+    const int base = RATE * LEAD_MS / 1000, total = RATE * 3200 / 1000;
+    static float mix[RATE * 4];
+    float ph = 0, lp = 0;
+
+    memset(mix, 0, sizeof(mix));
+    /* 1. the hiss, filtered, up over 0.5 s and down at the end; a carrier drifting 1750 -> 1950 Hz under it */
+    for (int i = 0; i < total; i++) {
+        float t  = (float)i / RATE;
+        float up = t < 0.5f ? t / 0.5f : 1.0f;
+        float dn = t > 2.4f ? fmaxf(0.0f, 1.0f - (t - 2.4f) / 0.8f) : 1.0f;
+        lp += 0.35f * (noise() - lp);
+        mix[i] += 0.16f * lp * up * dn;
+        if (t < 1.7f) {
+            ph += 2.0f * M_PI * (1750.0f + 200.0f * t / 1.7f) / RATE;
+            mix[i] += 0.10f * sinf(ph) * up * env_in_out(i, RATE * 17 / 10, RATE / 20);
+        }
+    }
+    /* 2. the handshake: 0.55 .. 1.6 s, 26 bursts of 1200 / 2200 Hz, 28 ms each, in groups */
+    static const char pattern[] = "1011 0110 1001 1101 0011 1010 01";
+    int at = RATE * 55 / 100;
+    for (const char *c = pattern; *c; c++) {
+        int len = RATE * 28 / 1000;
         if (*c == ' ') {
-            cq_len += 2 * dit;
+            at += RATE * 35 / 1000;
             continue;
         }
-        int len = (*c == '-' ? 3 : 1) * dit;
-        for (int i = 0; i < len; i++) {
-            float env = 1.0f;
-            if (i < edge) env = 0.5f - 0.5f * cosf(M_PI * i / edge);
-            else if (i >= len - edge) env = 0.5f - 0.5f * cosf(M_PI * (len - i) / edge);
-            cq[cq_len + i] = (int16_t)(AMPL * env * sinf(2.0f * M_PI * TONE_HZ * i / RATE));
-        }
-        cq_len += len + dit;
+        float f = *c == '1' ? 2200.0f : 1200.0f;
+        for (int i = 0; i < len; i++)
+            mix[at + i] += 0.42f * sinf(2.0f * M_PI * f * i / RATE) * env_in_out(i, len, RATE * 3 / 1000);
+        at += len;
     }
+    /* 3. the lock sweep: 1.65 .. 2.15 s, 500 -> 2600 Hz, rising */
+    ph      = 0;
+    at      = RATE * 165 / 100;
+    int len = RATE / 2;
+    for (int i = 0; i < len; i++) {
+        float x = (float)i / len;
+        ph += 2.0f * M_PI * (500.0f + 2100.0f * x * x) / RATE;
+        mix[at + i] += 0.40f * sinf(ph) * env_in_out(i, len, RATE / 50);
+    }
+    /* 4. connected: two bell tones, 2.25 s and 2.45 s, 880 then 1320 Hz with a soft overtone, decaying */
+    for (int k = 0; k < 2; k++) {
+        float f = k ? 1320.0f : 880.0f;
+        at      = RATE * (225 + 20 * k) / 100;
+        len     = total - at;
+        for (int i = 0; i < len; i++) {
+            float t = (float)i / RATE;
+            float e = expf(-t * 3.2f) * (i < RATE / 200 ? (float)i / (RATE / 200) : 1.0f);
+            mix[at + i] += 0.48f * e * (sinf(2.0f * M_PI * f * t) + 0.25f * sinf(4.0f * M_PI * f * t));
+        }
+    }
+    cq_len = base;
+    memset(cq, 0, base * sizeof(cq[0]));
+    for (int i = 0; i < total; i++) {
+        float v = mix[i] * AMPL * 1.3f;
+        cq[base + i] = (int16_t)fmaxf(-32000.0f, fminf(32000.0f, v));
+    }
+    cq_len = base + total + RATE * DIT_MS / 1000;   /* and one dit of silence, as the CW had */
 }
 
 /* The codec as PulseAudio runs it: playback and capture together, stereo. Opened
@@ -238,7 +300,7 @@ static int sound_start(pthread_t *th) {
     if (!base_control_init()) goto no_sound;   /* once: no retries */
     base_rxvol_set(user_vol < MIN_VOL ? MIN_VOL : user_vol);
     base_record_set(true);
-    cw("-.-. --.-   -.-. --.-");
+    link_sound();
     deadline = now_ms() + SOUND_MAX_MS;
     if (pthread_create(th, NULL, sound_thread, NULL) == 0) return 1;
     base_record_set(false);
@@ -261,12 +323,75 @@ static void sound_end(pthread_t th) {
     unlink(AUDIO_BUSY);
 }
 
+/* ---- The callsign (CX8ANM) ------------------------------------------------ */
+
+#define CALL_Y 14       /* its top, over the ring (which starts at y 48) */
+
+/* A text setting as saved by the GUI, "" when it has none */
+static void saved_text(const char *name, char *out, size_t size) {
+    sqlite3      *db;
+    sqlite3_stmt *st;
+
+    *out = 0;
+    if (sqlite3_open_v2(PARAMS_DB, &db, SQLITE_OPEN_READONLY, NULL) == SQLITE_OK &&
+        sqlite3_prepare_v2(db, "SELECT val FROM params WHERE name = ?", -1, &st, NULL) == SQLITE_OK) {
+        sqlite3_bind_text(st, 1, name, -1, SQLITE_STATIC);
+        if (sqlite3_step(st) == SQLITE_ROW && sqlite3_column_text(st, 0))
+            snprintf(out, size, "%s", (const char *)sqlite3_column_text(st, 0));
+        sqlite3_finalize(st);
+    }
+    sqlite3_close(db);
+}
+
+static int glyph(char c) {
+    if (c >= 'a' && c <= 'z') c -= 32;
+    for (size_t i = 0; i < sizeof(callfont) / sizeof(callfont[0]); i++)
+        if (callfont[i].c == c) return (int)i;
+    return -1;
+}
+
+/* The callsign drawn into the logo, centred at the top, gold with a dark edge so it reads on any picture */
+static void draw_call(uint8_t *logo) {
+    char call[16];
+    int  w = 0;
+
+    saved_text("callsign", call, sizeof(call));
+    for (char *c = call; *c; c++) {
+        int g = glyph(*c);
+        if (g >= 0) w += callfont[g].w + CALLFONT_SPACING;
+    }
+    if (w == 0 || w > W - 40) return;
+    int x0 = (W - w) / 2;
+    for (int pass = 0; pass < 2; pass++) {      /* the dark edge first, then the gold */
+        int x = x0;
+        for (char *c = call; *c; c++) {
+            int g = glyph(*c);
+            if (g < 0) continue;
+            for (int y = 0; y < CALLFONT_H; y++)
+                for (int i = 0; i < callfont[g].w; i++) {
+                    int a = callfont[g].px[y * callfont[g].w + i];
+                    if (!a) continue;
+                    for (int d = pass ? 0 : 2; d >= (pass ? 0 : -2); d -= pass ? 1 : 2) {
+                        int px = x + i + (pass ? 0 : d), py = CALL_Y + y + (pass ? 0 : 2);
+                        if (px < 0 || px >= W || py >= H) continue;
+                        uint8_t *p   = logo + (py * W + px) * 3;
+                        const int col[3] = {229, 168, 35};
+                        for (int k = 0; k < 3; k++)
+                            p[k] = pass ? (uint8_t)((p[k] * (255 - a) + col[k] * a) / 255) : (uint8_t)(p[k] * (255 - a / 2) / 255);
+                    }
+                }
+            x += callfont[g].w + CALLFONT_SPACING;
+        }
+    }
+}
+
 /* ---- Animation ------------------------------------------------------------ */
 
 /* When a logo pixel starts to fade in, ms from the first frame. The mark is 190 px wide at the
  * top (y 48..238): its ring is gold, the signal through it blue (b > r); then the name (y 258..340),
  * the rule (y 352), the subtitle (y 372..400) and the maintainer's line at the foot (y 424..466). */
 static int start_ms(int x, int y, const uint8_t *p) {
+    if (y < CALL_Y + CALLFONT_H + 3) return 1820 + abs(x - 400) * 120 / 200;   /* the callsign, last, from the centre */
     if (y >= 415) return 1760 + (x - 230) * 240 / 340;               /* the foot, left to right */
     if (y < 250) {
         double r = hypot(x - CX, y - CY);
@@ -324,6 +449,9 @@ int main(int argc, char **argv) {
     int own = logo_read(argc > 1 ? argv[1] : OWN_LOGO, logo);
     if (!own && !logo_read(OUR_LOGO, logo)) return 1;
     int fade = own ? OWN_FADE_MS : FADE_MS;
+    /* The plain background (the kernel logo's) before the callsign goes onto the picture */
+    uint8_t bg0[3] = {logo[0], logo[1], logo[2]};
+    draw_call(logo);
 
     /* The panel is 480x800 portrait: landscape (x, y) is fb (y, 799 - x), as the kernel logo */
     int fd = open("/dev/fb0", O_RDWR);
@@ -336,7 +464,7 @@ int main(int argc, char **argv) {
     #define PIX(r, g, b) ((uint32_t)(r) << v.red.offset | (uint32_t)(g) << v.green.offset | (uint32_t)(b) << v.blue.offset)
 
     /* Only the pixels that differ from the background change */
-    const uint8_t *bg = logo;
+    const uint8_t *bg = bg0;
     static uint32_t off[W * H];
     static int16_t  t0[W * H];
     static uint32_t src[W * H];

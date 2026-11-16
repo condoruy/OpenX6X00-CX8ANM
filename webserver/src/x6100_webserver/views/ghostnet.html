@@ -1,78 +1,75 @@
 % rebase('base.html', title='GhostNet')
 <h2><svg class="i"><use href="#i-antenna"/></svg>GhostNet</h2>
-<p class="sub">GhostNet son redes de HF para pasar información sin depender de internet ni de los celulares, sobre todo con
-<b>JS8</b>. En la radio: <b>APP &rarr; Modos &rarr; JS8 &rarr; Frec. &rarr; Modo GhostNet</b> (7.107 MHz y los grupos).
-Los horarios oficiales están en inglés. Para esas redes, la radio traduce los mensajes que llegan y, si querés, los tuyos
-antes de mandarlos (con WiFi). Todavía no hay una red GhostNet en español: abajo podés armar la tuya.</p>
+<p class="sub">GhostNet is a set of HF nets for passing information without depending on the internet or mobile phones, mostly with
+<b>JS8</b>. On the radio: <b>APP → Modes → JS8 → Freq → GhostNet mode</b> (7.107 MHz and the groups). The official nets are in English. For them the radio translates the messages that come in and, if you want, yours before they go out (with WiFi). There is no GhostNet net in your language yet: you can set up your own below.</p>
 
 <section class="dp-card" id="g-flash" style="display:none;border-color:#d00000">
-<div class="dp-head"><span class="dp-ico" style="color:#ff5050"><svg class="i"><use href="#i-bell"/></svg></span><div><h3 style="color:#ff5050">Emergencia: @GSTFLASH</h3><p>Lo último que llegó a @GSTFLASH. GhostNet pide pasarlo enseguida a quien pueda ayudar.</p></div></div>
+<div class="dp-head"><span class="dp-ico" style="color:#ff5050"><svg class="i"><use href="#i-bell"/></svg></span><div><h3 style="color:#ff5050">Emergency: @GSTFLASH</h3><p>The latest that came to @GSTFLASH. GhostNet asks to pass it on at once to whoever can help.</p></div></div>
 <div class="dp-body" id="g-flash-list"></div>
 </section>
 
 <section class="dp-card">
-<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-clock"/></svg></span><div><h3>Próximas redes</h3><p id="g-tz">En la hora de la radio. ★ = con recordatorio en la pantalla de la radio.</p></div></div>
-<div class="dp-body"><div class="g-table-wrap"><table class="g-table" id="g-sched"><thead><tr><th></th><th>Cuándo</th><th>Red</th><th>Qué</th><th>Frecuencia</th><th>UTC</th></tr></thead><tbody></tbody></table></div></div>
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-clock"/></svg></span><div><h3>Next nets</h3><p id="g-tz">In the radio’s time. ★ = with a reminder on the radio’s screen.</p></div></div>
+<div class="dp-body"><div class="g-table-wrap"><table class="g-table" id="g-sched"><thead><tr><th></th><th>When</th><th>Net</th><th>What</th><th>Frequency</th><th>UTC</th></tr></thead><tbody></tbody></table></div></div>
 </section>
 
 <section class="dp-card">
-<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-bell"/></svg></span><div><h3>Recordatorios</h3><p>Un aviso en la pantalla de la radio, en cualquier app, antes de cada red marcada.</p></div></div>
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-bell"/></svg></span><div><h3>Reminders</h3><p>A notice on the radio’s screen, in any app, before each net ticked.</p></div></div>
 <div class="dp-row">
-  <div class="dp-lbl"><label for="g-remind"><b>Recordatorio</b><br><small>minutos antes</small></label></div>
-  <div class="dp-ctl"><label class="g-sw"><input type="checkbox" id="g-remind"> activado</label> <input id="g-remind-min" type="number" min="1" max="120" style="max-width:6em"></div>
+  <div class="dp-lbl"><label for="g-remind"><b>Reminder</b><br><small>minutes before</small></label></div>
+  <div class="dp-ctl"><label class="g-sw"><input type="checkbox" id="g-remind"> on</label> <input id="g-remind-min" type="number" min="1" max="120" style="max-width:6em"></div>
 </div>
 <div class="dp-body" id="g-nets"></div>
 </section>
 
 <section class="dp-card">
-<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-antenna"/></svg></span><div><h3>Red hispana</h3><p>Una red propia en español, con su hora local, para coordinar con otros radioaficionados de la región.</p></div></div>
-<div class="dp-row"><div class="dp-lbl"><label for="g-es-on"><b>Usarla</b><br><small>sale en la lista y en los recordatorios</small></label></div>
-  <div class="dp-ctl"><label class="g-sw"><input type="checkbox" id="g-es-on"> sí</label></div></div>
-<div class="dp-row"><div class="dp-lbl"><label for="g-es-name"><b>Nombre</b></label></div>
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-antenna"/></svg></span><div><h3>Own net</h3><p>A net of your own in your language, at its local time, to coordinate with other radio amateurs of the region.</p></div></div>
+<div class="dp-row"><div class="dp-lbl"><label for="g-es-on"><b>Use it</b><br><small>it shows in the list and in the reminders</small></label></div>
+  <div class="dp-ctl"><label class="g-sw"><input type="checkbox" id="g-es-on"> yes</label></div></div>
+<div class="dp-row"><div class="dp-lbl"><label for="g-es-name"><b>Name</b></label></div>
   <div class="dp-ctl"><input id="g-es-name" maxlength="30" style="max-width:16em"></div></div>
-<div class="dp-row"><div class="dp-lbl"><label for="g-es-day"><b>Día y hora</b><br><small>hora de la radio</small></label></div>
-  <div class="dp-ctl"><select id="g-es-day"><option value="0">domingo</option><option value="1">lunes</option><option value="2">martes</option><option value="3">miércoles</option><option value="4">jueves</option><option value="5">viernes</option><option value="6">sábado</option></select>
-  <input id="g-es-time" placeholder="21:00" style="max-width:6em"> durante <input id="g-es-min" type="number" min="5" max="240" style="max-width:5em"> min</div></div>
-<div class="dp-row"><div class="dp-lbl"><label for="g-es-khz"><b>Frecuencia y modo</b><br><small>en kHz; 7107 es la de GhostNet en 40 m</small></label></div>
+<div class="dp-row"><div class="dp-lbl"><label for="g-es-day"><b>Day and time</b><br><small>the radio’s time</small></label></div>
+  <div class="dp-ctl"><select id="g-es-day"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select>
+  <input id="g-es-time" placeholder="21:00" style="max-width:6em"> for <input id="g-es-min" type="number" min="5" max="240" style="max-width:5em"> min</div></div>
+<div class="dp-row"><div class="dp-lbl"><label for="g-es-khz"><b>Frequency and mode</b><br><small>in kHz; 7107 is GhostNet’s on 40 m</small></label></div>
   <div class="dp-ctl"><input id="g-es-khz" style="max-width:7em"> kHz <select id="g-es-mode"><option>JS8</option><option>RTTY</option><option>LSB</option><option>USB</option></select></div></div>
 </section>
 
 <section class="dp-card">
-<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-globe"/></svg></span><div><h3>Grupos y traducción</h3><p>Los grupos se suman solos con "Modo GhostNet" en JS8. La traducción usa internet (MyMemory, gratis, con un límite por día).</p></div></div>
-<div class="dp-row"><div class="dp-lbl"><label for="g-region"><b>Grupo regional</b><br><small id="g-region-why"></small></label></div>
-  <div class="dp-ctl"><input id="g-region" placeholder="automático" style="max-width:10em;text-transform:uppercase"> <span id="g-region-auto" class="sub"></span></div></div>
-<div class="dp-row"><div class="dp-lbl"><label for="g-tr-rx"><b>Mensajes en inglés</b><br><small>llegan con la traducción debajo (ES: ...)</small></label></div>
-  <div class="dp-ctl"><label class="g-sw"><input type="checkbox" id="g-tr-rx"> traducir al español</label></div></div>
-<div class="dp-row"><div class="dp-lbl"><label for="g-tr-tx"><b>Los míos</b><br><small>el primer OK traduce y lo muestra; el segundo lo manda</small></label></div>
-  <div class="dp-ctl"><label class="g-sw"><input type="checkbox" id="g-tr-tx"> mandar en inglés</label></div></div>
-<div class="dp-body" style="border-top:1px solid #1a283c"><div class="actions"><button id="g-save" class="primary">Guardar</button> <span class="status" id="g-status"></span></div></div>
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-globe"/></svg></span><div><h3>Groups and translation</h3><p>The groups are added by themselves with "GhostNet mode" in JS8. The translation uses the internet (MyMemory, free, with a daily limit).</p></div></div>
+<div class="dp-row"><div class="dp-lbl"><label for="g-region"><b>Regional group</b><br><small id="g-region-why"></small></label></div>
+  <div class="dp-ctl"><input id="g-region" placeholder="automatic" style="max-width:10em;text-transform:uppercase"> <span id="g-region-auto" class="sub"></span></div></div>
+<div class="dp-row"><div class="dp-lbl"><label for="g-tr-rx"><b>Messages in English</b><br><small>they come with the translation under them</small></label></div>
+  <div class="dp-ctl"><label class="g-sw"><input type="checkbox" id="g-tr-rx"> translate them</label></div></div>
+<div class="dp-row"><div class="dp-lbl"><label for="g-tr-tx"><b>Mine</b><br><small>the first OK translates and shows it; the second sends it</small></label></div>
+  <div class="dp-ctl"><label class="g-sw"><input type="checkbox" id="g-tr-tx"> send in English</label></div></div>
+<div class="dp-body" style="border-top:1px solid #1a283c"><div class="actions"><button id="g-save" class="primary">Save</button> <span class="status" id="g-status"></span></div></div>
 </section>
 
 <section class="dp-card">
-<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-list"/></svg></span><div><h3>Mensajes</h3><p>Lo que llegó a los grupos de GhostNet (o en sus frecuencias) mientras JS8 estuvo abierto, con su traducción.</p></div></div>
-<div class="dp-body"><div id="g-msgs"><p class="sub" style="margin:0">Todavía nada.</p></div>
-<div class="actions" style="margin-top:10px"><button id="g-reload">Actualizar</button> <button id="g-clear">Borrar el registro</button></div></div>
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-list"/></svg></span><div><h3>Messages</h3><p>What came to the GhostNet groups (or on its frequencies) while JS8 was open, with its translation.</p></div></div>
+<div class="dp-body"><div id="g-msgs"><p class="sub" style="margin:0">Nothing yet.</p></div>
+<div class="actions" style="margin-top:10px"><button id="g-reload">Update</button> <button id="g-clear">Clear the log</button></div></div>
 </section>
 
 <section class="dp-card">
-<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-antenna"/></svg></span><div><h3>Estaciones escuchadas</h3><p>Quiénes se reportaron, por la última vez.</p></div></div>
-<div class="dp-body"><div class="g-table-wrap"><table class="g-table" id="g-st"><thead><tr><th>Indicativo</th><th>Última vez</th><th>SNR</th><th>Mensajes</th><th>Grupos</th></tr></thead><tbody></tbody></table></div></div>
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-antenna"/></svg></span><div><h3>Stations heard</h3><p>Who checked in, by the last time.</p></div></div>
+<div class="dp-body"><div class="g-table-wrap"><table class="g-table" id="g-st"><thead><tr><th>Callsign</th><th>Last time</th><th>SNR</th><th>Messages</th><th>Groups</th></tr></thead><tbody></tbody></table></div></div>
 </section>
 
 <section class="dp-card">
-<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-book"/></svg></span><div><h3>Cómo participar</h3><p>Resumen de GhostNet versión 1.5.</p></div></div>
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-book"/></svg></span><div><h3>How to take part</h3><p>A summary of GhostNet version 1.5.</p></div></div>
 <div class="dp-body g-guide">
 <ol>
-<li><b>Escuchá primero.</b> En JS8 elegí <b>Frec. &rarr; Modo GhostNet</b>: la radio va a 7.107 MHz y se suma a <b>@GHOSTNET</b>, <b>@GSTFLASH</b> y tu grupo regional. Escuchar no necesita licencia; transmitir sí.</li>
-<li><b>Grupos.</b> @GHOSTNET para el tráfico de todos los días; <b>@GSTFLASH solo para emergencias</b>; @GN + país + estado para tu zona (por ejemplo @GNURYMO es Montevideo).</li>
-<li><b>Reportarse.</b> En la ventana de la red mandá un mensaje corto al grupo, por ejemplo <code>@GHOSTNET QRV MONTEVIDEO GF15 ALL OK</code>. Elegí un offset libre; los latidos (heartbeat) van por debajo de 1000 Hz.</li>
-<li><b>Potencia.</b> La justa: si tenés mucha, bajala para no tapar a los que transmiten con poca.</li>
-<li><b>RTTY.</b> Una hora después de empezar cada red hay envíos en 7.077 MHz a 45,45 baudios para quien no pudo reportarse: JS8 &rarr; Frec. &rarr; GhostNet: redes, traducción, RTTY &rarr; RTTY.</li>
-<li><b>Voz.</b> 7.190 MHz LSB solo en emergencias graves, en los últimos 5 minutos de la ventana.</li>
-<li><b>Sin cifrado.</b> En las bandas de radioaficionado no se pueden cifrar los mensajes: todo va en claro y con tu indicativo.</li>
+<li><b>Listen first.</b> In JS8 choose <b>Freq → GhostNet mode</b>: the radio goes to 7.107 MHz and joins <b>@GHOSTNET</b>, <b>@GSTFLASH</b> and your regional group. Listening needs no licence; transmitting does.</li>
+<li><b>Groups.</b> @GHOSTNET for everyday traffic; <b>@GSTFLASH for emergencies only</b>; @GN + country + state for your area (for example @GNURYMO is Montevideo).</li>
+<li><b>Checking in.</b> In the net’s window send a short message to the group, for example <code>@GHOSTNET QRV MONTEVIDEO GF15 ALL OK</code>. Pick a free offset; heartbeats go below 1000 Hz.</li>
+<li><b>Power.</b> Just enough: if you have a lot, turn it down so you don’t cover those who transmit with little.</li>
+<li><b>RTTY.</b> An hour after each net starts there are broadcasts on 7.077 MHz at 45.45 baud for whoever could not check in: JS8 → Freq → GhostNet: nets, translation, RTTY → RTTY.</li>
+<li><b>Voice.</b> 7.190 MHz LSB only in serious emergencies, in the last 5 minutes of the window.</li>
+<li><b>No encryption.</b> On the amateur bands messages may not be encrypted: everything goes in the clear and with your callsign.</li>
 </ol>
-<p class="sub">Winlink por VARA y Ion2G ALE son programas de PC: no funcionan dentro de la radio, pero podés usarlos con una PC conectada.
-Documento oficial: <a href="https://github.com/s2underground/GhostNet" target="_blank" rel="noopener">github.com/s2underground/GhostNet</a>.</p>
+<p class="sub">Winlink over VARA and Ion2G ALE are PC programs: they don’t run inside the radio, but you can use them with a PC connected. The official document: <a href="https://github.com/s2underground/GhostNet" target="_blank" rel="noopener">github.com/s2underground/GhostNet</a>.</p>
 </div>
 </section>
 
@@ -105,16 +102,16 @@ function renderSched(list) {
   list.forEach(function(s) {
     const pc = s.mode === "VARA" || s.mode === "ALE";
     tb.append('<tr class="' + (s.now ? "now" : "") + (pc ? " dim" : "") + '"><td>' + (s.reminder ? "★" : "") + "</td><td>" + esc(s.day + " " + s.local.slice(11)) +
-      (s.now ? " <b>ahora</b>" : "") + "</td><td>" + esc(s.name) + "</td><td>" + esc(s.what) + "</td><td>" + khz(s.khz) + (s.mode === "LSB" ? " LSB" : "") +
+      (s.now ? " <b>now</b>" : "") + "</td><td>" + esc(s.name) + "</td><td>" + esc(s.what) + "</td><td>" + khz(s.khz) + (s.mode === "LSB" ? " LSB" : "") +
       "</td><td>" + esc(s.utc) + "</td></tr>");
   });
 }
 function renderMsgs(msgs) {
   const box = $("#g-msgs").empty(), fl = $("#g-flash-list").empty();
-  if (!msgs.length) box.append('<p class="sub" style="margin:0">Todavía nada. Abrí JS8 en Modo GhostNet y los mensajes van a ir apareciendo acá.</p>');
+  if (!msgs.length) box.append('<p class="sub" style="margin:0">Nothing yet. Open JS8 in GhostNet mode and the messages will show up here.</p>');
   msgs.forEach(function(m) {
     const html = '<div class="g-msg' + (m.kind === "X" ? " tx" : "") + (m.flash ? " flash" : "") + '"><div class="h">' + esc(m.local) + " · " +
-      (m.kind === "X" ? "enviado" : esc(m.from) + " · SNR " + m.snr) + " · " + khz(m.dial) + "</div><div class=\"t\">" + esc(m.text) + "</div>" +
+      (m.kind === "X" ? "sent" : esc(m.from) + " · SNR " + m.snr) + " · " + khz(m.dial) + "</div><div class=\"t\">" + esc(m.text) + "</div>" +
       (m.es ? '<div class="es">ES: ' + esc(m.es) + "</div>" : "") + "</div>";
     box.append(html);
     if (m.flash && fl.children().length < 3) fl.append(html);
@@ -123,7 +120,7 @@ function renderMsgs(msgs) {
 }
 function renderStations(st) {
   const tb = $("#g-st tbody").empty();
-  if (!st.length) tb.append('<tr class="dim"><td colspan="5">Ninguna todavía.</td></tr>');
+  if (!st.length) tb.append('<tr class="dim"><td colspan="5">None yet.</td></tr>');
   st.forEach(function(s) { tb.append("<tr><td><b>" + esc(s.call) + "</b></td><td>" + esc(s.local) + "</td><td>" + s.snr + "</td><td>" + s.count + "</td><td>" + esc(s.groups.join(" ")) + "</td></tr>"); });
 }
 function renderConf(r) {
@@ -135,14 +132,14 @@ function renderConf(r) {
   });
   $("#g-es-on").prop("checked", c.es_on === "1"); $("#g-es-name").val(c.es_name); $("#g-es-day").val(c.es_day);
   $("#g-es-time").val(c.es_time); $("#g-es-min").val(c.es_min); $("#g-es-khz").val(c.es_khz); $("#g-es-mode").val(c.es_mode);
-  $("#g-region").val(c.region); $("#g-region-auto").text(c.region ? "" : "ahora: " + (r.region || "—"));
+  $("#g-region").val(c.region); $("#g-region-auto").text(c.region ? "" : "now: " + (r.region || "—"));
   $("#g-region-why").text(r.region_why || "");
   $("#g-tr-rx").prop("checked", c.translate_rx === "1"); $("#g-tr-tx").prop("checked", c.translate_tx === "1");
 }
 function load() {
   $.get("/api/ghostnet", {}, function(r) {
     G = r; renderConf(r); renderSched(r.schedule); renderMsgs(r.messages); renderStations(r.stations);
-    $("#g-tz").text("En la hora de la radio (" + (r.tz || "local") + "). ★ = con recordatorio en la pantalla de la radio.");
+    $("#g-tz").text("In the radio’s time (" + (r.tz || "local") + "). ★ = with a reminder on the radio’s screen.");
   });
 }
 $("#g-save").on("click", function() {
@@ -151,14 +148,14 @@ $("#g-save").on("click", function() {
     es_on: $("#g-es-on").prop("checked"), es_name: $("#g-es-name").val(), es_day: $("#g-es-day").val(), es_time: $("#g-es-time").val(),
     es_min: $("#g-es-min").val(), es_khz: $("#g-es-khz").val(), es_mode: $("#g-es-mode").val(), region: $("#g-region").val(),
     translate_rx: $("#g-tr-rx").prop("checked"), translate_tx: $("#g-tr-tx").prop("checked")};
-  gStatus("Guardando…");
+  gStatus("Saving…");
   $.ajax({url: "/api/ghostnet/conf", type: "POST", data: JSON.stringify(d), contentType: "application/json; charset=utf-8", dataType: "json",
-    success: function(r) { renderSched(r.schedule); gStatus("Guardado: la radio lo usa enseguida"); load(); },
-    error: function(x) { gStatus(x.responseJSON ? x.responseJSON.msg : "No se pudo guardar", true); }});
+    success: function(r) { renderSched(r.schedule); gStatus("Saved: the radio uses it at once"); load(); },
+    error: function(x) { gStatus(x.responseJSON ? x.responseJSON.msg : "Could not save", true); }});
 });
 $("#g-reload").on("click", load);
 $("#g-clear").on("click", function() {
-  if (!confirm("¿Borrar el registro de mensajes GhostNet?")) return;
+  if (!confirm("Clear the GhostNet message log?")) return;
   $.post("/api/ghostnet/clear", {}, load);
 });
 load();

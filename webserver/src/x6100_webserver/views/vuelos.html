@@ -1,4 +1,4 @@
-% rebase('base.html', title='Vuelos')
+% rebase('base.html', title='Flights')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
@@ -11,22 +11,20 @@
   #fl-table tr.sel { background: rgba(255,176,64,.18); }
   #fl-table tbody tr { cursor: pointer; }
 </style>
-<h2><svg class="i"><use href="#i-globe"/></svg>Vuelos</h2>
-<p class="sub">Los aviones sobre la zona elegida, como en Flightradar: los mismos datos que <b>APP &rarr; Vuelos</b> en la radio.
-Vienen de redes abiertas de receptores ADS-B de voluntarios (airplanes.live, adsb.lol): solo se ven los aviones que capta
-algún receptor cercano. Se actualiza cada 15 segundos. <b>Tocá el mapa</b> para centrar ahí.</p>
+<h2><svg class="i"><use href="#i-globe"/></svg>Flights</h2>
+<p class="sub">The aircraft over the chosen area, as on Flightradar: the same data as <b>APP → Flights</b> on the radio. It comes from open networks of volunteers’ ADS-B receivers (airplanes.live, adsb.lol): only the aircraft some nearby receiver picks up are seen. It updates every 15 seconds. <b>Tap the map</b> to centre it there.</p>
 
 <section class="dp-card">
 <div class="dp-body">
 <div class="actions" style="margin-top: 0">
-  <label>Centro <select id="fl-center"></select></label>
+  <label>Centre <select id="fl-center"></select></label>
   <label>Radio <select id="fl-km"><option>25</option><option>50</option><option selected>100</option><option>200</option><option>400</option></select> km</label>
-  <button id="fl-upd">Actualizar</button>
+  <button id="fl-upd">Update</button>
   <span class="status" id="fl-status"></span>
 </div>
 <div id="fl-map"></div>
 <table id="fl-table" style="width: 100%; margin-top: 10px">
-<thead><tr><th>Vuelo</th><th>Matrícula</th><th>Tipo</th><th>Altura</th><th>Velocidad</th><th>Rumbo</th><th>Distancia</th></tr></thead>
+<thead><tr><th>Flight</th><th>Registration</th><th>Type</th><th>Altitude</th><th>Speed</th><th>Heading</th><th>Distance</th></tr></thead>
 <tbody></tbody>
 </table>
 </div>
@@ -34,11 +32,11 @@ algún receptor cercano. Se actualiza cada 15 segundos. <b>Tocá el mapa</b> par
 
 <script>
 const CENTERS = [
-  ["Mi locator (QTH)", null, null],
+  ["My locator (QTH)", null, null],
   ["SUMU Carrasco", -34.8384, -56.0308], ["SULS Laguna del Sauce", -34.8551, -55.0943],
   ["SUAA Melilla", -34.7892, -56.2647], ["SUDU Durazno", -33.3589, -56.4992], ["SURV Rivera", -30.9746, -55.4762],
   ["SUSO Salto", -31.4385, -57.9853], ["SABE Aeroparque", -34.5592, -58.4156], ["SAEZ Ezeiza", -34.8222, -58.5358],
-  ["SBPA Porto Alegre", -29.9939, -51.1714], ["Elegido en el mapa", null, null]
+  ["SBPA Porto Alegre", -29.9939, -51.1714], ["Chosen on the map", null, null]
 ];
 const fl = {lat: -34.8384, lon: -56.0308, home: null, sel: null, markers: {}, circle: null, timer: null, busy: false};
 const sel = document.getElementById("fl-center");
@@ -84,15 +82,15 @@ function render(d) {
       .forEach((v) => tr.append($("<td>").text(v || "")));
     tb.append(tr);
   });
-  if (!d.ac.length) tb.append($("<tr>").append($('<td colspan="7">').text("Ningún avión visto en esta zona ahora.")));
+  if (!d.ac.length) tb.append($("<tr>").append($('<td colspan="7">').text("No aircraft seen in this area now.")));
 }
 function update() {
   if (fl.busy) return;
   fl.busy = true;
-  flStatus("Buscando…");
+  flStatus("Searching…");
   $.ajax({url: "/api/flights", data: {lat: fl.lat.toFixed(4), lon: fl.lon.toFixed(4), km: km()}, dataType: "json", timeout: 45000,
     success: (d) => { render(d); flStatus(d.ac.length + " aviones · " + d.time + " (" + d.src + ")"); },
-    error: (x) => flStatus(x.responseJSON ? x.responseJSON.msg : "Sin datos (¿hay internet?)", true),
+    error: (x) => flStatus(x.responseJSON ? x.responseJSON.msg : "No data (is there internet?)", true),
     complete: () => { fl.busy = false; }});
 }
 sel.addEventListener("change", () => {
@@ -104,7 +102,7 @@ $("#fl-km").on("change", () => setCenter(fl.lat, fl.lon, true));
 $("#fl-upd").on("click", update);
 map.on("click", (e) => { sel.value = CENTERS.length - 1; setCenter(e.latlng.lat, e.latlng.lng, false); });
 $.get("/api/flights/home", {}, (h) => {
-  if (h.lat != null) { fl.home = [h.lat, h.lon]; CENTERS[0][0] = "Mi locator (" + h.qth + ")"; sel.options[0].textContent = CENTERS[0][0]; setCenter(h.lat, h.lon, true); }
+  if (h.lat != null) { fl.home = [h.lat, h.lon]; CENTERS[0][0] = "My locator (" + h.qth + ")"; sel.options[0].textContent = CENTERS[0][0]; setCenter(h.lat, h.lon, true); }
   else { sel.value = 1; setCenter(CENTERS[1][1], CENTERS[1][2], true); }
 }).fail(() => { sel.value = 1; setCenter(CENTERS[1][1], CENTERS[1][2], true); });
 fl.timer = setInterval(update, 15000);

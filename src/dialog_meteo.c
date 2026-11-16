@@ -397,7 +397,7 @@ static void show_status(void) {
         cJSON      *pos  = obj(data, "pos");
         const char *from = strv(pos, "from");
         snprintf(where, sizeof(where), "%s%s%s%s%s", strv(data, "dept"), pos ? " (" : "", strv(pos, "loc"),
-                 !strcmp(from, "gps") ? " GPS" : "", pos ? ")" : "");
+                 !strcmp(from, "gps") ? " GPS" : !strcmp(from, "manual") ? tr(" manual") : "", pos ? ")" : "");
     }
     lv_label_set_text_fmt(status_lbl, "#%06x %s# #%06x %s - %s#%s", theme_hex(TC_text_head), tr("WEATHER"),
                           theme_hex(TC_accent), names[view], where, extra);

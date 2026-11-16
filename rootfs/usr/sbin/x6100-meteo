@@ -65,7 +65,7 @@ def get(url, text=False, tries=2, accept=None):
     last = None
     for i in range(tries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "es",
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": LANG,
                                                        "Accept": accept or ("text/html" if text else "application/json")})
             with urllib.request.urlopen(req, timeout=25, context=ssl_context()) as r:
                 data = r.read()
@@ -99,11 +99,13 @@ def dist_km(lat1, lon1, lat2, lon2):
     return 12742 * math.asin(math.sqrt(min(1, a)))
 
 
+CARD_W = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
 CARD = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSO", "SO", "OSO", "O", "ONO", "NO", "NNO"]
 
 
 def cardinal(deg):
-    return None if deg is None else CARD[int(round((deg % 360) / 22.5)) % 16]
+    table = CARD_W if LANG in ("en", "de") else CARD
+    return None if deg is None else table[int(round((deg % 360) / 22.5)) % 16]
 
 
 def feels(t, hr, kmh):
@@ -318,13 +320,72 @@ def nearest_station(lat, lon):
 
 
 # ---------- Open-Meteo: lo que INUMET no da ----------
-WMO = {0: "Despejado", 1: "Mayormente despejado", 2: "Parcialmente nublado", 3: "Cubierto", 45: "Niebla",
-       48: "Niebla con escarcha", 51: "Llovizna débil", 53: "Llovizna", 55: "Llovizna intensa", 56: "Llovizna helada",
-       57: "Llovizna helada intensa", 61: "Lluvia débil", 63: "Lluvia", 65: "Lluvia intensa", 66: "Lluvia helada",
-       67: "Lluvia helada intensa", 71: "Nevada débil", 73: "Nevada", 75: "Nevada intensa", 77: "Granos de nieve",
-       80: "Chaparrones débiles", 81: "Chaparrones", 82: "Chaparrones fuertes", 85: "Chaparrones de nieve",
-       86: "Chaparrones de nieve fuertes", 95: "Tormenta", 96: "Tormenta con granizo", 99: "Tormenta con granizo fuerte"}
-DOW = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+# Los textos en el idioma de la radio (Ajustes > Interfaz > Idioma, params.db: 0 en, 1 es, 2 de, 3 fr, 4 it)
+def radio_lang():
+    try:
+        import sqlite3
+        con = sqlite3.connect("file:/mnt/params.db?mode=ro", uri=True)
+        try:
+            row = con.execute("SELECT val FROM params WHERE name = 'language'").fetchone()
+        finally:
+            con.close()
+        return ("en", "es", "de", "fr", "it")[int(row[0])] if row and row[0] is not None else "es"
+    except Exception:
+        return "es"
+
+
+LANG = radio_lang()
+_W = {   # código WMO: (en, es, de, fr, it)
+    0: ("Clear", "Despejado", "Klar", "Dégagé", "Sereno"),
+    1: ("Mostly clear", "Mayormente despejado", "Überwiegend klar", "Plutôt dégagé", "Prevalentemente sereno"),
+    2: ("Partly cloudy", "Parcialmente nublado", "Teilweise bewölkt", "Partiellement nuageux", "Parzialmente nuvoloso"),
+    3: ("Overcast", "Cubierto", "Bedeckt", "Couvert", "Coperto"),
+    45: ("Fog", "Niebla", "Nebel", "Brouillard", "Nebbia"),
+    48: ("Rime fog", "Niebla con escarcha", "Reifnebel", "Brouillard givrant", "Nebbia con brina"),
+    51: ("Light drizzle", "Llovizna débil", "Leichter Nieselregen", "Bruine faible", "Pioviggine debole"),
+    53: ("Drizzle", "Llovizna", "Nieselregen", "Bruine", "Pioviggine"),
+    55: ("Heavy drizzle", "Llovizna intensa", "Starker Nieselregen", "Bruine forte", "Pioviggine intensa"),
+    56: ("Freezing drizzle", "Llovizna helada", "Gefrierender Nieselregen", "Bruine verglaçante", "Pioviggine gelata"),
+    57: ("Heavy freezing drizzle", "Llovizna helada intensa", "Starker gefrierender Nieselregen", "Forte bruine verglaçante", "Pioviggine gelata intensa"),
+    61: ("Light rain", "Lluvia débil", "Leichter Regen", "Pluie faible", "Pioggia debole"),
+    63: ("Rain", "Lluvia", "Regen", "Pluie", "Pioggia"),
+    65: ("Heavy rain", "Lluvia intensa", "Starker Regen", "Forte pluie", "Pioggia intensa"),
+    66: ("Freezing rain", "Lluvia helada", "Gefrierender Regen", "Pluie verglaçante", "Pioggia gelata"),
+    67: ("Heavy freezing rain", "Lluvia helada intensa", "Starker gefrierender Regen", "Forte pluie verglaçante", "Pioggia gelata intensa"),
+    71: ("Light snow", "Nevada débil", "Leichter Schneefall", "Neige faible", "Nevicata debole"),
+    73: ("Snow", "Nevada", "Schneefall", "Neige", "Nevicata"),
+    75: ("Heavy snow", "Nevada intensa", "Starker Schneefall", "Forte neige", "Nevicata intensa"),
+    77: ("Snow grains", "Granos de nieve", "Schneegriesel", "Neige en grains", "Neve granulosa"),
+    80: ("Light showers", "Chaparrones débiles", "Leichte Schauer", "Averses faibles", "Rovesci deboli"),
+    81: ("Showers", "Chaparrones", "Schauer", "Averses", "Rovesci"),
+    82: ("Heavy showers", "Chaparrones fuertes", "Starke Schauer", "Fortes averses", "Rovesci forti"),
+    85: ("Snow showers", "Chaparrones de nieve", "Schneeschauer", "Averses de neige", "Rovesci di neve"),
+    86: ("Heavy snow showers", "Chaparrones de nieve fuertes", "Starke Schneeschauer", "Fortes averses de neige", "Forti rovesci di neve"),
+    95: ("Thunderstorm", "Tormenta", "Gewitter", "Orage", "Temporale"),
+    96: ("Thunderstorm with hail", "Tormenta con granizo", "Gewitter mit Hagel", "Orage avec grêle", "Temporale con grandine"),
+    99: ("Thunderstorm with heavy hail", "Tormenta con granizo fuerte", "Gewitter mit starkem Hagel", "Orage avec forte grêle", "Temporale con forte grandine"),
+}
+_LI = ("en", "es", "de", "fr", "it").index(LANG)
+WMO = {k: v[_LI] for k, v in _W.items()}
+DOW = {"en": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], "es": ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
+       "de": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], "fr": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+       "it": ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"]}[LANG]
+TXT = {   # los avisos calculados del pronóstico
+    "note": ("Calculated from the forecast (not official)", "Calculado del pronóstico (no oficial)",
+             "Aus der Vorhersage berechnet (nicht amtlich)", "Calculé d'après la prévision (non officiel)",
+             "Calcolato dalla previsione (non ufficiale)"),
+    "gust": ("Gusts up to {} km/h", "Ráfagas de hasta {} km/h", "Böen bis {} km/h", "Rafales jusqu'à {} km/h", "Raffiche fino a {} km/h"),
+    "rain": ("{} mm of rain", "Lluvia de {} mm", "{} mm Regen", "{} mm de pluie", "{} mm di pioggia"),
+    "storm": ("Thunderstorms", "Tormentas", "Gewitter", "Orages", "Temporali"),
+    "hail": ("Thunderstorms with hail", "Tormentas con granizo", "Gewitter mit Hagel", "Orages avec grêle", "Temporali con grandine"),
+    "heat": ("Heat: high of {}°", "Calor: máxima de {}°", "Hitze: Höchstwert {}°", "Chaleur : maximale de {}°", "Caldo: massima di {}°"),
+    "cold": ("Cold: low of {}°", "Frío: mínima de {}°", "Kälte: Tiefstwert {}°", "Froid : minimale de {}°", "Freddo: minima di {}°"),
+    "uv": ("Extreme UV ({})", "UV extremo ({})", "Extremes UV ({})", "UV extrême ({})", "UV estremo ({})"),
+}
+
+
+def T(key, *a):
+    return TXT[key][_LI].format(*a)
 
 
 def open_meteo(lat, lon):
@@ -413,11 +474,11 @@ def _load_places():
 
 def place_of(lat, lon):
     """{"city", "state", "county", "country", "cc"} de OpenStreetMap; una consulta por posición nueva."""
-    key = f"{lat:.2f},{lon:.2f}"
+    key = f"{lat:.2f},{lon:.2f},{LANG}"
     places = _load_places()
     if key in places and "iso" in places[key]:
         return places[key]
-    q = {"lat": f"{lat:.4f}", "lon": f"{lon:.4f}", "format": "jsonv2", "zoom": "10", "accept-language": "es"}
+    q = {"lat": f"{lat:.4f}", "lon": f"{lon:.4f}", "format": "jsonv2", "zoom": "10", "accept-language": LANG}
     r = get(NOMINATIM + "/reverse?" + urllib.parse.urlencode(q), tries=1)
     a = r.get("address") or {}
     geo = {
@@ -721,23 +782,23 @@ def meteoalarm_alerts(cc, geo):
 # ---------- avisos calculados del pronóstico (países sin servicio, o si el servicio no responde) ----------
 def computed_alerts(days, where):
     out = []
-    note = "Calculado del pronóstico (no oficial)"
+    note = T("note")
     for d in (days or [])[:2]:
         checks = []
         g, mm, code = num(d.get("gust_max")), num(d.get("rain_mm")), d.get("code")
         tmax, tmin, uv = num(d.get("tmax")), num(d.get("tmin")), num(d.get("uv"))
         if g is not None and g >= 65:
-            checks.append((4 if g >= 120 else 3 if g >= 90 else 2, f"Ráfagas de hasta {g:.0f} km/h"))
+            checks.append((4 if g >= 120 else 3 if g >= 90 else 2, T("gust", f"{g:.0f}")))
         if mm is not None and mm >= 50:
-            checks.append((4 if mm >= 150 else 3 if mm >= 100 else 2, f"Lluvia de {mm:.0f} mm"))
+            checks.append((4 if mm >= 150 else 3 if mm >= 100 else 2, T("rain", f"{mm:.0f}")))
         if code in (95, 96, 99):
-            checks.append((3 if code in (96, 99) else 2, "Tormentas" + (" con granizo" if code in (96, 99) else "")))
+            checks.append((3 if code in (96, 99) else 2, T("hail") if code in (96, 99) else T("storm")))
         if tmax is not None and tmax >= 36:
-            checks.append((4 if tmax >= 44 else 3 if tmax >= 40 else 2, f"Calor: máxima de {tmax:.0f}°"))
+            checks.append((4 if tmax >= 44 else 3 if tmax >= 40 else 2, T("heat", f"{tmax:.0f}")))
         if tmin is not None and tmin <= -12:
-            checks.append((3 if tmin <= -20 else 2, f"Frío: mínima de {tmin:.0f}°"))
+            checks.append((3 if tmin <= -20 else 2, T("cold", f"{tmin:.0f}")))
         if uv is not None and uv >= 11:
-            checks.append((2, f"UV extremo ({uv:.0f})"))
+            checks.append((2, T("uv", f"{uv:.0f}")))
         for level, text in checks:
             out.append(alert("calculada", level, f"{d.get('dow', '')}: {text}", "", note, where,
                              f"{d.get('date')} 00:00", f"{d.get('date')} 23:59", True, "Pronóstico"))

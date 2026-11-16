@@ -2,9 +2,10 @@
 # CX8ANM: traducción de los mensajes de JS8 para las redes GhostNet en inglés (src/ghostnet.c).
 #
 #   x6100-translate rx "CX1ABC: @GHOSTNET ALL STATIONS PLEASE CHECK IN"
-#       si el texto está en inglés imprime "ok <traducción al español>"; si no, "skip"
+#       si el texto está en inglés imprime "ok <traducción al idioma de la radio>"; si no, "skip"
 #   x6100-translate tx "@GHOSTNET BUENAS NOCHES A TODOS, CHEQUEO DESDE MONTEVIDEO"
-#       imprime "ok <traducción al inglés en mayúsculas, solo con las letras que JS8 puede mandar>"
+#       imprime "ok <traducción al inglés en mayúsculas, solo con las letras que JS8 puede mandar>" (desde el
+#       idioma de la radio: Ajustes > Interfaz > Idioma; con la radio en inglés no hay nada que traducir)
 #   en cualquier error imprime "error <motivo>"
 #
 # Las direcciones del principio (CX8ANM:, @GHOSTNET, CX1ABC, MSG, ...) no se traducen: quedan como están.
@@ -34,6 +35,22 @@ COMMANDS = {"MSG", "TO:", "ACK", "NACK", "HB", "HEARTBEAT", "SNR", "SNR?", "GRID
             "STATUS", "STATUS?", "HEARING", "HEARING?", "QUERY", "MSGS", "MSGS?", "CMD", "RELAY", "CQ", "DE", "AGN?",
             "QSL", "QSL?", "QTH", "QTH?", "YES", "NO", "73", "RR", "SK", "DIT", "DIT!"}
 CALL = re.compile(r"^@?[A-Z0-9/]*\d[A-Z0-9/]*:?$|^@[A-Z0-9]+$")
+
+
+def radio_lang():
+    try:
+        import sqlite3
+        con = sqlite3.connect("file:/mnt/params.db?mode=ro", uri=True)
+        try:
+            row = con.execute("SELECT val FROM params WHERE name = 'language'").fetchone()
+        finally:
+            con.close()
+        return ("en", "es", "de", "fr", "it")[int(row[0])] if row and row[0] is not None else "es"
+    except Exception:
+        return "es"
+
+
+LANG = radio_lang()
 
 
 def fail(why):
@@ -128,14 +145,17 @@ def main(argv):
     if not body:
         print("skip")
         return
+    if LANG == "en":
+        print("skip" if argv[1] == "rx" else "ok " + text.upper())
+        return
     if argv[1] == "rx":
         if not english(body):
             print("skip")
             return
-        out = translate(body, "en|es")
+        out = translate(body, "en|" + LANG)
         print("ok", " ".join(out.split()))
     else:
-        out = js8_text(translate(body, "es|en"))
+        out = js8_text(translate(body, LANG + "|en"))
         if not out:
             fail("traducción vacía")
         print("ok", (head + " " + out).strip())

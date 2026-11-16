@@ -6,6 +6,7 @@ import os
 import re
 import time
 
+from .i18n_web import t
 from .iso3_web import ISO3
 
 CONF = "/mnt/ghostnet.conf"
@@ -15,43 +16,43 @@ METEO_FILE = "/tmp/x6100-meteo.json"
 # (red, día UTC 0 domingo, hh, mm, minutos, kHz, modo, qué)
 SEGMENTS = [
     ("NA", 5, 1, 0, 30, 7107, "JS8", "JS8 40 m"),
-    ("NA", 5, 1, 30, 30, 7107, "VARA", "Winlink VARA (desde una PC)"),
-    ("NA", 5, 2, 0, 30, 7077, "RTTY", "RTTY 45,45 baudios"),
-    ("NA", 5, 2, 30, 30, 7190, "LSB", "Voz, solo emergencias (últimos 5 min)"),
+    ("NA", 5, 1, 30, 30, 7107, "VARA", "Winlink VARA (from a PC)"),
+    ("NA", 5, 2, 0, 30, 7077, "RTTY", "RTTY 45.45 baud"),
+    ("NA", 5, 2, 30, 30, 7190, "LSB", "Voice, emergencies only (last 5 min)"),
     ("EU", 4, 18, 0, 30, 7107, "JS8", "JS8 40 m"),
-    ("EU", 4, 18, 30, 30, 7107, "VARA", "Winlink VARA (desde una PC)"),
-    ("EU", 4, 19, 0, 30, 7077, "RTTY", "RTTY 45,45 baudios"),
-    ("EU", 4, 19, 30, 30, 7190, "LSB", "Voz, solo emergencias (últimos 5 min)"),
+    ("EU", 4, 18, 30, 30, 7107, "VARA", "Winlink VARA (from a PC)"),
+    ("EU", 4, 19, 0, 30, 7077, "RTTY", "RTTY 45.45 baud"),
+    ("EU", 4, 19, 30, 30, 7190, "LSB", "Voice, emergencies only (last 5 min)"),
     ("AU", 4, 7, 0, 30, 7107, "JS8", "JS8 40 m"),
-    ("AU", 4, 7, 30, 30, 7107, "VARA", "Winlink VARA (desde una PC)"),
-    ("AU", 4, 8, 0, 30, 7077, "RTTY", "RTTY 45,45 baudios"),
-    ("AU", 4, 8, 30, 30, 7190, "LSB", "Voz, solo emergencias (últimos 5 min)"),
+    ("AU", 4, 7, 30, 30, 7107, "VARA", "Winlink VARA (from a PC)"),
+    ("AU", 4, 8, 0, 30, 7077, "RTTY", "RTTY 45.45 baud"),
+    ("AU", 4, 8, 30, 30, 7190, "LSB", "Voice, emergencies only (last 5 min)"),
     ("B_NAEU", 6, 18, 0, 60, 14107, "JS8", "JS8 20 m"),
-    ("B_NAEU", 6, 19, 0, 60, 0, "ALE", "Ion2G ALE (desde una PC)"),
+    ("B_NAEU", 6, 19, 0, 60, 0, "ALE", "Ion2G ALE (from a PC)"),
     ("B_NAAU", 6, 12, 0, 60, 14107, "JS8", "JS8 20 m"),
-    ("B_NAAU", 6, 13, 0, 30, 0, "ALE", "Ion2G ALE (desde una PC)"),
+    ("B_NAAU", 6, 13, 0, 30, 0, "ALE", "Ion2G ALE (from a PC)"),
     ("B_NAAU", 6, 13, 30, 30, 3575, "JS8", "JS8 80 m"),
     ("B_EUAU", 6, 20, 0, 60, 14107, "JS8", "JS8 20 m"),
-    ("B_EUAU", 6, 21, 0, 30, 0, "ALE", "Ion2G ALE (desde una PC)"),
+    ("B_EUAU", 6, 21, 0, 30, 0, "ALE", "Ion2G ALE (from a PC)"),
     ("B_EUAU", 6, 21, 30, 30, 3575, "JS8", "JS8 80 m"),
     ("B_AUSP", 6, 8, 0, 60, 14107, "JS8", "JS8 20 m"),
     ("B_AUSP", 6, 9, 0, 30, 7107, "JS8", "JS8 40 m"),
-    ("B_AUSP", 6, 9, 30, 30, 0, "ALE", "Ion2G ALE (desde una PC)"),
+    ("B_AUSP", 6, 9, 30, 30, 0, "ALE", "Ion2G ALE (from a PC)"),
 ]
 NETS = [
-    ("NA", "Red Norteamérica", "Inglés. La semanal de los jueves a la noche de allá."),
-    ("EU", "Red Europa", "Inglés. La semanal de los jueves."),
-    ("AU", "Red Australia", "Inglés. La semanal de los jueves."),
-    ("B_NAEU", "Puente Norteamérica-Europa", "Inglés. Sábados, para pasar mensajes entre regiones."),
-    ("B_NAAU", "Puente Norteamérica-Australia", "Inglés. Sábados."),
-    ("B_EUAU", "Puente Europa-Australia", "Inglés. Sábados."),
-    ("B_AUSP", "Puente Australia-Pacífico Sur", "Inglés. Sábados."),
-    ("ES", "Red hispana (propia)", "En español: la que elijas abajo."),
+    ("NA", "North America net", "English. The weekly one, on Thursday nights there."),
+    ("EU", "Europe net", "English. The weekly one, on Thursdays."),
+    ("AU", "Australia net", "English. The weekly one, on Thursdays."),
+    ("B_NAEU", "North America-Europe bridge", "English. Saturdays, to pass messages between regions."),
+    ("B_NAAU", "North America-Australia bridge", "English. Saturdays."),
+    ("B_EUAU", "Europe-Australia bridge", "English. Saturdays."),
+    ("B_AUSP", "Australia-South Pacific bridge", "English. Saturdays."),
+    ("ES", "Own net", "In your language: the one you set below."),
 ]
-DEFAULTS = {"remind": "1", "remind_min": "10", "nets": "NA,B_NAEU,ES", "es_on": "0", "es_name": "Red hispana",
+DEFAULTS = {"remind": "1", "remind_min": "10", "nets": "NA,B_NAEU,ES", "es_on": "0", "es_name": "Own net",
             "es_day": "4", "es_time": "21:00", "es_min": "30", "es_khz": "7107", "es_mode": "JS8",
             "translate_rx": "1", "translate_tx": "0", "region": ""}
-DAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"]
+DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
 
 def read_conf():
@@ -128,10 +129,10 @@ def write_conf(new):
 
 def region_tag(country, conf):
     if conf.get("region"):
-        return conf["region"], "elegido a mano"
+        return conf["region"], t("chosen by hand")
     a3 = ISO3.get((country or "").upper()[:2])
     if not a3:
-        return "", "elegí el país en Ajustes de la radio"
+        return "", t("choose the country in the radio’s Settings")
     state = ""
     try:
         with open(METEO_FILE, encoding="utf-8") as f:
@@ -140,8 +141,8 @@ def region_tag(country, conf):
             state = re.sub(r"[^A-Z0-9]", "", r[3:].upper())[:3]
     except (OSError, ValueError, AttributeError):
         pass
-    return "@GN" + a3 + state, ("país y departamento (de Meteo)" if state else
-                                "solo el país: abrí Meteo con WiFi para sumar el departamento")
+    return "@GN" + a3 + state, t("country and state (from Weather)" if state else
+                                "the country only: open Weather with WiFi to add the state")
 
 
 def _next_utc(now, wday, hh, mm, minutes):
@@ -174,16 +175,16 @@ def schedule(conf, days=7):
     for net, wday, hh, mm, minutes, khz, mode, what in SEGMENTS:
         s = _next_utc(now, wday, hh, mm, minutes)
         if s <= now + days * 86400:
-            out.append((s, net, names[net], minutes, khz, mode, what))
+            out.append((s, net, t(names[net]), minutes, khz, mode, t(what)))
     if conf["es_on"] == "1":
         h, m = (int(x) for x in conf["es_time"].split(":"))
         s = _next_local(now, int(conf["es_day"]), h, m, int(conf["es_min"]))
         if s <= now + days * 86400:
             out.append((s, "ES", conf["es_name"], int(conf["es_min"]), int(conf["es_khz"]), conf["es_mode"],
-                        conf["es_mode"] + " en español"))
+                        conf["es_mode"] + " " + t("in your language")))
     out.sort()
     return [{"start": int(s), "local": time.strftime("%Y-%m-%d %H:%M", time.localtime(s)),
-             "day": DAYS[(time.localtime(s).tm_wday + 1) % 7], "utc": time.strftime("%a %H:%M", time.gmtime(s)) + "Z",
+             "day": t(DAYS[(time.localtime(s).tm_wday + 1) % 7]), "utc": time.strftime("%a %H:%M", time.gmtime(s)) + "Z",
              "net": net, "name": name, "minutes": minutes, "khz": khz, "mode": mode, "what": what,
              "now": s <= now < s + minutes * 60, "reminder": conf["remind"] == "1" and net in reminded and
              (net == "ES" or mode == "JS8")}

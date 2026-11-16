@@ -1106,3 +1106,241 @@ Check the numbers	Revisá los números
 Time like 21:00	La hora es como 21:00
 Invalid mode	Modo no válido
 The regional group is like @GNURYMO	El grupo regional es como @GNURYMO
+Invalid location mode	Modo de ubicación no válido
+Latitude and longitude are numbers, like -34.9 and -56.16	La latitud y la longitud son números, como -34,9 y -56,16
+Latitude between -90 and 90, longitude between -180 and 180	Latitud entre -90 y 90, longitud entre -180 y 180
+Not saved: %s	No se guardó: %s
+OpenX6X00-CX8ANM (Cóndor Tecnológico) · based on	OpenX6X00-CX8ANM (Cóndor Tecnológico) · basado en
+(7.107 MHz and the groups). The official nets are in English. For them the radio translates the messages that come in and, if you want, yours before they go out (with WiFi). There is no GhostNet net in your language yet: you can set up your own below.	(7.107 MHz y los grupos). Los horarios oficiales están en inglés. Para esas redes, la radio traduce los mensajes que llegan y, si querés, los tuyos antes de mandarlos (con WiFi). Todavía no hay una red GhostNet en español: abajo podés armar la tuya.
+An hour after each net starts there are broadcasts on 7.077 MHz at 45.45 baud for whoever could not check in: JS8 → Freq → GhostNet: nets, translation, RTTY → RTTY.	Una hora después de empezar cada red hay envíos en 7.077 MHz a 45,45 baudios para quien no pudo reportarse: JS8 → Frec. → GhostNet: redes, traducción, RTTY → RTTY.
+Winlink over VARA and Ion2G ALE are PC programs: they don’t run inside the radio, but you can use them with a PC connected. The official document:	Winlink por VARA y Ion2G ALE son programas de PC: no funcionan dentro de la radio, pero podés usarlos con una PC conectada. Documento oficial:
+The groups are added by themselves with "GhostNet mode" in JS8. The translation uses the internet (MyMemory, free, with a daily limit).	Los grupos se suman solos con "Modo GhostNet" en JS8. La traducción usa internet (MyMemory, gratis, con un límite por día).
+What came to the GhostNet groups (or on its frequencies) while JS8 was open, with its translation.	Lo que llegó a los grupos de GhostNet (o en sus frecuencias) mientras JS8 estuvo abierto, con su traducción.
+GhostNet is a set of HF nets for passing information without depending on the internet or mobile phones, mostly with	GhostNet son redes de HF para pasar información sin depender de internet ni de los celulares, sobre todo con
+On the amateur bands messages may not be encrypted: everything goes in the clear and with your callsign.	En las bandas de radioaficionado no se pueden cifrar los mensajes: todo va en claro y con tu indicativo.
+A net of your own in your language, at its local time, to coordinate with other radio amateurs of the region.	Una red propia en español, con su hora local, para coordinar con otros radioaficionados de la región.
+The latest that came to @GSTFLASH. GhostNet asks to pass it on at once to whoever can help.	Lo último que llegó a @GSTFLASH. GhostNet pide pasarlo enseguida a quien pueda ayudar.
+A notice on the radio’s screen, in any app, before each net ticked.	Un aviso en la pantalla de la radio, en cualquier app, antes de cada red marcada.
+7.190 MHz LSB only in serious emergencies, in the last 5 minutes of the window.	7.190 MHz LSB solo en emergencias graves, en los últimos 5 minutos de la ventana.
+Nothing yet. Open JS8 in GhostNet mode and the messages will show up here.	Todavía nada. Abrí JS8 en Modo GhostNet y los mensajes van a ir apareciendo acá.
+Just enough: if you have a lot, turn it down so you don’t cover those who transmit with little.	La justa: si tenés mucha, bajala para no tapar a los que transmiten con poca.
+. Pick a free offset; heartbeats go below 1000 Hz.	. Elegí un offset libre; los latidos (heartbeat) van por debajo de 1000 Hz.
+In the radio’s time. ★ = with a reminder on the radio’s screen.	En la hora de la radio. ★ = con recordatorio en la pantalla de la radio.
+; @GN + country + state for your area (for example @GNURYMO is Montevideo).	; @GN + país + estado para tu zona (por ejemplo @GNURYMO es Montevideo).
+In the net’s window send a short message to the group, for example	En la ventana de la red mandá un mensaje corto al grupo, por ejemplo
+and your regional group. Listening needs no licence; transmitting does.	y tu grupo regional. Escuchar no necesita licencia; transmitir sí.
+the first OK translates and shows it; the second sends it	el primer OK traduce y lo muestra; el segundo lo manda
+). ★ = with a reminder on the radio’s screen.	). ★ = con recordatorio en la pantalla de la radio.
+@GHOSTNET for everyday traffic;	@GHOSTNET para el tráfico de todos los días;
+Who checked in, by the last time.	Quiénes se reportaron, por la última vez.
+they come with the translation under them	llegan con la traducción debajo (ES: ...)
+Clear the GhostNet message log?	¿Borrar el registro de mensajes GhostNet?
+it shows in the list and in the reminders	sale en la lista y en los recordatorios
+in kHz; 7107 is GhostNet’s on 40 m	en kHz; 7107 es la de GhostNet en 40 m
+: the radio goes to 7.107 MHz and joins	: la radio va a 7.107 MHz y se suma a
+Saved: the radio uses it at once	Guardado: la radio lo usa enseguida
+A summary of GhostNet version 1.5.	Resumen de GhostNet versión 1.5.
+In the radio’s time (	En la hora de la radio (
+translate them	traducir al español
+Groups and translation	Grupos y traducción
+Messages in English	Mensajes en inglés
+Clear the log	Borrar el registro
+Could not save	No se pudo guardar
+send in English	mandar en inglés
+the radio’s time	hora de la radio
+Listen first.	Escuchá primero.
+None yet.	Ninguna todavía.
+How to take part	Cómo participar
+Next nets	Próximas redes
+. On the radio:	. En la radio:
+Nothing yet.	Todavía nada.
+In JS8 choose	En JS8 elegí
+Day and time	Día y hora
+automatic	automático
+Last time	Última vez
+Wednesday	miércoles
+Mine	Los míos
+Groups.	Grupos.
+sent	enviado
+for	durante
+Saturday	sábado
+now:	ahora:
+Groups	Grupos
+When	Cuándo
+now	ahora
+What	Qué
+yes	sí
+Your tower, approach or ATIS streams. They come first in the radio’s Airband list, before the directory’s. Paste the audio address the stream’s site gives (for example the .pls link to listen in another player). Respect each site’s terms of use.	Tus emisoras de torre, aproximación o ATIS. Aparecen primero en la lista Banda aérea de la radio, antes que las del directorio. Pegá la dirección del audio que da el sitio de la emisora (por ejemplo, el enlace .pls para escuchar en otro reproductor). Respetá las condiciones de uso de cada sitio.
+The favourite stations of APP → Internet radio. Add one with its name and the address of its audio (the one ending in .mp3, .aac, .pls or .m3u, or the one the station’s page gives to "listen in another player"). The radio shows them the next time you go through Favourites with the List key.	Las emisoras favoritas de APP → Radio Internet. Agregá una con su nombre y la dirección del audio (la que termina en .mp3, .aac, .pls o .m3u, o la que da la página de la emisora para "escuchar en otro reproductor"). La radio las muestra la próxima vez que pasás por Favoritas con la tecla Lista.
+separated by tabs or semicolons. Those already there are not repeated.	separados por tabulador o por punto y coma. Las que ya están no se repiten.
+Text file: one station a line,	Archivo de texto: una emisora por línea,
+name, address, format, kbps and country	nombre, dirección, formato, kbps y país
+Airband (air traffic control)	Banda aérea (control de tránsito aéreo)
+Could not import	No se pudo importar
+, lines with errors:	, líneas con error:
+Address	Dirección
+Country	País
+chosen. The official alerts come from the country’s service (INUMET in Uruguay, SMN in Argentina, INMET in Brazil, NWS in the United States, MeteoAlarm in Europe); in the other countries they are	elegido. Las alertas oficiales vienen del servicio del país (INUMET en Uruguay, SMN en Argentina, INMET en Brasil, NWS en Estados Unidos, MeteoAlarm en Europa); en los demás países son
+The weather and the alerts for where the radio is, the same as APP → Weather. The position comes from the	El tiempo y las alertas para donde está la radio, los mismos de APP → Meteo. La posición sale del
+This browser gives no location (on the radio, open it with https://)	Este navegador no da la ubicación (en la radio, entrar por https://)
+the radio’s: it also changes the time zone and the internet radio	el de la radio: también cambia la hora y la radio por Internet
+position: that one is used. The locator counts when there is no GPS.	: se usa esa. El locator vale cuando no hay GPS.
+(no answer: notices calculated from the forecast)	(no respondió: avisos calculados del pronóstico)
+notices calculated from the forecast (not official)	avisos calculados del pronóstico (no oficiales)
+Region 1 (Europe, Africa, Middle East)	Región 1 (Europa, África, Medio Oriente)
+Fetching the weather… (up to a minute)	Buscando el tiempo… (hasta un minuto)
+the radio’s QTH (4 or 6 characters)	el QTH de la radio (4 o 6 caracteres)
+only to shorten the list of countries	solo para achicar la lista de países
+Asking the browser for the location…	Pidiendo la ubicación al navegador…
+Saved on the radio · updated	Guardado en la radio · actualizado
+The locator is like GF15 or GF15wc	El locator es como GF15 o GF15wc
+notices calculated from the forecast	avisos calculados del pronóstico
+Saving and fetching the weather…	Guardando y buscando el tiempo…
+This device’s location	Ubicación de este dispositivo
+The radio has a	La radio tiene posición de
+and else from the capital of the	y si no de la capital del
+no location: Montevideo	sin ubicación: Montevideo
+No alerts in force for	Sin alertas vigentes para
+Region 3 (Asia, Oceania)	Región 3 (Asia, Oceanía)
+, which are not official.	, que no son oficiales.
+Could not update	No se pudo actualizar
+Save and update	Guardar y actualizar
+if it has one, else from the	si tiene, si no del
+Open-Meteo, 5 days	Open-Meteo, 5 días
+Region 2 (Americas)	Región 2 (América)
+No data yet.	Sin datos todavía.
+the country’s capital	capital del país
+Country’s capital	Capital del país
+the radio’s GPS	GPS de la radio
+Dew point	Punto de rocío
+No location:	Sin ubicación:
+· feels like	· sensación
+IARU region	Región IARU
+Forecast	Pronóstico
+forecast	pronóstico
+Location	Ubicación
+Pressure	Presión
+Gusts	Ráfagas
+Now	Ahora
+/ max	/ máx
+· min	· mín
+country	país
+on the radio. It comes from open networks of volunteers’ ADS-B receivers (airplanes.live, adsb.lol): only the aircraft some nearby receiver picks up are seen. It updates every 15 seconds.	en la radio. Vienen de redes abiertas de receptores ADS-B de voluntarios (airplanes.live, adsb.lol): solo se ven los aviones que capta algún receptor cercano. Se actualiza cada 15 segundos.
+The aircraft over the chosen area, as on Flightradar: the same data as	Los aviones sobre la zona elegida, como en Flightradar: los mismos datos que
+No aircraft seen in this area now.	Ningún avión visto en esta zona ahora.
+No data (is there internet?)	Sin datos (¿hay internet?)
+Chosen on the map	Elegido en el mapa
+to centre it there.	para centrar ahí.
+Tap the map	Tocá el mapa
+Registration	Matrícula
+Zello channels on the radio: APP → Zello. You listen on the speaker (or Bluetooth headphones) and talk with the radio’s side PTT or the Talk button, through the	Canales de Zello en la radio: APP → Zello. Se escucha por el parlante (o los auriculares Bluetooth) y se habla con el PTT del costado de la radio o el botón Hablar, por el
+The radio signs its own connection permit with this key, so	La radio firma su propio permiso de conexión con esta llave, así que
+Zello asks everyone to use their own keys (they are free):	Zello pide que cada uno use sus propias llaves (son gratis):
+whole (with the BEGIN and END lines) and paste them here.	completa (con las líneas BEGIN y END) y pegarlos acá.
+Saved. On the radio: APP → Zello → Reload channels	Guardado. En la radio: APP → Zello → Recargar canales
+Up to 20, one a line, written as in Zello	Hasta 20, uno por línea, escritos igual que en Zello
+Fill in the developer profile and save it.	Completar el perfil de desarrollador y guardar.
+. What you say goes to Zello, not on the air.	. Lo que se dice va a Zello, no sale al aire.
+the radio’s clock has to be right	la hora de la radio tiene que estar bien
+saved (leave it empty to keep it)	guardada (dejar vacío para no cambiarla)
+hand microphone without pressing its PTT	micrófono de mano sin apretar su PTT
+with your Zello user name and password.	con el usuario y la clave de Zello.
+The same as in the phone app	La misma de la app del celular
+(with internet it sets itself).	(con internet se pone sola).
+your Zello user name	su usuario de Zello
+Could not test	No se pudo probar
+Test the connection	Probar conexión
+and the	y la
+The Private Key has to include the BEGIN and END lines	La Private Key tiene que incluir las líneas BEGIN y END
+The address has to start with http:// or https://	La dirección tiene que empezar con http:// o https://
+That station is gone (reload the page)	Esa emisora ya no está (recargue la página)
+The kbps are a number (for example 128)	Los kbps son un número (por ejemplo 128)
+That address is already in the list	Esa dirección ya está en la lista
+The position is missing	Falta la posición
+the country only: open Weather with WiFi to add the state	solo el país: abrí Meteo con WiFi para sumar el departamento
+English. The weekly one, on Thursday nights there.	Inglés. La semanal de los jueves a la noche de allá.
+English. Saturdays, to pass messages between regions.	Inglés. Sábados, para pasar mensajes entre regiones.
+Voice, emergencies only (last 5 min)	Voz, solo emergencias (últimos 5 min)
+choose the country in the radio’s Settings	elegí el país en Ajustes de la radio
+English. The weekly one, on Thursdays.	Inglés. La semanal de los jueves.
+In your language: the one you set below.	En español: la que elijas abajo.
+country and state (from Weather)	país y departamento (de Meteo)
+North America-Australia bridge	Puente Norteamérica-Australia
+Australia-South Pacific bridge	Puente Australia-Pacífico Sur
+North America-Europe bridge	Puente Norteamérica-Europa
+English. Saturdays.	Inglés. Sábados.
+North America net	Red Norteamérica
+in your language	en español
+APP → Modes → JS8 → Freq → GhostNet mode	APP → Modos → JS8 → Frec. → Modo GhostNet
+@GSTFLASH for emergencies only	@GSTFLASH solo para emergencias
+Stations heard	Estaciones escuchadas
+Freq → GhostNet mode	Frec. → Modo GhostNet
+Emergency: @GSTFLASH	Emergencia: @GSTFLASH
+Frequency and mode	Frecuencia y modo
+Regional group	Grupo regional
+minutes before	minutos antes
+Reminders	Recordatorios
+Reminder	Recordatorio
+No encryption.	Sin cifrado.
+Checking in.	Reportarse.
+Own net	Red hispana
+Saving…	Guardando…
+Power.	Potencia.
+on	activado
+Sunday	domingo
+Friday	viernes
+Tuesday	martes
+Use it	Usarla
+Thursday	jueves
+Monday	lunes
+Voice.	Voz.
+Net	Red
+Import a file	Importar archivo
+Favourites	Favoritas
+Export	Exportar
+Format	Formato
+The device’s location is in: now Save	Locator del dispositivo puesto: falta Guardar
+(https:// is needed)	(hace falta https://)
+coordinates typed in	coordenadas a mano
+QTH locator	locator QTH
+Visibility	Visibilidad
+Humidity	Humedad
+Rain	Lluvia
+Wind	Viento
+Clouds	Nubes
+Sun	Sol
+My locator (QTH)	Mi locator (QTH)
+My locator (	Mi locator (
+APP → Flights	APP → Vuelos
+Distance	Distancia
+Searching…	Buscando…
+Centre	Centro
+Altitude	Altura
+Flight	Vuelo
+Heading	Rumbo
+Private Key saved (paste another to change it)	Private Key guardada (pegar otra para cambiarla)
+Radioaficionados Uruguay Another channel	Radioaficionados Uruguay Otro canal
+Developer keys	Llaves de desarrollador
+The Private Key is missing	Falta la Private Key
+Private Key loaded	Private Key cargada
+Zello account	Cuenta de Zello
+. Copy the	. Copiar el
+Go to	Entrar a
+User name	Usuario
+Password	Clave
+Location from	Ubicación desde
+where the weather and the alerts are for	para dónde son el tiempo y las alertas
+Automatic: GPS, else the locator, else the country	Automática: GPS, si no el locator, si no el país
+The grid locator	El grid locator
+The radio's GPS (else the locator)	El GPS de la radio (si no, el locator)
+Coordinates typed in	Coordenadas a mano
+Coordinates	Coordenadas
+decimal degrees; south and west negative	grados decimales; sur y oeste en negativo
+Europe net	Red Europa
+Australia net	Red Australia
+Europe-Australia bridge	Puente Europa-Australia
+Winlink VARA (from a PC)	Winlink VARA (desde una PC)
+Ion2G ALE (from a PC)	Ion2G ALE (desde una PC)
+RTTY 45.45 baud	RTTY 45,45 baudios
+chosen by hand	elegido a mano
+OpenX6X00 by RF.Guru	OpenX6X00 de RF.Guru

@@ -55,7 +55,7 @@ bool                   ghostnet_net_reminded(const char *net);   /* ¿esa red ti
 
 /* Las ventanas de las redes en las próximas `hours` horas (las que están pasando también), por hora */
 int ghostnet_upcoming(ghostnet_slot_t *out, int max, int hours, bool only_reminded);
-/* "jue 22:00", en hora local */
+/* "Thu 22:00" (translated), local time */
 void ghostnet_local_when(time_t t, char *out, size_t size);
 
 /* El grupo regional: "@GNURYMO" (país de Ajustes + departamento de Meteo), o el elegido a mano */

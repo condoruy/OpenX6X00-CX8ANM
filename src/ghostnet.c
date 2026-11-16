@@ -42,16 +42,16 @@ typedef struct {
 static const segment_t segments[] = {
     {"NA",     5,  1,  0, 30,  7107, "JS8",  "JS8 40 m"},
     {"NA",     5,  1, 30, 30,  7107, "VARA", "Winlink VARA (PC)"},
-    {"NA",     5,  2,  0, 30,  7077, "RTTY", "RTTY 45,45 baudios"},
-    {"NA",     5,  2, 30, 30,  7190, "LSB",  "Voz, solo emergencias"},
+    {"NA",     5,  2,  0, 30,  7077, "RTTY", "RTTY 45.45 baud"},
+    {"NA",     5,  2, 30, 30,  7190, "LSB",  "Voice, emergencies only"},
     {"EU",     4, 18,  0, 30,  7107, "JS8",  "JS8 40 m"},
     {"EU",     4, 18, 30, 30,  7107, "VARA", "Winlink VARA (PC)"},
-    {"EU",     4, 19,  0, 30,  7077, "RTTY", "RTTY 45,45 baudios"},
-    {"EU",     4, 19, 30, 30,  7190, "LSB",  "Voz, solo emergencias"},
+    {"EU",     4, 19,  0, 30,  7077, "RTTY", "RTTY 45.45 baud"},
+    {"EU",     4, 19, 30, 30,  7190, "LSB",  "Voice, emergencies only"},
     {"AU",     4,  7,  0, 30,  7107, "JS8",  "JS8 40 m"},
     {"AU",     4,  7, 30, 30,  7107, "VARA", "Winlink VARA (PC)"},
-    {"AU",     4,  8,  0, 30,  7077, "RTTY", "RTTY 45,45 baudios"},
-    {"AU",     4,  8, 30, 30,  7190, "LSB",  "Voz, solo emergencias"},
+    {"AU",     4,  8,  0, 30,  7077, "RTTY", "RTTY 45.45 baud"},
+    {"AU",     4,  8, 30, 30,  7190, "LSB",  "Voice, emergencies only"},
     {"B_NAEU", 6, 18,  0, 60, 14107, "JS8",  "JS8 20 m"},
     {"B_NAEU", 6, 19,  0, 60,     0, "ALE",  "Ion2G ALE (PC)"},
     {"B_NAAU", 6, 12,  0, 60, 14107, "JS8",  "JS8 20 m"},
@@ -66,13 +66,13 @@ static const segment_t segments[] = {
 };
 
 static const char *net_name(const char *net) {
-    if (!strcmp(net, "NA")) return "Norteamérica";
-    if (!strcmp(net, "EU")) return "Europa";
-    if (!strcmp(net, "AU")) return "Australia";
-    if (!strcmp(net, "B_NAEU")) return "Puente NA-Europa";
-    if (!strcmp(net, "B_NAAU")) return "Puente NA-Australia";
-    if (!strcmp(net, "B_EUAU")) return "Puente Europa-Australia";
-    if (!strcmp(net, "B_AUSP")) return "Puente Australia-Pacífico";
+    if (!strcmp(net, "NA")) return tr("North America");
+    if (!strcmp(net, "EU")) return tr("Europe");
+    if (!strcmp(net, "AU")) return tr("Australia");
+    if (!strcmp(net, "B_NAEU")) return tr("Bridge NA-Europe");
+    if (!strcmp(net, "B_NAAU")) return tr("Bridge NA-Australia");
+    if (!strcmp(net, "B_EUAU")) return tr("Bridge Europe-Australia");
+    if (!strcmp(net, "B_AUSP")) return tr("Bridge Australia-Pacific");
     return net;
 }
 
@@ -86,7 +86,7 @@ static void conf_defaults(ghostnet_conf_t *c) {
     c->remind     = true;
     c->remind_min = 10;
     snprintf(c->nets, sizeof(c->nets), "NA,B_NAEU,ES");   /* las de horario cómodo desde Sudamérica */
-    snprintf(c->es_name, sizeof(c->es_name), "Red hispana");
+    snprintf(c->es_name, sizeof(c->es_name), "%s", tr("Spanish net"));
     c->es_day = 4;      /* jueves */
     c->es_hh  = 21;
     c->es_min = 30;
@@ -219,7 +219,7 @@ int ghostnet_upcoming(ghostnet_slot_t *out, int max, int hours, bool only_remind
         o->khz     = s->khz;
         o->net     = s->net;
         snprintf(o->name, sizeof(o->name), "%s", net_name(s->net));
-        snprintf(o->what, sizeof(o->what), "%s", s->what);
+        snprintf(o->what, sizeof(o->what), "%s", tr(s->what));
         snprintf(o->mode, sizeof(o->mode), "%s", s->mode);
         n++;
     }
@@ -230,8 +230,8 @@ int ghostnet_upcoming(ghostnet_slot_t *out, int max, int hours, bool only_remind
             o->minutes = c->es_min;
             o->khz     = c->es_khz;
             o->net     = "ES";
-            snprintf(o->name, sizeof(o->name), "%s", c->es_name[0] ? c->es_name : "Red hispana");
-            snprintf(o->what, sizeof(o->what), "%s en español", c->es_mode);
+            snprintf(o->name, sizeof(o->name), "%s", c->es_name[0] ? c->es_name : tr("Spanish net"));
+            snprintf(o->what, sizeof(o->what), tr("%s in Spanish"), c->es_mode);
             snprintf(o->mode, sizeof(o->mode), "%s", c->es_mode);
             n++;
         }
@@ -243,10 +243,10 @@ int ghostnet_upcoming(ghostnet_slot_t *out, int max, int hours, bool only_remind
 }
 
 void ghostnet_local_when(time_t t, char *out, size_t size) {
-    static const char *days[] = {"dom", "lun", "mar", "mié", "jue", "vie", "sáb"};
+    static const char *days[] = {"Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"};
     struct tm          x;
     localtime_r(&t, &x);
-    snprintf(out, size, "%s %02d:%02d", days[x.tm_wday], x.tm_hour, x.tm_min);
+    snprintf(out, size, "%s %02d:%02d", tr(days[x.tm_wday]), x.tm_hour, x.tm_min);
 }
 
 /* ---------- el grupo regional ---------- */

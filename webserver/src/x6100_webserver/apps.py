@@ -28,6 +28,7 @@ import zipfile
 import bottle
 
 from . import settings
+from . import i18n_web
 
 app = bottle.Bottle()   # the configurator pages and their API
 
@@ -4159,11 +4160,11 @@ def iradio_entry():
     s = {"name": clean(data.get("name"), 60), "url": clean(data.get("url"), 250).replace(" ", "%20"),
          "codec": clean(data.get("codec"), 8).upper(), "kbps": clean(data.get("kbps"), 6), "cc": clean(data.get("cc"), 2).upper()}
     if not s["url"].lower().startswith(("http://", "https://")):
-        raise ValueError("La dirección tiene que empezar con http:// o https://")
+        raise ValueError("The address has to start with http:// or https://")
     if not s["name"]:
         raise ValueError("Falta el nombre de la emisora")
     if s["kbps"] and not s["kbps"].isdigit():
-        raise ValueError("Los kbps son un número (por ejemplo 128)")
+        raise ValueError("The kbps are a number (for example 128)")
     return s
 
 
@@ -4185,7 +4186,7 @@ def add_iradio(kind):
         s = iradio_entry()
         items = read_iradio(k)
         if any(x["url"] == s["url"] for x in items):
-            raise ValueError("Esa dirección ya está en la lista")
+            raise ValueError("That address is already in the list")
         if len(items) >= IRADIO_FAV_MAX:
             raise ValueError("Ya hay %d emisoras: quite alguna" % IRADIO_FAV_MAX)
         items.append(s)
@@ -4259,7 +4260,7 @@ def set_iradio(kind, i):
         s = iradio_entry()
         items = read_iradio(k)
         if not 0 <= i < len(items):
-            raise ValueError("Esa emisora ya no está (recargue la página)")
+            raise ValueError("That station is gone (reload the page)")
         items[i] = s
         write_iradio(items, k)
     except ValueError as ex:
@@ -4324,7 +4325,7 @@ def flights_get():
         lat, lon, km = float(q.get("lat")), float(q.get("lon")), float(q.get("km", 100))
     except (TypeError, ValueError):
         bottle.response.status = 400
-        return {"msg": "Falta la posición"}
+        return {"msg": "The position is missing"}
     try:
         r = subprocess.run([FLIGHTS_CMD, "update", "%.4f" % lat, "%.4f" % lon, "%d" % km],
                            capture_output=True, text=True, timeout=40,
@@ -4334,7 +4335,7 @@ def flights_get():
         line = ["error %s" % e]
     if not line[0].startswith("ok"):
         bottle.response.status = 502
-        return {"msg": line[0][6:] if line[0].startswith("error ") else "Sin datos (¿hay internet?)"}
+        return {"msg": line[0][6:] if line[0].startswith("error ") else "No data (is there internet?)"}
     with open(FLIGHTS_FILE, encoding="utf-8") as f:
         return json.load(f)
 
@@ -4351,7 +4352,7 @@ def ghostnet_get():
     conf = gn.read_conf()
     tag, why = gn.region_tag(read_param("country"), conf)
     msgs, stations = gn.messages()
-    return {"conf": conf, "nets": [{"id": n[0], "name": n[1], "note": n[2]} for n in gn.NETS],
+    return {"conf": conf, "nets": [{"id": n[0], "name": i18n_web.t(n[1]), "note": i18n_web.t(n[2])} for n in gn.NETS],
             "region": tag, "region_why": why, "schedule": gn.schedule(conf), "messages": msgs, "stations": stations,
             "tz": time.strftime("%Z"), "callsign": read_param("callsign")}
 
@@ -4386,6 +4387,25 @@ def ghostnet_clear():
 METEO_CMD = "/usr/sbin/x6100-meteo"
 METEO_FILE = "/tmp/x6100-meteo.json"
 METEO_LOCK = threading.Lock()
+METEO_WHERE = "/mnt/meteo/ubicacion.conf"   # CX8ANM: mode=auto|qth|gps|manual, lat=, lon= (la radio lo lee igual)
+
+
+def meteo_where():
+    w = {"mode": "auto", "lat": None, "lon": None}
+    try:
+        with open(METEO_WHERE, encoding="utf-8") as f:
+            for line in f:
+                k, _, v = line.strip().partition("=")
+                if k == "mode" and v in ("auto", "qth", "gps", "manual"):
+                    w["mode"] = v
+                elif k in ("lat", "lon"):
+                    try:
+                        w[k] = float(v)
+                    except ValueError:
+                        pass
+    except OSError:
+        pass
+    return w
 
 
 def meteo_countries():
@@ -4401,6 +4421,9 @@ def meteo_pos():
         r["gui"] = True
         return r
     qth, cc = read_param("qth"), read_param("country")
+    w = meteo_where()
+    if w["mode"] == "manual" and w["lat"] is not None and w["lon"] is not None:
+        return {"lat": w["lat"], "lon": w["lon"], "from": "manual", "cc": cc, "qth": qth, "gui": False}
     c = grid_center(qth)
     src = "qth"
     if not c:
@@ -4429,7 +4452,7 @@ def meteo_page():
 
 @app.get('/api/meteo')
 def meteo_get():
-    return {"pos": meteo_pos(), "data": meteo_data(), "countries": meteo_countries()}
+    return {"pos": meteo_pos(), "where": meteo_where(), "data": meteo_data(), "countries": meteo_countries()}
 
 
 @app.post('/api/meteo/update')
@@ -4459,6 +4482,31 @@ def meteo_location():
         d = {}
     cc = str(d.get("cc") or "").strip().upper()
     qth = str(d.get("qth") or "").strip()
+    mode = str(d.get("mode") or "").strip()
+    if mode:
+        if mode not in ("auto", "qth", "gps", "manual"):
+            return api_error(400, "Invalid location mode")
+        lines = ["mode=" + mode]
+        if mode == "manual":
+            try:
+                lat = float(str(d.get("lat")).replace(",", "."))
+                lon = float(str(d.get("lon")).replace(",", "."))
+            except (TypeError, ValueError):
+                return api_error(400, "Latitude and longitude are numbers, like -34.9 and -56.16")
+            if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+                return api_error(400, "Latitude between -90 and 90, longitude between -180 and 180")
+            lines += ["lat=%.5f" % lat, "lon=%.5f" % lon]
+        try:
+            os.makedirs(os.path.dirname(METEO_WHERE), exist_ok=True)
+            with open(METEO_WHERE + ".tmp", "w", encoding="utf-8") as f:
+                f.write("\n".join(lines) + "\n")
+            os.replace(METEO_WHERE + ".tmp", METEO_WHERE)
+        except OSError as e:
+            return api_error(500, "Not saved: %s" % e)
+        try:
+            os.remove(METEO_FILE)     # los datos del lugar nuevo
+        except OSError:
+            pass
     if cc and not re.fullmatch(r"[A-Z]{2}", cc):
         return api_error(400, "Unknown country")
     if qth:
@@ -4466,6 +4514,8 @@ def meteo_location():
             return api_error(400, "Invalid QTH locator")
         qth = qth[:2].upper() + qth[2:4] + qth[4:].lower()
     if not cc and not qth:
+        if mode:
+            return meteo_update()
         return api_error(400, "Nothing to change")
     r = display_call({"cmd": "meteo_set", "cc": cc, "qth": qth})
     if not r:
@@ -4547,7 +4597,7 @@ def set_zello():
         if data.get("private_key"):
             pem = str(data["private_key"]).strip().replace("\r\n", "\n")
             if "-----BEGIN" not in pem or "PRIVATE KEY-----" not in pem:
-                raise ValueError("La Private Key tiene que incluir las líneas BEGIN y END")
+                raise ValueError("The Private Key has to include the BEGIN and END lines")
             tmp = key + ".tmp"
             with open(tmp, "w") as f:
                 f.write(pem + "\n")

@@ -39,11 +39,52 @@ static bool        busy;
 static lv_obj_t   *popup;
 static lv_timer_t *popup_timer;
 
+/* CX8ANM: de dónde sale la ubicación de Meteo (página web Meteo): BOARD_DATA/meteo/ubicacion.conf con
+ * mode=auto (GPS, si no el locator, si no la capital del país), qth (el locator), gps (el GPS, si no hay fix el
+ * locator) o manual (lat= y lon= a mano) */
+typedef struct {
+    char   mode[8];
+    double lat, lon;
+    bool   has_pos;
+} meteo_where_t;
+
+static void where_read(meteo_where_t *w) {
+    FILE *f = fopen(METEO_WHERE, "r");
+    char  line[96];
+
+    memset(w, 0, sizeof(*w));
+    snprintf(w->mode, sizeof(w->mode), "auto");
+    if (!f) return;
+    bool has_lat = false, has_lon = false;
+    while (fgets(line, sizeof(line), f)) {
+        if (!strncmp(line, "mode=", 5)) {
+            snprintf(w->mode, sizeof(w->mode), "%.7s", line + 5);
+            w->mode[strcspn(w->mode, "\r\n ")] = 0;
+        } else if (!strncmp(line, "lat=", 4)) {
+            w->lat  = atof(line + 4);
+            has_lat = true;
+        } else if (!strncmp(line, "lon=", 4)) {
+            w->lon  = atof(line + 4);
+            has_lon = true;
+        }
+    }
+    fclose(f);
+    w->has_pos = has_lat && has_lon && w->lat >= -90 && w->lat <= 90 && w->lon >= -180 && w->lon <= 180;
+}
+
 const char *meteo_position_src(double *lat, double *lon) {
     int              age = 0;
     const country_t *c;
+    meteo_where_t    w;
 
-    if (gps_last_fix(lat, lon, &age) && age < 3600) return "gps";
+    where_read(&w);
+    if (!strcmp(w.mode, "manual") && w.has_pos) {
+        *lat = w.lat;
+        *lon = w.lon;
+        return "manual";
+    }
+    if (strcmp(w.mode, "qth") != 0 && gps_last_fix(lat, lon, &age) && (age < 3600 || !strcmp(w.mode, "gps")))
+        return "gps";
     if (params.qth.x[0] && qth_grid_check(params.qth.x)) {
         qth_str_to_pos(params.qth.x, lat, lon);
         return "qth";
