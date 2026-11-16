@@ -398,6 +398,21 @@ web configurator (System > Update).
     `/etc/openx6x00-image`, which no update touches, and each version lists the
     level it wants in `/usr/share/x6100/image-required`. Images up to v0.3.3
     have no stamp and count as level 1.
+- On a multiboot card (several systems and a boot menu, made with
+  [Xiegu Multi-Boot](https://github.com/TomekR1/Xiegu6x00-Multi-Boot) by SQ6RT):
+  - The in-radio update works as on a card of its own: it replaces files of
+    this system only, never a partition, the menu or the other systems.
+  - A new card image is not written straight onto the card (that erases the
+    menu and the other systems): rebuild the card in the app, with the new
+    version and "Carry the settings over from the old card" ticked.
+  - The radio says so itself: the message at the start ("New card image out:
+    rebuild the card with Multi-Boot"), Settings > Info > Update and the web
+    Update page.
+  - How it knows (`/etc/init.d/S01multiboot`, at each start, into
+    `/tmp/x6100-multiboot`): `x6100mb=` on the kernel's command line (the
+    menu of CX8ANM's fork of the app), the system on another partition than
+    the card's second, or `bootmenu.env` on the card's first partition.
+    Test on a PC: `tools/multiboot/test.sh`.
 
 ## Main screen
 

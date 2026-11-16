@@ -19,6 +19,11 @@ extern "C" {
 /* True when a newer card image than the running one is wanted; *note then says what it brings */
 bool image_newer_wanted(char *note, size_t size);
 
+/* True when this system is one of a multiboot card's (Xiegu Multi-Boot: S01multiboot, or x6100mb= from its
+   boot menu): a new card image then goes through that app, which keeps the menu, the other systems and the
+   settings; written straight onto the card it would erase them. The in-radio update works the same there */
+bool card_is_multiboot(void);
+
 /* A word on the screen once per version when it is, 20 s after start */
 void image_level_notice_init(void);
 

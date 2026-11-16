@@ -1543,7 +1543,7 @@
 { "EMERGENCY  -  @GSTFLASH", "URGENCE  -  @GSTFLASH" },
 { "GhostNet: pass it on at once to whoever can help, by any means", "GhostNet : transmettez-le aussitôt à qui peut aider, par tout moyen" },
 { "Starts in %d min (%s): %s on %d.%03d MHz", "Commence dans %d min (%s) : %s sur %d.%03d MHz" },
-{ "APP > JS8 > Freq > GhostNet  -  groups @GHOSTNET @GSTFLASH", "APP > JS8 > Fréq > GhostNet  -  groupes @GHOSTNET @GSTFLASH" },
+{ "APP > Modes > JS8 > Freq > GhostNet mode  -  groups @GHOSTNET @GSTFLASH", "APP > JS8 > Fréq > GhostNet  -  groupes @GHOSTNET @GSTFLASH" },
 { "no translator (is the radio on the internet?)", "pas de traducteur (la radio a-t-elle internet ?)" },
 { "Not translated: %s", "Non traduit : %s" },
 { "In English: check it and press OK to send", "En anglais : vérifiez et appuyez sur OK pour envoyer" },

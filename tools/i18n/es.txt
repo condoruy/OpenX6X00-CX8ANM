@@ -1930,6 +1930,10 @@ Name	Nombre
 Nature	Nature
 Network name not set	Nombre en la red sin poner
 New card image for this version: %s	Imagen de tarjeta nueva para esta versión: %s
+New card image for this version: %s. Multiboot card: rebuild it with the Multi-Boot app (settings carried over), not straight onto the card	Imagen de tarjeta nueva para esta versión: %s. Tarjeta multiarranque: rearmala con la app Multi-Boot (pasa los ajustes), no la grabes directo en la tarjeta
+v%s is out; its card image brings %s. Multiboot card: install now, rebuild the card with Multi-Boot later	Salió la v%s; su imagen de tarjeta trae %s. Tarjeta multiarranque: instalá ahora y rearmá la tarjeta con Multi-Boot después
+New card image out: rebuild the card with Multi-Boot	Salió una imagen de tarjeta nueva: rearmá la tarjeta con Multi-Boot
+New card image out: Settings > Info	Salió una imagen de tarjeta nueva: Ajustes > Info
 Next TX: %s%s%s	Próxima TX: %s%s%s
 No %s spot: no %s key (web page, Field Ops)	Sin spot %s: falta la clave %s (página web, Field Ops)
 No CQ: callsign %s does not fit %s	Sin CQ: el indicativo %s no entra en %s

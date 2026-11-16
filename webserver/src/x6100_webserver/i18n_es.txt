@@ -794,6 +794,10 @@ Checking the files:	Verificando los archivos:
 no release yet	todavía no hay release
 Up to date	Al día
 also has a new card image, bringing	también tiene una imagen de tarjeta nueva, que trae
+Multiboot card: do not write the image straight onto the card, it would erase the boot menu and the other systems. Rebuild the card with	Tarjeta multiarranque: no grabes la imagen directo en la tarjeta, borraría el menú de arranque y los otros sistemas. Rearmá la tarjeta con
+Multiboot card: updates here work as usual. A new card image goes through	Tarjeta multiarranque: las actualizaciones de acá funcionan como siempre. Una imagen de tarjeta nueva pasa por
+instead: add the new version and tick Carry the settings over from the old card.	en su lugar: agregá la versión nueva y marcá Pasar los ajustes de la tarjeta vieja.
+, not straight onto the card.	, no directo en la tarjeta.
 Download and install the latest release? The radio software restarts at the end.	¿Descargar e instalar el último release? El software de la radio se reinicia al final.
 Put the previous version's files back and restart?	¿Volver a poner los archivos de la versión anterior y reiniciar?
 Choose a file first	Primero elegí un archivo

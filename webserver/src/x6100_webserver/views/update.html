@@ -50,11 +50,29 @@ var showStatus = function(sel, text, error=false) {
 var fail = function(xhr) { showStatus("#status", xhr.responseJSON ? xhr.responseJSON.msg : "Failed", true); }
 var poll = null;
 
+/* CX8ANM: this system is one of a multiboot card's (Xiegu Multi-Boot, S01multiboot). The in-radio update works as on
+   any card; a new card image goes through the app, which keeps the boot menu, the other systems and their settings:
+   written straight onto the card it would erase them */
+var MULTIBOOT_APP = "https://github.com/TomekR1/Xiegu6x00-Multi-Boot/releases/latest";
+var multiboot = function(image) {
+  $("#mbnote").remove();
+  var p = $("<p>").attr("id", "mbnote").addClass("hint").css({margin: "6px 0 0", color: image ? "#f59e0b" : ""});
+  p.append(document.createTextNode(image
+    ? "Multiboot card: do not write the image straight onto the card, it would erase the boot menu and the other systems. Rebuild the card with "
+    : "Multiboot card: updates here work as usual. A new card image goes through "));
+  p.append($("<a>").attr({href: MULTIBOOT_APP, target: "_blank"}).text("Xiegu Multi-Boot"));
+  p.append(document.createTextNode(image
+    ? " instead: add the new version and tick Carry the settings over from the old card."
+    : ", not straight onto the card."));
+  $("#imgnote").after(p);
+}
+
 var render = function(st, mine) {
   $("#running").text("v" + (st.running || "?"));
   if (st.image) {
     $("#image").text(st.image.needed ? "a newer one is out" : "up to date");
     if (st.image.needed) $("#imgnote").text("This version's card image brings " + st.image.note + ": write it from the releases page; settings and logs stay on the card");
+    if (st.image.multiboot) multiboot(st.image.needed);
   }
   if (st.pending) $("#running").text("v" + st.running + " (installed, waiting for its first minute)");
   if (st.last) {
@@ -97,6 +115,7 @@ $("#check").on("click", function() {
       /* the release also has a new card image for this radio: the update brings the rest */
       $("#image").empty().append($("<a>").attr("href", c.image_url || "https://github.com/condoruy/OpenX6X00-CX8ANM/releases/latest").text("v" + c.latest + " image"));
       $("#imgnote").text("v" + c.latest + " also has a new card image, bringing " + (c.image_note || "more") + ". Install updates the radio software now; write the image when convenient (settings and logs stay)");
+      if (c.multiboot) multiboot(true);
     }
   }).fail(fail);
 });

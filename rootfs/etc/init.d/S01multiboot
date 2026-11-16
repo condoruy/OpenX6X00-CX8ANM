@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# CX8ANM: is this system one of several on a multiboot card (Xiegu Multi-Boot / Xiegu Multi Patcher, SQ6RT)?
+# The in-radio update works there as on any card: it only replaces files of this system. A new card image does
+# not: written straight onto the card it erases the boot menu and the other systems; it goes through the app
+# instead. The GUI, x6100-update and the web page read the answer, worked out once per start, from
+# /tmp/x6100-multiboot (absent: a card of its own; present: one line saying how it was told):
+#   - x6100mb=<key> on the kernel's command line: the app's boot menu says so (CX8ANM's fork of the app);
+#   - root= another partition than the card's second: systems 2 to 5 of a menu;
+#   - bootmenu.env on the card's first partition: the menu's settings, also with this system first.
+# MB_CMDLINE, MB_BOOTDEV and MB_OUT are for the host test (tools/multiboot/test.sh).
+CMDLINE=${MB_CMDLINE:-/proc/cmdline}
+BOOTDEV=${MB_BOOTDEV:-/dev/mmcblk0p1}
+OUT=${MB_OUT:-/tmp/x6100-multiboot}
+
+detect() {
+    args=" $(cat "$CMDLINE" 2>/dev/null)"     # the space: each argument starts after one (no \b in busybox sed)
+    key=$(echo "$args" | sed -n 's/.* x6100mb=\([0-9][0-9]*\).*/\1/p')
+    if [ -n "$key" ]; then
+        echo "boot menu key F$key"
+        return
+    fi
+    root=$(echo "$args" | sed -n 's/.* root=\/dev\/mmcblk0p\([0-9][0-9]*\).*/\1/p')
+    if [ -n "$root" ] && [ "$root" != 2 ]; then
+        echo "root on partition $root"
+        return
+    fi
+    [ -b "$BOOTDEV" ] || [ -f "$BOOTDEV" ] || return
+    dir=$(mktemp -d /tmp/.multiboot.XXXXXX) || return
+    if mount -t vfat -o ro "$BOOTDEV" "$dir" 2>/dev/null; then
+        [ -f "$dir/bootmenu.env" ] && echo "boot menu on the card (bootmenu.env)"
+        umount "$dir"
+    fi
+    rmdir "$dir"
+}
+
+start() {
+    how=$(detect)
+    if [ -n "$how" ]; then
+        echo "$how" > "$OUT"
+        echo "Multiboot card: $how"
+        [ -x /usr/sbin/x6100-starttrace ] && /usr/sbin/x6100-starttrace "S01multiboot: $how"
+    else
+        rm -f "$OUT"
+    fi
+}
+
+case "$1" in
+    start)
+        start;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+esac
