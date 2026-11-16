@@ -39,12 +39,21 @@ CONF = DATA + "/dmr.conf"
 STATUS = "/tmp/x6100-dmr.status"
 HEARD = "/tmp/x6100-dmr.heard"
 IDS = DATA + "/dmr_ids.json"            # indicativos ya buscados (radioid.net)
-STATIC_DONE = DATA + "/dmr_static.json"  # el TG fijo que la radio puso en BrandMeister (para sacarlo al cambiar)
+STATIC_DONE = DATA + "/dmr_static.json"
+VARIANT_FILE = DATA + "/dmr_variant"          # la ficha que aceptó el servidor la última vez  # el TG fijo que la radio puso en BrandMeister (para sacarlo al cambiar)
 LOG = DATA + "/app_logs/dmr.txt"
 LOG_MAX = 256 * 1024
 UA = "OpenX6X00-CX8ANM/1.1 (escucha DMR de una radio de radioaficionado; github.com/condoruy/OpenX6X00-CX8ANM)"
 BM_API = "https://api.brandmeister.network/v2"
 SOFTWARE = "OpenX6X00-CX8ANM"
+# Las fichas del hotspot (RPTC) que se prueban en orden: (software, paquete, frecuencia simplex en Hz).
+# BrandMeister no acepta cualquier software ni paquete: las primeras son como las de MMDVMHost en un hotspot.
+CONFIG_VARIANTS = [
+    ("20250314", "MMDVM_MMDVM_HS_Hat", 438800000),
+    ("20250314", "MMDVM", 438800000),
+    ("20250314_Pi-Star", "MMDVM_MMDVM_HS_Hat", 438800000),
+    (SOFTWARE, "MMDVM", 430000000),
+]
 PING_S = 5
 DEAD_S = 30
 CALL_END_S = 1.2                      # sin ráfagas en este tiempo, la transmisión terminó
@@ -132,6 +141,29 @@ class Status:
 
 
 # ---------- indicativos (radioid.net) ----------
+
+def radioid_call(dmr_id):
+    """El indicativo registrado para un DMR ID (para la ficha del hotspot si la radio no tiene uno cargado)"""
+    i = "".join(ch for ch in str(dmr_id) if ch.isdigit())[:7]
+    if not i:
+        return ""
+    try:
+        with open(IDS) as f:
+            v = (json.load(f) or {}).get(i)
+        if v:
+            return v.split()[0]
+    except (OSError, ValueError, AttributeError):
+        pass
+    try:
+        req = urllib.request.Request("https://radioid.net/api/dmr/user/?id=" + i,
+                                     headers={"User-Agent": UA, "Accept": "application/json"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            res = (json.loads(r.read().decode("utf-8", "replace")) or {}).get("results") or []
+        return (res[0].get("callsign") or "").upper() if res else ""
+    except Exception as e:
+        log("radioid %s: %s" % (i, e.__class__.__name__))
+        return ""
+
 
 class Names:
     def __init__(self):
@@ -231,16 +263,35 @@ def bm_set_static(c, hid, tg):
 
 
 def bm_masters():
-    req = urllib.request.Request(BM_API + "/masters/", headers={"User-Agent": UA, "Accept": "application/json"})
-    with urllib.request.urlopen(req, timeout=15) as r:
-        d = json.loads(r.read().decode("utf-8", "replace"))
-    out = []
-    for m in d if isinstance(d, list) else []:
-        addr = m.get("address") or m.get("ip") or ""
-        if addr:
-            out.append({"id": m.get("id"), "country": m.get("country") or "", "address": addr,
-                        "port": m.get("port") or 62031})
-    return out
+    """La lista de servidores de BrandMeister. La API cambió de dirección con los años: se prueban varias"""
+    last = None
+    for url in (BM_API + "/master/", BM_API + "/masters/", BM_API + "/master", "https://api.brandmeister.network/v1.0/master/"):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (X11; Linux armv7l) " + UA,
+                                                       "Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=15) as r:
+                d = json.loads(r.read().decode("utf-8", "replace"))
+        except Exception as e:
+            last = "%s: %s" % (url, e)
+            continue
+        if isinstance(d, dict):
+            d = d.get("masters") or d.get("data") or d.get("items") or list(d.values())
+        out = []
+        for m in d if isinstance(d, list) else []:
+            if not isinstance(m, dict):
+                continue
+            addr = m.get("address") or m.get("hostname") or m.get("host") or m.get("ip") or ""
+            mid = m.get("id") or m.get("masterId") or m.get("serverId")
+            if not addr and mid:
+                addr = "%s.master.brandmeister.network" % mid
+            if addr:
+                out.append({"id": mid, "country": m.get("country") or m.get("countryCode") or "", "address": addr,
+                            "port": m.get("port") or 62031})
+        if out:
+            return out
+        last = "%s: lista vacía" % url
+    log("lista de servidores BM: %s" % last)
+    raise OSError(last or "sin lista")
 
 
 # ---------- el protocolo de los hotspots ----------
@@ -285,11 +336,19 @@ class Link:
             return None
         return d if a[0] == self.addr[0] else None
 
-    def config(self):
-        call = (radio_callsign() or "N0CALL")[:8]
+    def callsign(self):
+        """El indicativo de la ficha: BrandMeister lo compara con el dueño del DMR ID (radioid.net)"""
+        call = self.c.get("CALLSIGN", "").strip().upper() or radio_callsign()
+        if not call:
+            call = radioid_call(self.c.get("DMR_ID", ""))
+        return (call or "N0CALL")[:8]
+
+    def config(self, variant):
+        software, package, freq = CONFIG_VARIANTS[variant]
         fmt = "%-8.8s%09u%09u%02u%02u%8.8s%9.9s%03d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s"
-        s = fmt % (call, 430000000, 430000000, 0, 1, "%08f" % 0.0, "%09f" % 0.0, 0, "Internet", "X6100 listen only",
-                   "4", "https://github.com/condoruy/OpenX6X00-CX8ANM", SOFTWARE, "MMDVM")
+        s = fmt % (self.callsign(), freq, freq, 1, 1, "%08f" % 0.0, "%09f" % 0.0, 0, "Internet", "X6100 listen only",
+                   "4", "https://github.com/condoruy/OpenX6X00-CX8ANM", software, package)
+        log("ficha %d: %s" % (variant, " ".join(s.split())))
         return b"RPTC" + self.idb + s.encode("ascii", "replace")
 
     def options(self, tg):
@@ -300,7 +359,33 @@ class Link:
             return None
         return o.replace("{tg}", str(tg))
 
-    def login(self, tg, timeout=12):
+    def login(self, tg):
+        """Entra probando las fichas (CONFIG_VARIANTS), primero la que el servidor aceptó la última vez.
+        Devuelve None si entró, o el motivo"""
+        try:
+            with open(VARIANT_FILE) as f:
+                first = int(f.read().strip())
+        except (OSError, ValueError):
+            first = 0
+        order = [first] + [i for i in range(len(CONFIG_VARIANTS)) if i != first] if first < len(CONFIG_VARIANTS) else \
+            list(range(len(CONFIG_VARIANTS)))
+        why = None
+        for v in order:
+            why = self.login_one(tg, v)
+            if why != "the server rejected the configuration":
+                if why is None:
+                    log("el servidor aceptó la ficha %d" % v)
+                    try:
+                        with open(VARIANT_FILE, "w") as f:
+                            f.write(str(v))
+                    except OSError:
+                        pass
+                return why
+            log("el servidor rechazó la ficha %d" % v)
+            time.sleep(1.5)
+        return why
+
+    def login_one(self, tg, variant, timeout=12):
         """Devuelve None si entró, o el motivo"""
         pkt = b"RPTL" + self.idb
         self.send(pkt)
@@ -324,7 +409,7 @@ class Link:
                 salt = d[6:10]
                 pkt, step = b"RPTK" + self.idb + hashlib.sha256(salt + self.password.encode()).digest(), "auth"
             elif step == "auth":
-                pkt, step = self.config(), "config"
+                pkt, step = self.config(variant), "config"
             elif step == "config" and opts:
                 pkt, step = b"RPTO" + self.idb + opts.encode(), "options"
             else:

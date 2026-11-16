@@ -289,6 +289,7 @@ static void *run_fn(void *arg) {
     else radio_set_play_mode(AUDIO_PLAY_OFF);
     run_on    = false;
     run_alive = false;
+    unlink(STATUS_FILE);      /* que la web no muestre un estado viejo con la app cerrada */
     scheduler_put_noargs(run_ended);
     return NULL;
 }

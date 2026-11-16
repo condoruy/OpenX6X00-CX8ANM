@@ -4745,7 +4745,7 @@ def set_dmr():
 @app.post('/api/dmr/test')
 def test_dmr():
     try:
-        r = subprocess.run(["/usr/sbin/x6100-dmr", "test"], capture_output=True, text=True, timeout=40)
+        r = subprocess.run(["/usr/sbin/x6100-dmr", "test"], capture_output=True, text=True, timeout=90)
         out = (r.stdout.strip().splitlines() or ["error no answer"])[-1]
     except (OSError, subprocess.SubprocessError) as ex:
         out = "error " + str(ex)
@@ -4765,7 +4765,7 @@ def dmr_masters():
     except (OSError, ValueError):
         pass
     try:
-        r = subprocess.run(["/usr/sbin/x6100-dmr", "masters"], capture_output=True, text=True, timeout=30)
+        r = subprocess.run(["/usr/sbin/x6100-dmr", "masters"], capture_output=True, text=True, timeout=75)
         d = json.loads(r.stdout or "[]")
     except (OSError, subprocess.SubprocessError, ValueError):
         d = {"error": "x6100-dmr"}
