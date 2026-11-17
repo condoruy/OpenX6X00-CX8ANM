@@ -8,9 +8,9 @@
 <ol class="sub" style="margin-top: 0">
 <li>Get a <b>DMR ID</b> (7 digits) from <a href="https://radioid.net/" target="_blank" rel="noopener">radioid.net</a>, if you do not have one yet. It is free; they check your licence.</li>
 <li>In <a href="https://brandmeister.network/" target="_blank" rel="noopener">BrandMeister SelfCare</a> (log in with your DMR ID): <b>Profile → Hotspot Security</b>: turn it on and choose a password. That is the <b>hotspot password</b> below.</li>
-<li>The radio appears as a hotspot with your DMR ID and two more digits (the SSID, 01 by default). In SelfCare, open it under <b>My hotspots</b> and add the <b>static talkgroups</b> you want to hear. To change talkgroups from the radio instead, create an <b>API key</b> (Profile → API Keys) and paste it below.</li>
+<li>The radio receives all the talkgroups of your list at once, and on the radio (APP → DMR) you mark which ones you hear: all or only some. In BrandMeister they must be <b>static talkgroups</b> of the hotspot: the easiest is to create an <b>API key</b> (Profile → API Keys) and paste it below, and the radio adds them for you. Without the key, add them yourself in SelfCare, under <b>My hotspots</b> (the radio appears there with your DMR ID and two more digits, the SSID).</li>
 </ol>
-<p class="sub" style="margin: 0">FreeDMR and other networks of hotspots work too: there the radio asks for the talkgroup you choose on it.</p>
+<p class="sub" style="margin: 0">FreeDMR and other networks of hotspots work too: there the radio asks for all the talkgroups of the list when it connects.</p>
 </div>
 </section>
 
@@ -41,7 +41,7 @@
     <div class="dp-ctl"><input id="d-pass" type="password" autocomplete="new-password" maxlength="64"></div>
   </div>
 <div class="dp-row" id="row-api">
-    <div class="dp-lbl"><label for="d-api"><b>BrandMeister API key</b></label><br><span class="sub">optional: to change talkgroups from the radio</span></div>
+    <div class="dp-lbl"><label for="d-api"><b>BrandMeister API key</b></label><br><span class="sub">optional: the radio adds the talkgroups of the list for you</span></div>
     <div class="dp-ctl"><textarea id="d-api" rows="2" style="font-family: monospace; width: 100%"></textarea> <label id="lbl-clear" style="display:none"><input type="checkbox" id="d-api-clear"> remove the saved key</label></div>
   </div>
 <div class="dp-row" id="row-opt">

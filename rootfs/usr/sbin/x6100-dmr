@@ -227,39 +227,74 @@ def bm_request(method, path, key, body=None):
     return json.loads(txt) if txt.strip() else None
 
 
-def bm_set_static(c, hid, tg):
-    """Deja `tg` como el TG fijo del hotspot: saca el que puso la radio antes y agrega el nuevo"""
+def bm_sync_static(c, hid, tgs):
+    """Deja todos los TG de la lista como fijos del hotspot (con la llave de la API): agrega los que faltan y saca
+    los que la radio puso antes y ya no están en la lista. Los que puso el usuario en SelfCare no se tocan.
+    Qué TG se oyen lo elige la radio después (LISTEN), sin volver a llamar a la API."""
     key = c.get("APIKEY", "").strip()
-    if not key or not tg:
+    if not key:
         return None
     try:
         with open(STATIC_DONE) as f:
             done = json.load(f)
     except (OSError, ValueError):
         done = {}
-    if done.get("hid") == hid and done.get("tg") == tg:
-        return None
-    if done.get("hid") == hid and done.get("tg"):
+    if done.get("hid") != hid:
+        done = {"hid": hid, "tgs": [], "slot": 0}
+    if "tg" in done:                                  # el formato de la v1.1.8: un solo TG
+        done["tgs"] = [done.pop("tg")] if done.get("tg") else []
+    have, want = set(done.get("tgs") or []), set(tgs)
+    slot, err = done.get("slot", 0), None
+    for tg in sorted(have - want):
         try:
-            bm_request("DELETE", "/device/%d/talkgroup/%d/%d" % (hid, done.get("slot", 0), done["tg"]), key)
+            bm_request("DELETE", "/device/%d/talkgroup/%d/%d" % (hid, slot, tg), key)
+            have.discard(tg)
+            log("BM: saqué el TG fijo %d" % tg)
         except Exception as e:
-            log("BM: no se pudo sacar el TG %s: %s" % (done.get("tg"), e))
-    err = None
-    for slot in (0, 2):    # 0 en los hotspots simplex; 2 si BrandMeister no lo acepta
-        try:
-            bm_request("POST", "/device/%d/talkgroup" % hid, key, {"slot": slot, "group": tg})
-            with open(STATIC_DONE, "w") as f:
-                json.dump({"hid": hid, "tg": tg, "slot": slot}, f)
-            log("BM: TG fijo %d en el hotspot %d (slot %d)" % (tg, hid, slot))
-            return None
-        except urllib.error.HTTPError as e:
-            err = "BrandMeister API: HTTP %d" % e.code
-            if e.code in (401, 403):
+            log("BM: no se pudo sacar el TG %d: %s" % (tg, e))
+    for tg in sorted(want - have):
+        ok, err_before = False, err
+        for sl in (slot, 2 if slot == 0 else 0):     # 0 en los hotspots simplex; 2 si BrandMeister no lo acepta
+            try:
+                bm_request("POST", "/device/%d/talkgroup" % hid, key, {"slot": sl, "group": tg})
+                have.add(tg)
+                slot, ok = sl, True
+                err = err_before        # el error del otro slot no cuenta si este anduvo
+                log("BM: TG fijo %d en el hotspot %d (slot %d)" % (tg, hid, sl))
                 break
-        except Exception as e:
-            err = "BrandMeister API: %s" % e.__class__.__name__
-    log(err or "BM: error")
+            except urllib.error.HTTPError as e:
+                err = "BrandMeister API: HTTP %d" % e.code
+                if e.code in (401, 403):
+                    break
+            except Exception as e:
+                err = "BrandMeister API: %s" % e.__class__.__name__
+        if not ok and err and "HTTP 40" in err and err[-3:] in ("401", "403"):
+            break
+    try:
+        with open(STATIC_DONE, "w") as f:
+            json.dump({"hid": hid, "tgs": sorted(have), "slot": slot}, f)
+    except OSError:
+        pass
+    if err:
+        log(err)
     return err
+
+
+def list_tgs(c):
+    out = []
+    for x in (c.get("TALKGROUPS") or "").split("|"):
+        x = x.strip().split(" ")[0]
+        if x.isdigit() and int(x) not in out:
+            out.append(int(x))
+    return out
+
+
+def listen_set(c):
+    """Los TG que se quieren oír (LISTEN=all o LISTEN=91,214); None = todos"""
+    v = (c.get("LISTEN") or "all").strip().lower()
+    if v in ("", "all"):
+        return None
+    return {int(x) for x in v.replace(" ", "").split(",") if x.isdigit()}
 
 
 def bm_masters():
@@ -352,12 +387,14 @@ class Link:
         return b"RPTC" + self.idb + s.encode("ascii", "replace")
 
     def options(self, tg):
+        """tg: un TG o la lista de todos (FreeDMR acepta varios separados por comas en TS2)"""
         o = self.c.get("OPTIONS", "").strip()
         if self.net == "freedmr" and not o:
             o = "TS2={tg};DIAL=0;VOICE=0;TIMER=0"
-        if not o or not tg:
+        tgs = ",".join(str(t) for t in tg) if isinstance(tg, (list, tuple)) else str(tg or "")
+        if not o or not tgs:
             return None
-        return o.replace("{tg}", str(tg))
+        return o.replace("{tg}", tgs)
 
     def login(self, tg):
         """Entra probando las fichas (CONFIG_VARIANTS), primero la que el servidor aceptó la última vez.
@@ -440,20 +477,17 @@ def out_write(b):
 def run(tg_arg):
     c = read_conf()
     st = Status()
-    try:
-        tg = int(tg_arg or c.get("TG") or 0)
-    except ValueError:
-        tg = 0
+    tg = list_tgs(c)          # todos los de la lista: se reciben todos y la radio elige cuáles se oyen
     link = Link(c)
     why = link.check()
     netname = {"bm": "BrandMeister", "freedmr": "FreeDMR"}.get(link.net, link.host)
-    st.lines[1] = "%s\t%d\t%s" % (netname, link.hid, tg or "")
+    st.lines[1] = "%s\t%d\t%s" % (netname, link.hid, ",".join(str(t) for t in tg))
     if why:
         st.set(0, "error " + why)
         time.sleep(3)
         return
     if link.net == "bm":
-        err = bm_set_static(c, link.hid, tg)
+        err = bm_sync_static(c, link.hid, tg)
         if err:
             st.set(3, err)
     names = Names()
@@ -477,7 +511,7 @@ def run(tg_arg):
             time.sleep(min(30, 3 * tries))
             continue
         tries = 0
-        log("conectado a %s:%d como %d, TG %s" % (link.host, link.port, link.hid, tg or "-"))
+        log("conectado a %s:%d como %d, TG %s" % (link.host, link.port, link.hid, ",".join(str(t) for t in tg) or "-"))
         st.set(0, "online")
         if listen(link, st, names) == "closed":
             log("el servidor cerró la conexión")
@@ -489,8 +523,20 @@ def run(tg_arg):
 def listen(link, st, names):
     last_rx = last_ping = time.time()
     stream = None           # (stream id, src, dst, comienzo, último paquete)
+    want, conf_mtime, conf_check = None, None, 0
     while True:
         now = time.time()
+        if now - conf_check >= 1:          # la radio cambia LISTEN en /mnt/dmr.conf mientras se escucha
+            conf_check = now
+            try:
+                mt = os.path.getmtime(CONF)
+            except OSError:
+                mt = None
+            if mt != conf_mtime:
+                conf_mtime = mt
+                want = listen_set(read_conf())
+                if stream and want is not None and stream[2] not in want:
+                    stream = end_call(stream, st, names)
         if now - last_ping >= PING_S:
             link.send(b"RPTPING" + link.idb)
             last_ping = now
@@ -516,6 +562,8 @@ def listen(link, st, names):
         private = bool(flags & 0x40)
         if private and dst != link.hid and dst != link.hid // 100:
             continue
+        if not private and want is not None and dst not in want:
+            continue                        # un TG que la radio no quiere oír ahora
         sid = d[16:20]
         if stream and stream[0] != sid:
             if time.time() - stream[4] < CALL_END_S:
@@ -562,7 +610,7 @@ def test():
         return
     try:
         link.open()
-        why = link.login(int(c.get("TG") or 0) if (c.get("TG") or "").isdigit() else 0)
+        why = link.login(list_tgs(c))
     except OSError as e:
         log("red: %s" % e)
         why = "no Internet connection"

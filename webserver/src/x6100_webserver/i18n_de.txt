@@ -1411,3 +1411,10 @@ Options	Optionen
 Connecting…	Verbinde…
 Get a	Besorge dir eine
 Hotspot ID:	Hotspot-ID:
+The radio receives all the talkgroups of your list at once, and on the radio (APP → DMR) you mark which ones you hear: all or only some. In BrandMeister they must be	Das Funkgerät empfängt alle Sprechgruppen deiner Liste gleichzeitig, und am Funkgerät (APP → DMR) markierst du, welche du hörst: alle oder nur einige. Bei BrandMeister müssen es
+of the hotspot: the easiest is to create an	des Hotspots sein: am einfachsten erstellst du einen
+(Profile → API Keys) and paste it below, and the radio adds them for you. Without the key, add them yourself in SelfCare, under	(Profile → API Keys) und fügst ihn unten ein, dann trägt das Funkgerät sie selbst ein. Ohne Schlüssel trägst du sie in SelfCare selbst ein, unter
+(the radio appears there with your DMR ID and two more digits, the SSID).	(dort erscheint das Funkgerät mit deiner DMR-ID und zwei weiteren Ziffern, der SSID).
+FreeDMR and other networks of hotspots work too: there the radio asks for all the talkgroups of the list when it connects.	FreeDMR und andere Hotspot-Netze gehen auch: dort fordert das Funkgerät beim Verbinden alle Sprechgruppen der Liste an.
+My hotspots	My hotspots
+optional: the radio adds the talkgroups of the list for you	optional: das Funkgerät trägt die Sprechgruppen der Liste selbst ein

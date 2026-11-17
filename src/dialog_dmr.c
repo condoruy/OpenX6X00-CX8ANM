@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -48,8 +49,9 @@ typedef struct {
 } tg_t;
 
 static tg_t tgs[MAX_TG];
+static bool tg_on[MAX_TG];    /* los TG que se oyen (LISTEN en /mnt/dmr.conf); se reciben todos los de la lista */
 static int  tgs_n;
-static int  cur_tg;
+static int  talking_tg;       /* el TG de quien habla ahora, para marcarlo */
 static char network[16];      /* "bm", "freedmr", "other" */
 static bool have_apikey;
 static char dmr_id[16];
@@ -112,7 +114,7 @@ static void unquote(char *v) {
 static void load_conf(void) {
     FILE *f = fopen(CONF_FILE, "r");
     char  line[2048];
-    int   saved = 0;
+    char  listen[512] = "all";
 
     tgs_n       = 0;
     have_apikey = false;
@@ -132,8 +134,8 @@ static void load_conf(void) {
             snprintf(dmr_id, sizeof(dmr_id), "%s", v);
         } else if (!strcmp(line, "APIKEY")) {
             have_apikey = v[0] != 0;
-        } else if (!strcmp(line, "TG")) {
-            saved = atoi(v);
+        } else if (!strcmp(line, "LISTEN")) {
+            snprintf(listen, sizeof(listen), "%s", v);
         } else if (!strcmp(line, "TALKGROUPS")) {
             for (char *p = strtok(v, "|"); p && tgs_n < MAX_TG; p = strtok(NULL, "|")) {
                 while (*p == ' ') p++;
@@ -148,11 +150,47 @@ static void load_conf(void) {
         }
     }
     fclose(f);
-    if (!cur_tg) cur_tg = saved ? saved : (tgs_n ? tgs[0].tg : 0);
+    bool all = !listen[0] || !strcasecmp(listen, "all");
+    for (int i = 0; i < tgs_n; i++) {
+        tg_on[i] = all;
+        if (all) continue;
+        char num[16];
+        snprintf(num, sizeof(num), "%d", tgs[i].tg);
+        for (char *p = listen; *p;) {
+            size_t n = strcspn(p, ",");
+            if (n == strlen(num) && !strncmp(p, num, n)) tg_on[i] = true;
+            p += n;
+            if (*p == ',') p++;
+        }
+    }
 }
 
-/* El TG elegido queda en /mnt/dmr.conf (TG=), para la próxima vez */
-static void save_tg(int tg) {
+static bool all_on(void) {
+    for (int i = 0; i < tgs_n; i++)
+        if (!tg_on[i]) return false;
+    return true;
+}
+
+static int count_on(void) {
+    int n = 0;
+    for (int i = 0; i < tgs_n; i++) n += tg_on[i];
+    return n;
+}
+
+/* Los TG que se oyen quedan en /mnt/dmr.conf (LISTEN=all, o LISTEN=91,214; 0 = ninguno). x6100-dmr lo relee solo
+ * mientras escucha, así que se cambia sin volver a conectar */
+static void save_listen(void) {
+    char  val[512];
+    char *p = val;
+    if (all_on()) {
+        snprintf(val, sizeof(val), "all");
+    } else {
+        val[0] = 0;
+        for (int i = 0; i < tgs_n; i++)
+            if (tg_on[i] && p < val + sizeof(val) - 12) p += sprintf(p, "%s%d", p == val ? "" : ",", tgs[i].tg);
+        if (!val[0]) snprintf(val, sizeof(val), "0");
+    }
+
     FILE *f = fopen(CONF_FILE, "r");
     if (!f) return;
     char  *buf = NULL;
@@ -161,14 +199,14 @@ static void save_tg(int tg) {
     char   line[2048];
     bool   done = false;
     while (fgets(line, sizeof(line), f)) {
-        if (!strncmp(line, "TG=", 3)) {
-            fprintf(m, "TG=%d\n", tg);
+        if (!strncmp(line, "LISTEN=", 7)) {
+            fprintf(m, "LISTEN=\"%s\"\n", val);
             done = true;
         } else {
             fputs(line, m);
         }
     }
-    if (!done) fprintf(m, "TG=%d\n", tg);
+    if (!done) fprintf(m, "LISTEN=\"%s\"\n", val);
     fclose(f);
     fclose(m);
     FILE *o = fopen(CONF_FILE ".tmp", "w");
@@ -206,11 +244,9 @@ static bool read_full(int fd, void *buf, size_t n) {
 static void run_ended(void *arg);
 
 static void *run_fn(void *arg) {
-    int  tg = (int)(intptr_t)arg;
-    int  fds[2];
-    char tgs_arg[16];
+    (void)arg;
+    int fds[2];
 
-    snprintf(tgs_arg, sizeof(tgs_arg), "%d", tg);
     if (pipe(fds) != 0) {
         run_on = run_alive = false;
         scheduler_put_noargs(run_ended);
@@ -225,7 +261,7 @@ static void *run_fn(void *arg) {
         close(fds[1]);
         int dn = open("/dev/null", O_RDWR);
         if (dn >= 0) dup2(dn, 2);
-        execl(HELPER, HELPER, "run", tgs_arg, (char *)NULL);
+        execl(HELPER, HELPER, "run", (char *)NULL);
         _exit(127);
     }
     close(fds[1]);
@@ -331,24 +367,11 @@ static void launch(void) {
     }
     run_on    = true;
     run_alive = true;
-    if (pthread_create(&t, NULL, run_fn, (void *)(intptr_t)cur_tg) == 0) {
+    if (pthread_create(&t, NULL, run_fn, NULL) == 0) {
         pthread_detach(t);
     } else {
         run_on = run_alive = false;
     }
-}
-
-static void connect_to(int tg) {
-    cur_tg     = tg;
-    auto_tries = 0;
-    save_tg(tg);
-    if (run_alive) {
-        stop_run();
-        restart_pending = true;
-    } else {
-        launch();
-    }
-    show_all();
 }
 
 /* ---------- pantalla ---------- */
@@ -359,24 +382,29 @@ static const char *net_name(void) {
     return tr("Other network");
 }
 
-/* ¿se puede elegir el TG desde la radio? En BrandMeister hace falta la llave de la API */
-static bool tg_selectable(void) {
-    return strcmp(network, "bm") || have_apikey;
+/* En BrandMeister sin la llave de la API, los TG fijos los pone el usuario en SelfCare */
+static bool bm_manual(void) {
+    return !strcmp(network, "bm") && !have_apikey;
 }
 
+/* Fila 0: "Todos"; después un TG por fila, con [x] si se oye */
 static void show_all(void) {
     if (!table) return;
     lv_label_set_text_fmt(title_lbl, "#%06x DMR#  #%06x %s  %s%s#", theme_hex(TC_accent), theme_hex(TC_text_dim),
                           net_name(), dmr_id[0] ? "ID " : "", dmr_id[0] ? dmr_id : tr("no DMR ID"));
-    lv_table_set_row_cnt(table, tgs_n ? tgs_n : 1);
     if (!tgs_n) {
+        lv_table_set_row_cnt(table, 1);
         lv_table_set_cell_value(table, 0, 0, tr("No talkgroups: add them on the radio's web page (DMR page)"));
         lv_table_set_cell_value(table, 0, 1, "");
+        return;
     }
+    lv_table_set_row_cnt(table, tgs_n + 1);
+    lv_table_set_cell_value_fmt(table, 0, 0, "%s %s", all_on() ? "[x]" : "[  ]", tr("All talkgroups"));
+    lv_table_set_cell_value_fmt(table, 0, 1, "%d/%d", count_on(), tgs_n);
     for (int i = 0; i < tgs_n; i++) {
-        bool cur = run_on && tgs[i].tg == cur_tg;
-        lv_table_set_cell_value_fmt(table, i, 0, "%s %d %s", cur ? ">" : " ", tgs[i].tg, tgs[i].name);
-        lv_table_set_cell_value(table, i, 1, cur ? tr("listening") : "");
+        bool talk = run_on && tgs[i].tg == talking_tg;
+        lv_table_set_cell_value_fmt(table, i + 1, 0, "%s %d %s", tg_on[i] ? "[x]" : "[  ]", tgs[i].tg, tgs[i].name);
+        lv_table_set_cell_value(table, i + 1, 1, talk ? tr("talking") : "");
     }
 }
 
@@ -428,38 +456,48 @@ static void status_cb(lv_timer_t *t) {
     if (!state_lbl) return;
     if (!run_on) {
         lv_label_set_text_fmt(state_lbl, "#%06x %s#", theme_hex(TC_text_dim),
-                              tg_selectable() ? tr("Disconnected: choose a talkgroup and press the MFK or Connect")
-                                              : tr("Disconnected: press Connect (talkgroups set in BrandMeister SelfCare)"));
+                              tr("Disconnected: mark the talkgroups with the MFK and press Connect"));
     } else if (!strncmp(st, "error", 5)) {
         lv_label_set_text_fmt(state_lbl, "#%06x %s#", theme_hex(TC_err), st[5] ? tr(st + 6) : tr("Error"));
     } else if (!strcmp(st, "online")) {
-        if (cur_tg && tg_selectable())
-            lv_label_set_text_fmt(state_lbl, "#%06x %s %s# TG %d%s%s", theme_hex(TC_accent), ">", tr("Listening"),
-                                  cur_tg, note[0] ? "  " : "", note);
+        if (note[0])
+            lv_label_set_text_fmt(state_lbl, "#%06x > %s# %d/%d  #%06x %s#", theme_hex(TC_accent), tr("Listening"),
+                                  count_on(), tgs_n, theme_hex(TC_err), note);
+        else if (bm_manual())
+            lv_label_set_text_fmt(state_lbl, "#%06x > %s# %d/%d  #%06x %s#", theme_hex(TC_accent), tr("Listening"),
+                                  count_on(), tgs_n, theme_hex(TC_text_dim),
+                                  tr("(they must be static talkgroups in BrandMeister SelfCare)"));
         else
-            lv_label_set_text_fmt(state_lbl, "#%06x %s %s# %s", theme_hex(TC_accent), ">", tr("Listening"),
-                                  tr("the talkgroups of your hotspot in BrandMeister SelfCare"));
+            lv_label_set_text_fmt(state_lbl, "#%06x > %s# %d/%d %s", theme_hex(TC_accent), tr("Listening"), count_on(),
+                                  tgs_n, tr("talkgroups"));
     } else {
         lv_label_set_text_fmt(state_lbl, "#%06x %s#", theme_hex(TC_text_dim), tr("Connecting..."));
     }
     char *tab = strchr(talker, '\t');
+    int   now_tg = 0;
     if (run_on && talker[0] && tab) {
         *tab++    = 0;
         char *tg  = strchr(tab, '\t');
+        now_tg    = tg ? atoi(tg + 1) : 0;
         lv_label_set_text_fmt(talk_lbl, "#%06x %s %s#  TG %s", theme_hex(TC_accent), ">", talker,
                               tg ? tg + 1 : "");
     } else {
         lv_label_set_text_fmt(talk_lbl, "#%06x %s#", theme_hex(TC_text_dim),
                               run_on ? tr("Listen only: the radio never transmits on DMR") : "");
     }
+    if (now_tg != talking_tg) {
+        talking_tg = now_tg;
+        show_all();
+    }
     heard_update();
 }
 
+/* -1: ninguna; 0: "Todos"; 1..: el TG i-1 */
 static int selected(void) {
     uint16_t row = 0, col = 0;
     if (!table || !tgs_n) return -1;
     lv_table_get_selected_cell(table, &row, &col);
-    return row == LV_TABLE_CELL_NONE || row >= tgs_n ? -1 : row;
+    return row == LV_TABLE_CELL_NONE || row > tgs_n ? -1 : row;
 }
 
 static void power_cb(button_data_t *b) {
@@ -470,8 +508,6 @@ static void power_cb(button_data_t *b) {
         show_all();
         return;
     }
-    int i = selected();
-    if (i >= 0 && tg_selectable()) cur_tg = tgs[i].tg;
     auto_tries = 0;
     launch();
     show_all();
@@ -482,11 +518,16 @@ static void reload_cb(button_data_t *b) {
     load_conf();
     show_all();
     msg_update_text_fmt("%s: %d", tr("Talkgroups"), tgs_n);
+    if (run_alive) {          /* la lista cambió: se vuelve a conectar para recibirlos todos */
+        stop_run();
+        restart_pending = true;
+    }
 }
 
 static void help_cb(button_data_t *b) {
     (void)b;
-    msg_update_text_fmt("%s", tr("DMR: set your DMR ID, hotspot password and talkgroups on the radio's web page (DMR page)"));
+    msg_update_text_fmt("%s", bm_manual() ? tr("BrandMeister: add the talkgroups as static in SelfCare, or paste your API key on the DMR web page so the radio adds them")
+                                          : tr("DMR: set your DMR ID, hotspot password and talkgroups on the radio's web page (DMR page)"));
 }
 
 static void key_cb(lv_event_t *e) {
@@ -497,11 +538,16 @@ static void key_cb(lv_event_t *e) {
             dialog_destruct();
             break;
         case LV_KEY_ENTER: {
-            int i = selected();
-            if (i < 0) break;
-            if (run_on && tgs[i].tg == cur_tg) power_cb(NULL);
-            else if (tg_selectable() || !run_on) connect_to(tgs[i].tg);
-            else msg_update_text_fmt("%s", tr("BrandMeister: add your API key on the DMR web page to change talkgroups from the radio"));
+            int r = selected();
+            if (r < 0) break;
+            if (r == 0) {
+                bool all = !all_on();
+                for (int i = 0; i < tgs_n; i++) tg_on[i] = all;
+            } else {
+                tg_on[r - 1] = !tg_on[r - 1];
+            }
+            save_listen();
+            show_all();
             break;
         }
         case KEY_VOL_LEFT_EDIT:
@@ -579,13 +625,10 @@ static void construct_cb(lv_obj_t *parent) {
 
     load_conf();
     show_all();
-    for (int i = 0; i < tgs_n; i++)
-        if (tgs[i].tg == cur_tg) {
-            lv_table_t *tt = (lv_table_t *)table;
-            tt->row_act    = i;
-            tt->col_act    = 0;
-            lv_obj_invalidate(table);
-        }
+    lv_table_t *tt = (lv_table_t *)table;
+    tt->row_act    = 0;
+    tt->col_act    = 0;
+    lv_obj_invalidate(table);
 
     status_timer = lv_timer_create(status_cb, 400, NULL);
     status_cb(NULL);

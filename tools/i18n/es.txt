@@ -2486,3 +2486,8 @@ the server does not answer	el servidor no responde
 no Internet connection	sin conexión a Internet
 the server stopped answering, reconnecting	el servidor dejó de responder, reconectando
 the server dropped the hotspot, reconnecting	el servidor sacó al hotspot, reconectando
+All talkgroups	Todos los grupos
+talking	hablando
+Disconnected: mark the talkgroups with the MFK and press Connect	Desconectado: marcá los grupos con el MFK y pulsá Conectar
+(they must be static talkgroups in BrandMeister SelfCare)	(tienen que estar como grupos fijos en BrandMeister SelfCare)
+BrandMeister: add the talkgroups as static in SelfCare, or paste your API key on the DMR web page so the radio adds them	BrandMeister: agregá los grupos como fijos en SelfCare, o pegá tu llave de la API en la página web DMR para que la radio los agregue

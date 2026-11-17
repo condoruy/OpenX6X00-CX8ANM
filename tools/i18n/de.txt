@@ -2360,3 +2360,8 @@ the server does not answer	der Server antwortet nicht
 no Internet connection	keine Internetverbindung
 the server stopped answering, reconnecting	der Server antwortet nicht mehr, neue Verbindung
 the server dropped the hotspot, reconnecting	der Server hat den Hotspot getrennt, neue Verbindung
+All talkgroups	Alle Sprechgruppen
+talking	spricht
+Disconnected: mark the talkgroups with the MFK and press Connect	Getrennt: Sprechgruppen mit dem MFK markieren und Verbinden drücken
+(they must be static talkgroups in BrandMeister SelfCare)	(sie müssen feste Sprechgruppen in BrandMeister SelfCare sein)
+BrandMeister: add the talkgroups as static in SelfCare, or paste your API key on the DMR web page so the radio adds them	BrandMeister: Sprechgruppen in SelfCare als fest eintragen oder den API-Schlüssel auf der Webseite DMR einfügen, damit das Funkgerät sie einträgt

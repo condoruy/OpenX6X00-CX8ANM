@@ -4631,7 +4631,7 @@ def test_zello():
 # ---------- DMR (x6100-dmr, src/dialog_dmr.c): escucha de DMR por Internet, solo recepción ----------
 # /mnt/dmr.conf: NETWORK, HOST, PORT, DMR_ID, SSID, PASSWORD, APIKEY, OPTIONS, TALKGROUPS (separados por |), TG.
 # La clave del hotspot y la llave de la API nunca se devuelven a la página: solo si están cargadas.
-DMR_KEYS = ("NETWORK", "HOST", "PORT", "DMR_ID", "SSID", "PASSWORD", "APIKEY", "OPTIONS", "TALKGROUPS", "TG")
+DMR_KEYS = ("NETWORK", "HOST", "PORT", "DMR_ID", "SSID", "PASSWORD", "APIKEY", "OPTIONS", "TALKGROUPS", "TG", "LISTEN")
 
 
 def dmr_path():
@@ -4640,7 +4640,7 @@ def dmr_path():
 
 def read_dmr():
     c = {"NETWORK": "bm", "HOST": "", "PORT": "62031", "DMR_ID": "", "SSID": "01", "PASSWORD": "", "APIKEY": "",
-         "OPTIONS": "", "TALKGROUPS": "91 Worldwide", "TG": "91"}
+         "OPTIONS": "", "TALKGROUPS": "91 Worldwide", "TG": "91", "LISTEN": "all"}
     try:
         with open(dmr_path(), encoding="utf-8") as f:
             for line in f:

@@ -1411,3 +1411,10 @@ Options	Opciones
 Connecting…	Conectando…
 Get a	Conseguí un
 Hotspot ID:	ID del hotspot:
+The radio receives all the talkgroups of your list at once, and on the radio (APP → DMR) you mark which ones you hear: all or only some. In BrandMeister they must be	La radio recibe todos los grupos de tu lista a la vez, y en la radio (APP → DMR) marcás cuáles escuchás: todos o solo algunos. En BrandMeister tienen que ser
+of the hotspot: the easiest is to create an	del hotspot: lo más fácil es crear una
+(Profile → API Keys) and paste it below, and the radio adds them for you. Without the key, add them yourself in SelfCare, under	(Profile → API Keys) y pegarla abajo, y la radio los agrega sola. Sin la llave, agregalos vos en SelfCare, en
+(the radio appears there with your DMR ID and two more digits, the SSID).	(la radio aparece ahí con tu DMR ID y dos cifras más, el SSID).
+FreeDMR and other networks of hotspots work too: there the radio asks for all the talkgroups of the list when it connects.	FreeDMR y otras redes de hotspots también funcionan: ahí la radio pide todos los grupos de la lista al conectarse.
+My hotspots	My hotspots
+optional: the radio adds the talkgroups of the list for you	opcional: la radio agrega sola los grupos de la lista

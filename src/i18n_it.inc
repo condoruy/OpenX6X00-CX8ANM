@@ -2357,3 +2357,8 @@
 { "no Internet connection", "nessuna connessione Internet" },
 { "the server stopped answering, reconnecting", "il server non risponde più, riconnessione" },
 { "the server dropped the hotspot, reconnecting", "il server ha scollegato l'hotspot, riconnessione" },
+{ "All talkgroups", "Tutti i gruppi" },
+{ "talking", "parla" },
+{ "Disconnected: mark the talkgroups with the MFK and press Connect", "Disconnesso: segna i gruppi con l'MFK e premi Connetti" },
+{ "(they must be static talkgroups in BrandMeister SelfCare)", "(devono essere gruppi fissi in BrandMeister SelfCare)" },
+{ "BrandMeister: add the talkgroups as static in SelfCare, or paste your API key on the DMR web page so the radio adds them", "BrandMeister: aggiungi i gruppi come fissi in SelfCare, o incolla la chiave API nella pagina web DMR perché la radio li aggiunga" },
