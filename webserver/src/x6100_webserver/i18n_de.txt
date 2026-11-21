@@ -1418,3 +1418,14 @@ of the hotspot: the easiest is to create an	des Hotspots sein: am einfachsten er
 FreeDMR and other networks of hotspots work too: there the radio asks for all the talkgroups of the list when it connects.	FreeDMR und andere Hotspot-Netze gehen auch: dort fordert das Funkgerät beim Verbinden alle Sprechgruppen der Liste an.
 My hotspots	My hotspots
 optional: the radio adds the talkgroups of the list for you	optional: das Funkgerät trägt die Sprechgruppen der Liste selbst ein
+Callsign or name	Rufzeichen oder Name
+Date and time	Datum und Uhrzeit
+Download ADIF (SWL)	ADIF herunterladen (SWL)
+Download CSV	CSV herunterladen
+Every station the radio heard on DMR, kept on the radio. These are listening reports (SWL), not QSOs	Jede Station, die das Funkgerät in DMR gehört hat, im Funkgerät gespeichert. Es sind Hörberichte (SWL), keine QSOs
+Listening log	Hörlog
+Nothing heard yet	Noch nichts gehört
+Search	Suchen
+The ADIF marks every record as a listening report (SWL=Y, mode DMR, via internet): a logging program keeps them apart from your QSOs. The downloads take the search above.	Das ADIF kennzeichnet jeden Eintrag als Hörbericht (SWL=Y, Betriebsart DMR, über Internet): ein Logprogramm hält sie von deinen QSOs getrennt. Die Downloads übernehmen die Suche oben.
+The newest 500	Die neuesten 500
+Heard:	Gehört:

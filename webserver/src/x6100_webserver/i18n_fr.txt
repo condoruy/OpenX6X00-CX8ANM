@@ -1418,3 +1418,14 @@ of the hotspot: the easiest is to create an	du hotspot : le plus simple est de c
 FreeDMR and other networks of hotspots work too: there the radio asks for all the talkgroups of the list when it connects.	FreeDMR et d'autres réseaux de hotspots marchent aussi : la radio y demande tous les groupes de la liste en se connectant.
 My hotspots	My hotspots
 optional: the radio adds the talkgroups of the list for you	facultatif : la radio ajoute elle-même les groupes de la liste
+Callsign or name	Indicatif ou nom
+Date and time	Date et heure
+Download ADIF (SWL)	Télécharger l'ADIF (SWL)
+Download CSV	Télécharger le CSV
+Every station the radio heard on DMR, kept on the radio. These are listening reports (SWL), not QSOs	Chaque station que la radio a entendue en DMR, gardée dans la radio. Ce sont des rapports d'écoute (SWL), pas des QSO
+Listening log	Journal d'écoute
+Nothing heard yet	Rien entendu pour l'instant
+Search	Chercher
+The ADIF marks every record as a listening report (SWL=Y, mode DMR, via internet): a logging program keeps them apart from your QSOs. The downloads take the search above.	L'ADIF marque chaque enregistrement comme rapport d'écoute (SWL=Y, mode DMR, par internet) : un logiciel de log les garde à part de vos QSO. Les téléchargements reprennent la recherche ci-dessus.
+The newest 500	Les 500 plus récents
+Heard:	Entendus :

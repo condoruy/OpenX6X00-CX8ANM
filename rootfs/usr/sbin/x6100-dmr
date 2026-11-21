@@ -38,6 +38,8 @@ DATA = os.environ.get("X6100_DATA", "/mnt")   # la partición de datos de la rad
 CONF = DATA + "/dmr.conf"
 STATUS = "/tmp/x6100-dmr.status"
 HEARD = "/tmp/x6100-dmr.heard"
+HISTORY = DATA + "/dmr_heard_log.txt"    # el registro permanente de escucha (página web DMR: historial, ADIF SWL)
+HISTORY_MAX = 2 * 1024 * 1024            # al llegar, pasa a .1 (se guardan dos)
 IDS = DATA + "/dmr_ids.json"            # indicativos ya buscados (radioid.net)
 STATIC_DONE = DATA + "/dmr_static.json"
 VARIANT_FILE = DATA + "/dmr_variant"          # la ficha que aceptó el servidor la última vez  # el TG fijo que la radio puso en BrandMeister (para sacarlo al cambiar)
@@ -591,12 +593,27 @@ def start_call(sid, src, dst, st, names):
     return (sid, src, dst, time.time(), time.time())
 
 
+def history_add(t0, src, who, tg, secs, net):
+    """Una línea por transmisión oída: época, id, "INDICATIVO Nombre" (vacío si radioid.net todavía no
+    respondió: la web lo completa después), TG, segundos, red"""
+    try:
+        if os.path.exists(HISTORY) and os.path.getsize(HISTORY) > HISTORY_MAX:
+            os.replace(HISTORY, HISTORY + ".1")
+        with open(HISTORY, "a", encoding="utf-8") as f:
+            f.write("%d\t%d\t%s\t%d\t%d\t%s\n" % (int(t0), src, (who or "").replace("\t", " "), tg,
+                                                   int(round(secs)), net))
+    except OSError:
+        pass
+
+
 def end_call(stream, st, names):
     sid, src, dst, t0, tl = stream
     out_write(b"E")
     secs = tl - t0
     if secs >= 0.5:
-        st.add_heard(t0, src, names.get(src) or str(src), dst, secs)
+        who = names.get(src)
+        st.add_heard(t0, src, who or str(src), dst, secs)
+        history_add(t0, src, who, dst, secs, st.lines[1].split("\t")[0])
     st.set(2, "")
     return None
 

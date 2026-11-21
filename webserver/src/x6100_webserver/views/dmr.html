@@ -65,8 +65,29 @@
 </div>
 </section>
 
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-list"/></svg></span><div><h3>Listening log</h3><p>Every station the radio heard on DMR, kept on the radio. These are listening reports (SWL), not QSOs</p></div></div>
+<div class="dp-body">
+<div class="d-filters">
+  <input id="h-q" placeholder="Callsign or name" maxlength="30">
+  <input id="h-tg" inputmode="numeric" placeholder="TG" maxlength="8" style="width: 6em">
+  <label>From <input id="h-from" type="date"></label>
+  <label>To <input id="h-to" type="date"></label>
+  <button id="h-go">Search</button>
+</div>
+<p class="sub" id="h-count"></p>
+<div class="d-table-wrap"><table class="d-table" id="h-table"><thead><tr><th>Date and time</th><th>Station</th><th>Name</th><th>TG</th><th>Seconds</th></tr></thead><tbody></tbody></table></div>
+<div class="actions"><a class="btn" id="h-adif" href="/api/dmr/history.adi">Download ADIF (SWL)</a> <a class="btn" id="h-csv" href="/api/dmr/history.csv">Download CSV</a></div>
+<p class="sub">The ADIF marks every record as a listening report (SWL=Y, mode DMR, via internet): a logging program keeps them apart from your QSOs. The downloads take the search above.</p>
+</div>
+</section>
+
 <style>
 .d-table-wrap{overflow-x:auto}
+.d-filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.d-filters input{max-width:12em}
+.d-table a{color:inherit;text-decoration:underline dotted}
+a.btn{display:inline-block;padding:8px 14px;border:1px solid #2c3e57;border-radius:8px;text-decoration:none;color:inherit}
 .d-table{width:100%;border-collapse:collapse;font-size:14px}
 .d-table th,.d-table td{text-align:left;padding:6px 8px;border-bottom:1px solid #1a283c;white-space:nowrap}
 .d-table th{color:var(--muted,#8da2bd);font-weight:600}
@@ -137,10 +158,38 @@ function dLive() {
     $("#d-live").text(live);
     const tb = $("#d-heard tbody").empty();
     r.heard.forEach(function(h) {
-      $("<tr>").append($("<td>").text(h.local), $("<td>").text(h.who), $("<td>").text(h.tg), $("<td>").text(h.secs)).appendTo(tb);
+      $("<tr>").append($("<td>").text(h.local), $("<td>").append(qrzLink(h.who)), $("<td>").text(h.tg), $("<td>").text(h.secs)).appendTo(tb);
     });
   });
 }
+/* "CX1ABC Juan" -> the callsign as a link to its QRZ.com page, the name after it */
+function qrzLink(who) {
+  const call = (who || "").split(" ")[0], rest = (who || "").slice(call.length);
+  const span = $("<span>");
+  if (/^[A-Z0-9]{1,3}[0-9][A-Z0-9]*$/i.test(call) && !/^[0-9]+$/.test(call))
+    span.append($("<a>").attr({href: "https://www.qrz.com/db/" + encodeURIComponent(call), target: "_blank", rel: "noopener"}).text(call));
+  else span.append(document.createTextNode(call));
+  return span.append(document.createTextNode(rest));
+}
+function hQuery() {
+  return $.param({q: $("#h-q").val().trim(), tg: $("#h-tg").val().trim(), from: $("#h-from").val(), to: $("#h-to").val()});
+}
+function hLoad() {
+  const q = hQuery();
+  $("#h-adif").attr("href", "/api/dmr/history.adi?" + q);
+  $("#h-csv").attr("href", "/api/dmr/history.csv?" + q);
+  $.get("/api/dmr/history?" + q, {}, function(r) {
+    const tb = $("#h-table tbody").empty();
+    r.rows.forEach(function(h) {
+      $("<tr>").append($("<td>").text(h.local), $("<td>").append(qrzLink(h.call || h.id)), $("<td>").text(h.name),
+                       $("<td>").text(h.tg), $("<td>").text(h.secs)).appendTo(tb);
+    });
+    $("#h-count").text(r.count ? (r.count >= 500 ? "The newest 500" : "Heard: " + r.count) : "Nothing heard yet");
+  });
+}
+$("#h-go").on("click", hLoad);
+$("#h-q, #h-tg").on("keydown", function(e) { if (e.key === "Enter") hLoad(); });
+hLoad();
 $.get("/api/dmr", {}, dRender);
 $.get("/api/dmr/masters", {}, function(r) {
   const sel = $("#d-master").empty().append($("<option>").val("").text(r.masters.length ? "Choose…" : (r.error || "No list")));

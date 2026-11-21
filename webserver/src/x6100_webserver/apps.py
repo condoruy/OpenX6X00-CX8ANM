@@ -4779,6 +4779,109 @@ def dmr_masters():
     return {"masters": [], "error": "Could not get the BrandMeister server list (is the radio on the internet?)"}
 
 
+# ---------- DMR: el registro de escucha (x6100-dmr lo escribe en /mnt/dmr_heard_log.txt) ----------
+
+def dmr_history(q="", tg="", day_from="", day_to="", limit=None):
+    """Las transmisiones oídas, la más nueva primero. q: indicativo o nombre; tg: número; day_*: AAAA-MM-DD (hora local)"""
+    root = settings.FILEBROWSER_PATH or "/mnt"
+    try:
+        with open(os.path.join(root, "dmr_ids.json")) as f:
+            ids = json.load(f)
+        if not isinstance(ids, dict):
+            ids = {}
+    except (OSError, ValueError):
+        ids = {}
+    lines = []
+    for name in ("dmr_heard_log.txt.1", "dmr_heard_log.txt"):
+        try:
+            with open(os.path.join(root, name), encoding="utf-8", errors="replace") as f:
+                lines += f.read().splitlines()
+        except OSError:
+            pass
+    q = (q or "").strip().upper()
+    out = []
+    for line in reversed(lines):
+        p = line.split("\t")
+        if len(p) < 5:
+            continue
+        try:
+            epoch, src, tgn, secs = int(p[0]), p[1], int(p[3]), int(p[4])
+        except ValueError:
+            continue
+        who = p[2] or ids.get(src) or ""
+        call, _, name = who.partition(" ")
+        day = time.strftime("%Y-%m-%d", time.localtime(epoch))
+        if tg and str(tgn) != str(tg).strip():
+            continue
+        if day_from and day < day_from or day_to and day > day_to:
+            continue
+        if q and q not in (call + " " + name).upper() and q != src:
+            continue
+        out.append({"time": epoch, "local": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(epoch)),
+                    "id": src, "call": call, "name": name.strip(), "tg": tgn, "secs": secs,
+                    "net": p[5] if len(p) > 5 else ""})
+        if limit and len(out) >= limit:
+            break
+    return out
+
+
+def _dmr_filters():
+    g = bottle.request.query
+    return dict(q=g.get("q", ""), tg=g.get("tg", ""), day_from=g.get("from", ""), day_to=g.get("to", ""))
+
+
+@app.get('/api/dmr/history')
+def dmr_history_api():
+    rows = dmr_history(limit=500, **_dmr_filters())
+    return {"rows": rows, "count": len(rows)}
+
+
+def _adif_field(name, value):
+    value = str(value)
+    return "<%s:%d>%s " % (name, len(value.encode("utf-8")), value)
+
+
+@app.get('/api/dmr/history.adi')
+def dmr_history_adif():
+    """El registro de escucha como ADIF de escucha (SWL=Y): no son QSOs, y los programas de log lo saben"""
+    me = (read_callsign() or "").strip().upper()
+    out = ["Registro de escucha DMR por Internet - OpenX6X00-CX8ANM\n",
+           _adif_field("ADIF_VER", "3.1.4"), _adif_field("PROGRAMID", "OpenX6X00-CX8ANM"), "<EOH>\n"]
+    for r in reversed(dmr_history(**_dmr_filters())):
+        if not r["call"]:
+            continue                # sin indicativo (un id que radioid.net no conoce) no es un registro útil
+        t = time.gmtime(r["time"])
+        rec = [_adif_field("CALL", r["call"]), _adif_field("QSO_DATE", time.strftime("%Y%m%d", t)),
+               _adif_field("TIME_ON", time.strftime("%H%M%S", t)),
+               _adif_field("TIME_OFF", time.strftime("%H%M%S", time.gmtime(r["time"] + r["secs"]))),
+               _adif_field("MODE", "DIGITALVOICE"), _adif_field("SUBMODE", "DMR"), _adif_field("SWL", "Y"),
+               _adif_field("PROP_MODE", "INTERNET"),
+               _adif_field("COMMENT", "TG %s%s, %d s, DMR ID %s" % (r["tg"], " " + r["net"] if r["net"] else "",
+                                                                     r["secs"], r["id"]))]
+        if r["name"]:
+            rec.append(_adif_field("NAME", r["name"]))
+        if me:
+            rec.append(_adif_field("STATION_CALLSIGN", me))
+        out.append("".join(rec) + "<EOR>\n")
+    bottle.response.content_type = "text/plain; charset=utf-8"
+    bottle.response.set_header("Content-Disposition", 'attachment; filename="dmr_escucha_swl.adi"')
+    return "".join(out)
+
+
+@app.get('/api/dmr/history.csv')
+def dmr_history_csv():
+    import csv
+    import io
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(["local_time", "callsign", "name", "dmr_id", "talkgroup", "seconds", "network"])
+    for r in dmr_history(**_dmr_filters()):
+        w.writerow([r["local"], r["call"], r["name"], r["id"], r["tg"], r["secs"], r["net"]])
+    bottle.response.content_type = "text/csv; charset=utf-8"
+    bottle.response.set_header("Content-Disposition", 'attachment; filename="dmr_escucha.csv"')
+    return "\ufeff" + buf.getvalue()
+
+
 @app.get('/api/dmr/heard')
 def dmr_heard():
     """Lo que la app DMR está escuchando: estado, quién habla y los últimos oídos"""
