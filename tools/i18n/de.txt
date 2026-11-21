@@ -2365,3 +2365,25 @@ talking	spricht
 Disconnected: mark the talkgroups with the MFK and press Connect	Getrennt: Sprechgruppen mit dem MFK markieren und Verbinden drücken
 (they must be static talkgroups in BrandMeister SelfCare)	(sie müssen feste Sprechgruppen in BrandMeister SelfCare sein)
 BrandMeister: add the talkgroups as static in SelfCare, or paste your API key on the DMR web page so the radio adds them	BrandMeister: Sprechgruppen in SelfCare als fest eintragen oder den API-Schlüssel auf der Webseite DMR einfügen, damit das Funkgerät sie einträgt
+tower	Tower
+approaching	im Anflug
+departing	im Abflug
+on the ground	am Boden
+near the airport	nahe am Flughafen
+Listening on the radio	Empfang mit dem Funkgerät
+Listen tower: the air traffic control of this airport, over the internet	Tower hören: die Flugsicherung dieses Flughafens, über das Internet
+the stream stopped	der Stream ist abgebrochen
+Tower	Tower
+No tower stream found for	Kein Tower-Stream gefunden für
+Searching the tower of	Suche den Tower von
+climbing	steigend
+descending	sinkend
+Map /	Karte /
+Getting the world activity of BrandMeister...	Hole die weltweite Aktivität von BrandMeister...
+no connection to BrandMeister	keine Verbindung zu BrandMeister
+talking now	sprechen gerade
+in the last 5 minutes	in den letzten 5 Minuten
+zoom	Zoom
+Nobody talking	Niemand spricht
+in your talkgroups now	gerade in deinen Sprechgruppen
+the DMR app is disconnected	die DMR-App ist getrennt

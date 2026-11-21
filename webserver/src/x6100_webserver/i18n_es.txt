@@ -1429,3 +1429,28 @@ Search	Buscar
 The ADIF marks every record as a listening report (SWL=Y, mode DMR, via internet): a logging program keeps them apart from your QSOs. The downloads take the search above.	El ADIF marca cada registro como reporte de escucha (SWL=Y, modo DMR, por internet): un programa de log los mantiene separados de tus QSOs. Las descargas usan la búsqueda de arriba.
 The newest 500	Los 500 más nuevos
 Heard:	Escuchados:
+Range	Radio
+Choose an airport	Elegí un aeropuerto
+Every BrandMeister station talking in the world, live. Who you are hearing on the radio is highlighted	Cada estación de BrandMeister que habla en el mundo, en vivo. Quien escuchás en la radio aparece resaltado
+Getting the world activity of BrandMeister...	Trayendo la actividad mundial de BrandMeister...
+Listen tower	Escuchar torre
+No answer from the radio	La radio no responde
+No tower stream found for	No se encontró emisora de torre para
+Press play on the player	Tocá reproducir en el reproductor
+Searching the tower of	Buscando la torre de
+The map needs internet on this device (map library)	El mapa necesita internet en este dispositivo (biblioteca del mapa)
+The position is approximate: the country of the callsign, or for who you hear the city of their radioid.net record. DMR does not send positions.	La posición es aproximada: el país del indicativo, o para quien escuchás la ciudad de su ficha en radioid.net. DMR no transmite posiciones.
+This stream does not play in the browser: choose another	Esta emisora no se reproduce en el navegador: elegí otra
+World activity	Actividad mundial
+in the last 5 minutes	en los últimos 5 minutos
+near the airport	cerca del aeropuerto
+on the ground	en tierra
+plays the air traffic control of the airport here in the browser, over the internet. While it plays, the aircraft most likely talking to that tower (near the airport and low: approaching, departing or on the ground) are highlighted in blue with their registration.	reproduce acá en el navegador, por internet, el control de tránsito aéreo del aeropuerto. Mientras suena, los aviones que con más probabilidad hablan con esa torre (cerca del aeropuerto y bajos: aproximando, despegando o en tierra) se resaltan en azul con su matrícula.
+approaching	aproximando
+departing	despegando
+talking now	hablando ahora
+approximate position	posición aproximada
+Listening:	Escuchando:
+heading	rumbo
+Aircraft:	Aviones:
+EMERGENCY	EMERGENCIA

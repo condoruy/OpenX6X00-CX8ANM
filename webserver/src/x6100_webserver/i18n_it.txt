@@ -1429,3 +1429,28 @@ Search	Cerca
 The ADIF marks every record as a listening report (SWL=Y, mode DMR, via internet): a logging program keeps them apart from your QSOs. The downloads take the search above.	L'ADIF segna ogni record come rapporto d'ascolto (SWL=Y, modo DMR, via internet): un programma di log li tiene separati dai tuoi QSO. I download usano la ricerca qui sopra.
 The newest 500	I 500 più recenti
 Heard:	Ascoltati:
+Range	Raggio
+Choose an airport	Scegli un aeroporto
+Every BrandMeister station talking in the world, live. Who you are hearing on the radio is highlighted	Ogni stazione BrandMeister che parla nel mondo, in diretta. Chi ascolti sulla radio è evidenziato
+Getting the world activity of BrandMeister...	Recupero dell'attività mondiale di BrandMeister...
+Listen tower	Ascolta torre
+No answer from the radio	Nessuna risposta dalla radio
+No tower stream found for	Nessuno stream della torre trovato per
+Press play on the player	Premi play nel lettore
+Searching the tower of	Ricerca della torre di
+The map needs internet on this device (map library)	La mappa ha bisogno di internet su questo dispositivo (libreria della mappa)
+The position is approximate: the country of the callsign, or for who you hear the city of their radioid.net record. DMR does not send positions.	La posizione è approssimativa: il paese del nominativo, o per chi ascolti la città della sua scheda radioid.net. Il DMR non trasmette posizioni.
+This stream does not play in the browser: choose another	Questo stream non si riproduce nel browser: scegline un altro
+World activity	Attività mondiale
+in the last 5 minutes	negli ultimi 5 minuti
+near the airport	vicino all'aeroporto
+on the ground	a terra
+plays the air traffic control of the airport here in the browser, over the internet. While it plays, the aircraft most likely talking to that tower (near the airport and low: approaching, departing or on the ground) are highlighted in blue with their registration.	riproduce qui nel browser, via internet, il controllo del traffico aereo dell'aeroporto. Mentre suona, gli aerei che più probabilmente parlano con quella torre (vicini all'aeroporto e bassi: in avvicinamento, in partenza o a terra) sono evidenziati in blu con la loro immatricolazione.
+approaching	in avvicinamento
+departing	in partenza
+talking now	parlano ora
+approximate position	posizione approssimativa
+Listening:	In ascolto:
+heading	rotta
+Aircraft:	Aerei:
+EMERGENCY	EMERGENZA

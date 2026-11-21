@@ -2491,3 +2491,25 @@ talking	hablando
 Disconnected: mark the talkgroups with the MFK and press Connect	Desconectado: marcá los grupos con el MFK y pulsá Conectar
 (they must be static talkgroups in BrandMeister SelfCare)	(tienen que estar como grupos fijos en BrandMeister SelfCare)
 BrandMeister: add the talkgroups as static in SelfCare, or paste your API key on the DMR web page so the radio adds them	BrandMeister: agregá los grupos como fijos en SelfCare, o pegá tu llave de la API en la página web DMR para que la radio los agregue
+tower	torre
+approaching	aproximando
+departing	despegando
+on the ground	en tierra
+near the airport	cerca del aeropuerto
+Listening on the radio	Escuchando con la radio
+Listen tower: the air traffic control of this airport, over the internet	Escuchar torre: el control de tránsito aéreo de este aeropuerto, por internet
+the stream stopped	la transmisión se cortó
+Tower	Torre
+No tower stream found for	No se encontró emisora de torre para
+Searching the tower of	Buscando la torre de
+climbing	subiendo
+descending	bajando
+Map /	Mapa /
+Getting the world activity of BrandMeister...	Trayendo la actividad mundial de BrandMeister...
+no connection to BrandMeister	sin conexión con BrandMeister
+talking now	hablando ahora
+in the last 5 minutes	en los últimos 5 minutos
+zoom	zoom
+Nobody talking	Nadie habla
+in your talkgroups now	en tus grupos ahora
+the DMR app is disconnected	la app DMR está desconectada

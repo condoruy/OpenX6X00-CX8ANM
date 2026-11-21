@@ -1429,3 +1429,28 @@ Search	Suchen
 The ADIF marks every record as a listening report (SWL=Y, mode DMR, via internet): a logging program keeps them apart from your QSOs. The downloads take the search above.	Das ADIF kennzeichnet jeden Eintrag als Hörbericht (SWL=Y, Betriebsart DMR, über Internet): ein Logprogramm hält sie von deinen QSOs getrennt. Die Downloads übernehmen die Suche oben.
 The newest 500	Die neuesten 500
 Heard:	Gehört:
+Range	Umkreis
+Choose an airport	Wähle einen Flughafen
+Every BrandMeister station talking in the world, live. Who you are hearing on the radio is highlighted	Jede BrandMeister-Station, die weltweit spricht, live. Wen du am Funkgerät hörst, ist hervorgehoben
+Getting the world activity of BrandMeister...	Hole die weltweite Aktivität von BrandMeister...
+Listen tower	Tower hören
+No answer from the radio	Keine Antwort vom Funkgerät
+No tower stream found for	Kein Tower-Stream gefunden für
+Press play on the player	Drücke Play im Player
+Searching the tower of	Suche den Tower von
+The map needs internet on this device (map library)	Die Karte braucht Internet auf diesem Gerät (Kartenbibliothek)
+The position is approximate: the country of the callsign, or for who you hear the city of their radioid.net record. DMR does not send positions.	Die Position ist ungefähr: das Land des Rufzeichens, oder für die gehörte Station die Stadt aus ihrem radioid.net-Eintrag. DMR sendet keine Positionen.
+This stream does not play in the browser: choose another	Dieser Stream läuft nicht im Browser: wähle einen anderen
+World activity	Weltweite Aktivität
+in the last 5 minutes	in den letzten 5 Minuten
+near the airport	nahe am Flughafen
+on the ground	am Boden
+plays the air traffic control of the airport here in the browser, over the internet. While it plays, the aircraft most likely talking to that tower (near the airport and low: approaching, departing or on the ground) are highlighted in blue with their registration.	spielt die Flugsicherung des Flughafens hier im Browser ab, über das Internet. Solange sie läuft, werden die Flugzeuge, die am wahrscheinlichsten mit diesem Tower sprechen (nahe am Flughafen und tief: im Anflug, im Abflug oder am Boden), blau mit ihrem Kennzeichen hervorgehoben.
+approaching	im Anflug
+departing	im Abflug
+talking now	sprechen gerade
+approximate position	ungefähre Position
+Listening:	Höre:
+heading	Kurs
+Aircraft:	Flugzeuge:
+EMERGENCY	NOTFALL

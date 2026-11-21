@@ -1429,3 +1429,28 @@ Search	Chercher
 The ADIF marks every record as a listening report (SWL=Y, mode DMR, via internet): a logging program keeps them apart from your QSOs. The downloads take the search above.	L'ADIF marque chaque enregistrement comme rapport d'écoute (SWL=Y, mode DMR, par internet) : un logiciel de log les garde à part de vos QSO. Les téléchargements reprennent la recherche ci-dessus.
 The newest 500	Les 500 plus récents
 Heard:	Entendus :
+Range	Rayon
+Choose an airport	Choisissez un aéroport
+Every BrandMeister station talking in the world, live. Who you are hearing on the radio is highlighted	Chaque station BrandMeister qui parle dans le monde, en direct. Celle que vous écoutez sur la radio est mise en évidence
+Getting the world activity of BrandMeister...	Récupération de l'activité mondiale de BrandMeister...
+Listen tower	Écouter la tour
+No answer from the radio	Pas de réponse de la radio
+No tower stream found for	Aucun flux de tour trouvé pour
+Press play on the player	Appuyez sur lecture dans le lecteur
+Searching the tower of	Recherche de la tour de
+The map needs internet on this device (map library)	La carte a besoin d'internet sur cet appareil (bibliothèque de carte)
+The position is approximate: the country of the callsign, or for who you hear the city of their radioid.net record. DMR does not send positions.	La position est approximative : le pays de l'indicatif, ou pour la station écoutée la ville de sa fiche radioid.net. Le DMR n'envoie pas de positions.
+This stream does not play in the browser: choose another	Ce flux ne se lit pas dans le navigateur : choisissez-en un autre
+World activity	Activité mondiale
+in the last 5 minutes	dans les 5 dernières minutes
+near the airport	près de l'aéroport
+on the ground	au sol
+plays the air traffic control of the airport here in the browser, over the internet. While it plays, the aircraft most likely talking to that tower (near the airport and low: approaching, departing or on the ground) are highlighted in blue with their registration.	diffuse ici dans le navigateur, par internet, le contrôle aérien de l'aéroport. Pendant l'écoute, les avions qui parlent le plus probablement avec cette tour (près de l'aéroport et bas : en approche, au départ ou au sol) sont mis en évidence en bleu avec leur immatriculation.
+approaching	en approche
+departing	au départ
+talking now	parlent maintenant
+approximate position	position approximative
+Listening:	Écoute :
+heading	cap
+Aircraft:	Avions :
+EMERGENCY	URGENCE

@@ -10,17 +10,29 @@
   #fl-table td, #fl-table th { padding: 3px 8px; text-align: left; }
   #fl-table tr.sel { background: rgba(255,176,64,.18); }
   #fl-table tbody tr { cursor: pointer; }
+  .fl-plane.hl { color: #3fd2ff; filter: drop-shadow(0 0 4px #3fd2ff); }
+  .fl-tag.hl { background: #0a5a78; font-weight: bold; }
+  #fl-table tr.hl td { color: #3fd2ff; }
+  .fl-tower { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+  .fl-tower audio { height: 32px; }
 </style>
 <h2><svg class="i"><use href="#i-globe"/></svg>Flights</h2>
 <p class="sub">The aircraft over the chosen area, as on Flightradar: the same data as <b>APP → Flights</b> on the radio. It comes from open networks of volunteers’ ADS-B receivers (airplanes.live, adsb.lol): only the aircraft some nearby receiver picks up are seen. It updates every 15 seconds. <b>Tap the map</b> to centre it there.</p>
+<p class="sub"><b>Listen tower</b> plays the air traffic control of the airport here in the browser, over the internet. While it plays, the aircraft most likely talking to that tower (near the airport and low: approaching, departing or on the ground) are highlighted in blue with their registration.</p>
 
 <section class="dp-card">
 <div class="dp-body">
 <div class="actions" style="margin-top: 0">
   <label>Centre <select id="fl-center"></select></label>
-  <label>Radio <select id="fl-km"><option>25</option><option>50</option><option selected>100</option><option>200</option><option>400</option></select> km</label>
+  <label>Range <select id="fl-km"><option>25</option><option>50</option><option selected>100</option><option>200</option><option>400</option></select> km</label>
   <button id="fl-upd">Update</button>
   <span class="status" id="fl-status"></span>
+</div>
+<div class="fl-tower">
+  <button id="fl-tw">Listen tower</button>
+  <select id="fl-tw-list" style="display:none"></select>
+  <audio id="fl-audio" controls preload="none" style="display:none"></audio>
+  <span class="status" id="fl-tw-status"></span>
 </div>
 <div id="fl-map"></div>
 <table id="fl-table" style="width: 100%; margin-top: 10px">
@@ -61,23 +73,55 @@ function setCenter(lat, lon, fit) {
   if (fit) map.fitBounds(fl.circle.getBounds());
   update();
 }
-function fmtAlt(a) { return a.ground ? "en tierra" : a.alt_m != null ? a.alt_m + " m" : "--"; }
+function fmtAlt(a) { return a.ground ? "on the ground" : a.alt_m != null ? a.alt_m + " m" : "--"; }
 function ident(a) { return a.call || a.reg || a.hex; }
+/* the airport: the chosen one, else the nearest of the list */
+function airport() {
+  const c = CENTERS[sel.value];
+  if (c && c[1] != null) return c;
+  let best = null, bd = 1e9;
+  CENTERS.forEach((x) => { if (x[1] != null) { const d = distKm(fl.lat, fl.lon, x[1], x[2]); if (d < bd) { bd = d; best = x; } } });
+  return best;
+}
+function distKm(a1, o1, a2, o2) {
+  const p = Math.PI / 180, a = Math.sin((a2 - a1) * p / 2), b = Math.sin((o2 - o1) * p / 2);
+  return 12742 * Math.asin(Math.sqrt(a * a + Math.cos(a1 * p) * Math.cos(a2 * p) * b * b));
+}
+function listening() { const au = document.getElementById("fl-audio"); return au.src && !au.paused; }
+function likely(a) {
+  if (!listening()) return false;
+  const ap = airport();
+  return ap && distKm(a.lat, a.lon, ap[1], ap[2]) <= 30 && (a.ground || (a.alt_m != null && a.alt_m < 3000));
+}
+function phase(a) {
+  if (a.ground) return "on the ground";
+  if (a.vs != null && a.vs <= -120) return "approaching";
+  if (a.vs != null && a.vs >= 120) return "departing";
+  return "near the airport";
+}
+let flLast = null;
 function render(d) {
+  flLast = d;
   layer.clearLayers();
   const tb = $("#fl-table tbody").empty();
-  d.ac.forEach((a) => {
-    const cls = "fl-plane" + (a.emerg ? " emg" : a.ground ? " gnd" : "");
+  const list = d.ac.slice().sort((x, y) => likely(y) - likely(x));
+  let opened = false;
+  list.forEach((a) => {
+    const hl = likely(a);
+    const cls = "fl-plane" + (a.emerg ? " emg" : hl ? " hl" : a.ground ? " gnd" : "");
     const icon = L.divIcon({className: "", iconSize: [20, 20], iconAnchor: [10, 10],
       html: '<div class="' + cls + '" style="transform: rotate(' + (a.trk || 0) + 'deg)">' +
         '<svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 1 L16 18 L10 14 L4 18 Z" fill="currentColor" stroke="#000" stroke-width="1"/></svg></div>'});
     const m = L.marker([a.lat, a.lon], {icon: icon}).addTo(layer);
-    m.bindTooltip('<span class="fl-tag">' + ident(a) + " " + fmtAlt(a) + "</span>",
-      {permanent: d.ac.length <= 30, direction: "right", offset: [8, 0], className: ""});
-    m.bindPopup("<b>" + ident(a) + "</b> " + (a.reg || "") + " " + (a.type || "") + "<br>" + (a.desc || "") +
-      "<br>" + fmtAlt(a) + (a.kmh != null ? " · " + a.kmh + " km/h" : "") + (a.trk != null ? " · rumbo " + a.trk + "°" : "") +
-      "<br>" + a.dist_km + " km a " + a.brg + "° · squawk " + (a.squawk || "--") + (a.emerg ? " · <b>EMERGENCIA</b>" : ""));
-    const tr = $("<tr>").toggleClass("sel", fl.sel === a.hex).on("click", () => { fl.sel = a.hex; m.openPopup(); map.panTo([a.lat, a.lon]); });
+    m.bindTooltip('<span class="fl-tag' + (hl ? " hl" : "") + '">' + (hl && a.reg ? a.reg : ident(a)) + " " + fmtAlt(a) + "</span>",
+      {permanent: hl || d.ac.length <= 30, direction: "right", offset: [8, 0], className: ""});
+    m.bindPopup("<b>" + (a.reg || ident(a)) + "</b> " + (a.call || "") + " " + (a.type || "") + "<br>" + (a.desc || "") +
+      (hl ? "<br><b>" + phase(a) + "</b>" : "") +
+      "<br>" + fmtAlt(a) + (a.kmh != null ? " · " + a.kmh + " km/h" : "") + (a.trk != null ? " · " + "heading" + " " + a.trk + "°" : "") +
+      "<br>" + a.dist_km + " km · " + a.brg + "° · squawk " + (a.squawk || "--") + (a.emerg ? " · <b>EMERGENCY</b>" : ""));
+    if (hl && !opened && (!fl.sel || fl.sel === a.hex)) { m.openPopup(); opened = true; fl.sel = a.hex; }
+    const tr = $("<tr>").toggleClass("sel", fl.sel === a.hex).toggleClass("hl", hl)
+      .on("click", () => { fl.sel = a.hex; m.openPopup(); map.panTo([a.lat, a.lon]); });
     [ident(a), a.reg, a.type, fmtAlt(a), a.kmh != null ? a.kmh + " km/h" : "--", a.trk != null ? a.trk + "°" : "--", a.dist_km + " km"]
       .forEach((v) => tr.append($("<td>").text(v || "")));
     tb.append(tr);
@@ -89,7 +133,7 @@ function update() {
   fl.busy = true;
   flStatus("Searching…");
   $.ajax({url: "/api/flights", data: {lat: fl.lat.toFixed(4), lon: fl.lon.toFixed(4), km: km()}, dataType: "json", timeout: 45000,
-    success: (d) => { render(d); flStatus(d.ac.length + " aviones · " + d.time + " (" + d.src + ")"); },
+    success: (d) => { render(d); flStatus("Aircraft: " + d.ac.length + " · " + d.time + " (" + d.src + ")"); },
     error: (x) => flStatus(x.responseJSON ? x.responseJSON.msg : "No data (is there internet?)", true),
     complete: () => { fl.busy = false; }});
 }
@@ -106,4 +150,32 @@ $.get("/api/flights/home", {}, (h) => {
   else { sel.value = 1; setCenter(CENTERS[1][1], CENTERS[1][2], true); }
 }).fail(() => { sel.value = 1; setCenter(CENTERS[1][1], CENTERS[1][2], true); });
 fl.timer = setInterval(update, 15000);
+
+/* ---- the tower ---- */
+const au = document.getElementById("fl-audio");
+function twStatus(t, err) {
+  const el = $("#fl-tw-status"); el.toggleClass("error", !!err);
+  el.html(t ? '<span class="dot"></span>' : "").append(document.createTextNode(t || ""));
+}
+function twPlay(url) {
+  au.src = url; au.style.display = "";
+  au.play().catch(() => twStatus("Press play on the player", false));
+}
+$("#fl-tw").on("click", function() {
+  const ap = airport();
+  if (!ap) return;
+  twStatus("Searching the tower of " + ap[0] + "…");
+  $.get("/api/flights/atc", {airport: ap[0]}, (r) => {
+    const ls = $("#fl-tw-list").empty();
+    if (!r.towers.length) { ls.hide(); twStatus(r.msg || ("No tower stream found for " + ap[0]), true); return; }
+    r.towers.forEach((t) => ls.append($("<option>").val(t.url).text(t.name)));
+    ls.show();
+    twStatus("");
+    twPlay(r.towers[0].url);
+  }).fail(() => twStatus("No answer from the radio", true));
+});
+$("#fl-tw-list").on("change", function() { twPlay(this.value); });
+au.addEventListener("playing", () => { twStatus("Listening: " + $("#fl-tw-list option:selected").text()); if (flLast) render(flLast); });
+au.addEventListener("pause", () => { if (flLast) render(flLast); });
+au.addEventListener("error", () => twStatus("This stream does not play in the browser: choose another", true));
 </script>

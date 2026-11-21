@@ -4340,6 +4340,28 @@ def flights_get():
         return json.load(f)
 
 
+@app.get('/api/flights/atc')
+def flights_atc():
+    """Las emisoras de torre de un aeropuerto ("SUMU Carrasco"), para escucharlas en el navegador"""
+    words = [w for w in re.split(r"\s+", bottle.request.query.get("airport", "").strip()) if w][:4]
+    if not words:
+        return {"towers": [], "msg": "Choose an airport"}
+    try:
+        r = subprocess.run(["/usr/sbin/x6100-iradio", "atc"] + words, capture_output=True, text=True, timeout=60)
+        lines = (r.stdout or "").splitlines()
+    except (OSError, subprocess.SubprocessError) as e:
+        return {"towers": [], "msg": str(e)}
+    towers, msg = [], ""
+    for line in lines:
+        if line.startswith("error "):
+            msg = "" if "no se encontraron" in line else line[6:]
+            continue
+        p = line.split("\t")
+        if len(p) >= 2 and p[1].startswith(("http://", "https://")):
+            towers.append({"name": p[0], "url": p[1], "codec": p[2] if len(p) > 2 else ""})
+    return {"towers": towers, "msg": msg if not towers else ""}
+
+
 # ---------- GhostNet (src/ghostnet.c, ghostnet_web.py) ----------
 @app.route('/ghostnet')
 def ghostnet_page():
@@ -4880,6 +4902,25 @@ def dmr_history_csv():
     bottle.response.content_type = "text/csv; charset=utf-8"
     bottle.response.set_header("Content-Disposition", 'attachment; filename="dmr_escucha.csv"')
     return "\ufeff" + buf.getvalue()
+
+
+@app.get('/api/dmr/world')
+def dmr_world():
+    """La actividad DMR del mundo (x6100-dmr-world, que se arranca solo mientras alguien mira el mapa)"""
+    try:
+        subprocess.run(["/usr/sbin/x6100-dmr-world", "ensure"], timeout=10, stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    try:
+        with open("/tmp/x6100-dmr-world.json", encoding="utf-8") as f:
+            d = json.load(f)
+    except (OSError, ValueError):
+        return {"t": 0, "online": False, "error": "Getting the world activity of BrandMeister...", "active": 0,
+                "stations": [], "talker": None}
+    if d.get("error"):
+        d["error"] = i18n_web.t(d["error"])
+    return d
 
 
 @app.get('/api/dmr/heard')

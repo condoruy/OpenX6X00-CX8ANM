@@ -4,6 +4,8 @@
 #   x6100-iradio country <CC> | top | air [CC] | search <texto>
 #        lista de emisoras (directorio abierto radio-browser.info), una por línea:
 #        nombre<TAB>url<TAB>códec<TAB>kbps<TAB>país   ("error <motivo>" si no hay red)
+#   x6100-iradio atc <OACI> [palabras del nombre]
+#        las emisoras de torre de un aeropuerto (para la app Vuelos), con el mismo formato
 #   x6100-iradio play <url>
 #        audio PCM s16 mono 44100 Hz por la salida estándar (la GUI lo manda al parlante);
 #        el estado en STATUS: tres líneas, estado ("connecting", "playing", "error ..."),
@@ -193,6 +195,34 @@ def own_atc():
     return out
 
 
+def cmd_atc(args):
+    """Las emisoras de torre (control de tránsito aéreo) de un aeropuerto, para la app Vuelos:
+    x6100-iradio atc SUMU Carrasco Montevideo  (el código OACI y palabras del nombre o la ciudad).
+    Primero las cargadas por el usuario que lo nombran, después las del directorio que dicen el código o el nombre."""
+    if not args:
+        raise Fail("falta el aeropuerto")
+    icao = args[0].upper()[:4]
+    words = [w for w in args[1:] if len(w) >= 4]
+    keys = [icao] + words
+    def match(s):
+        text = (clean(s.get("name")) + " " + clean(s.get("tags"))).upper()
+        return any(k.upper() in text for k in keys)
+    rows = [s for s in own_atc() if match(s)]
+    found = []
+    for q in keys:
+        try:
+            found += api("/json/stations/search", dict(COMMON, name=q, limit="40"))
+        except Fail:
+            if not rows and q == icao:
+                raise
+        try:
+            found += api("/json/stations/search", dict(COMMON, tag=q.lower(), limit="20"))
+        except Fail:
+            pass
+    rows += [s for s in found if is_atc(s) and match(s)]
+    print_list(rows)
+
+
 def cmd_search(args):
     text = " ".join(args).strip()
     if not text:
@@ -357,9 +387,10 @@ def cmd_play(args):
 
 
 def main(argv):
-    cmds = {"country": cmd_country, "top": cmd_top, "search": cmd_search, "air": cmd_air, "play": cmd_play}
+    cmds = {"country": cmd_country, "top": cmd_top, "search": cmd_search, "air": cmd_air, "atc": cmd_atc,
+            "play": cmd_play}
     if len(argv) < 2 or argv[1] not in cmds:
-        print("uso: x6100-iradio country CC | top | air [CC] | search TEXTO | play URL", file=sys.stderr)
+        print("uso: x6100-iradio country CC | top | air [CC] | atc OACI [nombre] | search TEXTO | play URL", file=sys.stderr)
         return 2
     try:
         return cmds[argv[1]](argv[2:]) or 0

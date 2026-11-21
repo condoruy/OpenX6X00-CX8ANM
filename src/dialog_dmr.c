@@ -12,6 +12,8 @@
 #include "audio.h"
 #include "board.h"
 #include "buttons.h"
+#include "cJSON.h"
+#include "live_map.h"
 #include "dialog.h"
 #include "dmr_ambe.h"
 #include "events.h"
@@ -75,8 +77,121 @@ static void help_cb(button_data_t *b);
 static button_data_t btn_power  = {.type = BTN_TEXT, .label = "Connect /\nDisconnect", .press = power_cb};
 static button_data_t btn_reload = {.type = BTN_TEXT, .label = "Reload\ntalkgroups", .press = reload_cb};
 static button_data_t btn_help   = {.type = BTN_TEXT, .label = "Help", .press = help_cb};
+static void          map_cb(button_data_t *b);
+static button_data_t btn_map    = {.type = BTN_TEXT, .label = "Map /\nList", .press = map_cb};
 
-static buttons_page_t btn_page = {{&btn_power, &btn_reload, &btn_help}};
+static buttons_page_t btn_page = {{&btn_power, &btn_reload, &btn_map, &btn_help}};
+
+/* ---------- el mapa del mundo: la actividad de BrandMeister (x6100-dmr-world) ---------- */
+
+static void dlog(const char *what);
+
+#define WORLD_HELPER "/usr/sbin/x6100-dmr-world"
+#define WORLD_FILE   "/tmp/x6100-dmr-world.json"
+#define MAP_PTS      600
+
+static lv_obj_t      *map_obj;          /* el lienzo; NULL con la lista */
+static lv_timer_t    *map_timer;
+static int            map_zoom = 1;     /* 1 el mundo, 2, 4 alrededor de quien habla */
+static uint32_t       map_ensure_ms;
+static live_map_pt_t  map_pts[MAP_PTS + 1];
+
+static void *ensure_fn(void *arg) {
+    (void)arg;
+    if (system(WORLD_HELPER " ensure >/dev/null 2>&1") != 0) dlog("x6100-dmr-world ensure falló");
+    return NULL;
+}
+
+static void map_refresh(void) {
+    if (!map_obj) return;
+    if (!map_ensure_ms || lv_tick_elaps(map_ensure_ms) > 30000) {   /* que siga andando mientras se mira */
+        pthread_t t;
+        map_ensure_ms = lv_tick_get() | 1;
+        if (pthread_create(&t, NULL, ensure_fn, NULL) == 0) pthread_detach(t);
+    }
+    cJSON *j = NULL;
+    FILE  *f = fopen(WORLD_FILE, "r");
+    if (f) {
+        fseek(f, 0, SEEK_END);
+        long len = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        char *txt = len > 0 && len < 2 * 1024 * 1024 ? malloc(len + 1) : NULL;
+        if (txt) {
+            txt[fread(txt, 1, len, f)] = 0;
+            j = cJSON_Parse(txt);
+            free(txt);
+        }
+        fclose(f);
+    }
+    int    n = 0, talker_id = 0;
+    char   box[256] = "", footer[160];
+    cJSON *t = j ? cJSON_GetObjectItem(j, "talker") : NULL;
+    if (cJSON_IsObject(t) && run_on) {
+        talker_id   = (int)cJSON_GetNumberValue(cJSON_GetObjectItem(t, "id"));
+        const char *call = cJSON_GetStringValue(cJSON_GetObjectItem(t, "call"));
+        const char *name = cJSON_GetStringValue(cJSON_GetObjectItem(t, "name"));
+        const char *city = cJSON_GetStringValue(cJSON_GetObjectItem(t, "city"));
+        const char *ctry = cJSON_GetStringValue(cJSON_GetObjectItem(t, "country"));
+        int         tg   = (int)cJSON_GetNumberValue(cJSON_GetObjectItem(t, "tg"));
+        cJSON      *la = cJSON_GetObjectItem(t, "lat"), *lo = cJSON_GetObjectItem(t, "lon");
+        char        place[96];
+        snprintf(place, sizeof(place), "%s%s%s", city ? city : "", city && city[0] && ctry && ctry[0] ? ", " : "",
+                 ctry ? ctry : "");
+        snprintf(box, sizeof(box), "%s\n%s\n%s\nTG %d", call && call[0] ? call : "?", name ? name : "", place, tg);
+        if (cJSON_IsNumber(la) && cJSON_IsNumber(lo)) {
+            map_pts[n].lat  = (float)la->valuedouble;
+            map_pts[n].lon  = (float)lo->valuedouble;
+            map_pts[n].kind = LIVE_MAP_HIGHLIGHT;
+            snprintf(map_pts[n].label, sizeof(map_pts[0].label), "%s", call ? call : "");
+            n++;
+        }
+    }
+    cJSON *st, *arr = j ? cJSON_GetObjectItem(j, "stations") : NULL;
+    cJSON_ArrayForEach(st, arr) {
+        if (n >= MAP_PTS) break;
+        if ((int)cJSON_GetNumberValue(cJSON_GetObjectItem(st, "id")) == talker_id) continue;
+        map_pts[n].lat      = (float)cJSON_GetNumberValue(cJSON_GetObjectItem(st, "lat"));
+        map_pts[n].lon      = (float)cJSON_GetNumberValue(cJSON_GetObjectItem(st, "lon"));
+        map_pts[n].kind     = cJSON_IsTrue(cJSON_GetObjectItem(st, "active")) ? LIVE_MAP_ACTIVE : LIVE_MAP_IDLE;
+        map_pts[n].label[0] = 0;
+        n++;
+    }
+    const char *err = j ? cJSON_GetStringValue(cJSON_GetObjectItem(j, "error")) : NULL;
+    if (!j)
+        snprintf(footer, sizeof(footer), "%s", tr("Getting the world activity of BrandMeister..."));
+    else if (err && err[0] && !cJSON_IsTrue(cJSON_GetObjectItem(j, "online")))
+        snprintf(footer, sizeof(footer), "%s", tr(err));
+    else
+        snprintf(footer, sizeof(footer), "BrandMeister: %d %s, %d %s   %s x%d", (int)cJSON_GetNumberValue(cJSON_GetObjectItem(j, "active")),
+                 tr("talking now"), cJSON_GetArraySize(arr), tr("in the last 5 minutes"), tr("zoom"), map_zoom);
+    if (!box[0]) snprintf(box, sizeof(box), "%s\n%s", tr("Nobody talking"), run_on ? tr("in your talkgroups now") : tr("the DMR app is disconnected"));
+    live_map_draw(map_pts, n, map_zoom, -34.9, -56.2, box, footer);
+    cJSON_Delete(j);
+}
+
+static void map_timer_cb(lv_timer_t *t) {
+    (void)t;
+    map_refresh();
+}
+
+static void map_key_cb(lv_event_t *e) {
+    uint32_t key = *((uint32_t *)lv_event_get_param(e));
+    if (key == LV_KEY_ESC) {
+        dialog_destruct();
+    } else if (key == LV_KEY_RIGHT || key == LV_KEY_DOWN || key == '+') {
+        if (map_zoom < 8) map_zoom *= 2;
+        map_refresh();
+    } else if (key == LV_KEY_LEFT || key == LV_KEY_UP || key == '-') {
+        if (map_zoom > 1) map_zoom /= 2;
+        map_refresh();
+    } else if (key == LV_KEY_ENTER) {
+        map_cb(NULL);
+    } else if (key == KEY_VOL_LEFT_EDIT || key == KEY_VOL_LEFT_SELECT) {
+        radio_change_vol(-1);
+    } else if (key == KEY_VOL_RIGHT_EDIT || key == KEY_VOL_RIGHT_SELECT) {
+        radio_change_vol(1);
+    }
+}
 
 static dialog_t dialog = {
     .run          = false,
@@ -561,6 +676,37 @@ static void key_cb(lv_event_t *e) {
     }
 }
 
+/* Mapa / Lista: el mapa ocupa el lugar de las dos tablas; la perilla MFK acerca y aleja, su botón vuelve */
+static void map_cb(button_data_t *b) {
+    (void)b;
+    if (!dialog.obj) return;
+    if (map_obj) {
+        if (map_timer) lv_timer_del(map_timer);
+        map_timer = NULL;
+        lv_obj_del(map_obj);
+        map_obj = NULL;
+        lv_obj_clear_flag(table, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(heard_tbl, LV_OBJ_FLAG_HIDDEN);
+        lv_group_add_obj(keyboard_group, table);
+        lv_group_focus_obj(table);
+        lv_group_set_editing(keyboard_group, true);
+        return;
+    }
+    map_obj = live_map_create(dialog.obj, 780, DIALOG_H - 100);
+    if (!map_obj) return;
+    lv_obj_set_pos(map_obj, 10, 96);
+    lv_obj_add_flag(table, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(heard_tbl, LV_OBJ_FLAG_HIDDEN);
+    lv_group_remove_obj(table);
+    lv_obj_add_event_cb(map_obj, map_key_cb, LV_EVENT_KEY, NULL);
+    lv_group_add_obj(keyboard_group, map_obj);
+    lv_group_focus_obj(map_obj);
+    lv_group_set_editing(keyboard_group, true);
+    map_ensure_ms = 0;
+    map_refresh();
+    map_timer = lv_timer_create(map_timer_cb, 1000, NULL);
+}
+
 static lv_obj_t *make_table(int x, int w, int cols) {
     lv_obj_t *t = lv_table_create(dialog.obj);
     lv_obj_remove_style(t, NULL, LV_STATE_ANY | LV_PART_MAIN);
@@ -637,6 +783,9 @@ static void construct_cb(lv_obj_t *parent) {
 static void destruct_cb(void) {
     restart_pending = false;
     stop_run();
+    if (map_timer) lv_timer_del(map_timer);
+    map_timer = NULL;
+    map_obj   = NULL;     /* se borra con el diálogo */
     if (status_timer) lv_timer_del(status_timer);
     status_timer = NULL;
     title_lbl = state_lbl = talk_lbl = table = heard_tbl = NULL;

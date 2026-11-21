@@ -66,6 +66,14 @@
 </section>
 
 <section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-globe"/></svg></span><div><h3>World activity</h3><p id="w-sum">Every BrandMeister station talking in the world, live. Who you are hearing on the radio is highlighted</p></div></div>
+<div class="dp-body">
+<div id="w-map"></div>
+<p class="sub">The position is approximate: the country of the callsign, or for who you hear the city of their radioid.net record. DMR does not send positions.</p>
+</div>
+</section>
+
+<section class="dp-card">
 <div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-list"/></svg></span><div><h3>Listening log</h3><p>Every station the radio heard on DMR, kept on the radio. These are listening reports (SWL), not QSOs</p></div></div>
 <div class="dp-body">
 <div class="d-filters">
@@ -82,7 +90,12 @@
 </div>
 </section>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
+#w-map{height:420px;border-radius:8px}
+.w-hl{width:22px;height:22px;border-radius:50%;background:#ffb040;border:3px solid #fff;box-shadow:0 0 0 6px rgba(255,176,64,.45),0 0 14px #ffb040;animation:wpulse 1.2s infinite}
+@keyframes wpulse{50%{box-shadow:0 0 0 12px rgba(255,176,64,.15),0 0 20px #ffb040}}
 .d-table-wrap{overflow-x:auto}
 .d-filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
 .d-filters input{max-width:12em}
@@ -187,6 +200,51 @@ function hLoad() {
     $("#h-count").text(r.count ? (r.count >= 500 ? "The newest 500" : "Heard: " + r.count) : "Nothing heard yet");
   });
 }
+/* ---- the world map ---- */
+let wMap = null, wLayer = null, wHl = null, wTalker = null;
+function wInit() {
+  if (typeof L === "undefined") { $("#w-map").text("The map needs internet on this device (map library)"); return; }
+  wMap = L.map("w-map", {worldCopyJump: true}).setView([10, -30], 2);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    {maxZoom: 10, attribution: "&copy; OpenStreetMap &copy; CARTO"}).addTo(wMap);
+  wLayer = L.layerGroup().addTo(wMap);
+}
+function esc(s) { return $("<div>").text(s == null ? "" : String(s)).html(); }
+function wQrz(call) { return call ? '<a href="https://www.qrz.com/db/' + encodeURIComponent(call) + '" target="_blank" rel="noopener">' + esc(call) + "</a>" : "?"; }
+function wLoad() {
+  if (!wMap) return;
+  $.get("/api/dmr/world", {}, function(d) {
+    wLayer.clearLayers();
+    const tid = d.talker ? d.talker.id : 0;
+    d.stations.forEach(function(s) {
+      if (s.id === tid) return;
+      L.circleMarker([s.lat, s.lon], {radius: s.active ? 5 : 3, weight: s.active ? 1 : 0, color: "#000",
+        fillColor: s.active ? "#3fd2ff" : "#8da2bd", fillOpacity: s.active ? 0.95 : 0.55})
+        .bindTooltip(esc(s.call) + " · TG " + s.tg + (s.tgname ? " " + esc(s.tgname) : "") + (s.active ? "" : " · " + s.secs + " s"))
+        .addTo(wLayer);
+    });
+    const t = d.talker;
+    if (t && t.lat != null) {
+      const html = "<b>" + wQrz(t.call) + "</b> " + esc(t.name) + "<br>" + esc([t.city, t.country].filter(Boolean).join(", ")) +
+        "<br>TG " + t.tg + (t.exact ? "" : "<br><i>" + "approximate position" + "</i>");
+      const key = t.id + "/" + t.lat + "/" + t.lon;
+      if (!wHl || wTalker !== key) {
+        if (wHl) wHl.remove();
+        wHl = L.marker([t.lat, t.lon], {icon: L.divIcon({className: "", html: '<div class="w-hl"></div>', iconSize: [22, 22], iconAnchor: [11, 11]}),
+                                        zIndexOffset: 1000}).addTo(wMap).bindPopup(html, {autoPan: true}).openPopup();
+        wTalker = key;
+        wMap.panTo([t.lat, t.lon]);
+      } else {
+        wHl.setPopupContent(html);
+      }
+    } else if (wHl) { wHl.remove(); wHl = null; wTalker = null; }
+    $("#w-sum").text(d.online ? ("BrandMeister: " + d.active + " " + "talking now" + " · " + d.stations.length + " " + "in the last 5 minutes")
+                              : (d.error || "Getting the world activity of BrandMeister..."));
+  });
+}
+wInit();
+wLoad();
+setInterval(wLoad, 2000);
 $("#h-go").on("click", hLoad);
 $("#h-q, #h-tg").on("keydown", function(e) { if (e.key === "Enter") hLoad(); });
 hLoad();

@@ -1,0 +1,478 @@
+#!/usr/bin/env python3
+# CX8ANM: la actividad DMR de todo el mundo, en vivo, para los mapas de la app DMR y de la página web DMR.
+#
+#   x6100-dmr-world run
+#       se conecta al "Last Heard" de BrandMeister (socket.io sobre websocket, api.brandmeister.network/lh) y cada
+#       2 s escribe OUT con las estaciones de los últimos minutos y su posición. Sigue mientras alguien mire el
+#       mapa: los que lo muestran tocan WANT; sin tocarlo en 90 s, termina solo. Uno solo a la vez (PIDFILE).
+#   x6100-dmr-world ensure
+#       toca WANT y lo arranca en segundo plano si no está andando (la web y la GUI llaman esto)
+#
+# La posición: el país del indicativo (cty.dat, el de la radio, con un pequeño corrimiento por estación para que
+# no queden todas encima). Para quien está hablando en la app DMR (STATUS de x6100-dmr), la ciudad de su ficha
+# en radioid.net, ubicada con Nominatim (OpenStreetMap) y guardada en GEO_CACHE.
+#
+# OUT (JSON): {"t": época, "online": bool, "error": "", "active": n,
+#              "stations": [{"id", "call", "name", "tg", "tgname", "lat", "lon", "country", "start", "secs",
+#                            "active"}...],
+#              "talker": {"id", "call", "name", "tg", "city", "country", "lat", "lon", "exact"} o null}
+import base64
+import hashlib
+import json
+import os
+import socket
+import ssl
+import struct
+import sys
+import threading
+import time
+import urllib.parse
+import urllib.request
+
+DATA = os.environ.get("X6100_DATA", "/mnt")
+OUT = os.environ.get("X6100_DMR_WORLD_OUT", "/tmp/x6100-dmr-world.json")
+WANT = "/tmp/x6100-dmr-world.want"
+PIDFILE = "/tmp/x6100-dmr-world.pid"
+STATUS = "/tmp/x6100-dmr.status"          # el de x6100-dmr: la tercera línea es quién habla ahora
+GEO_CACHE = DATA + "/dmr_geo.json"
+IDS = DATA + "/dmr_ids.json"
+LOG = DATA + "/app_logs/dmr.txt"
+CTY = [DATA + "/cty.dat", "/usr/share/x6100/cty.dat",
+       os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../third-party/cty/cty.dat")]
+HOST = os.environ.get("X6100_DMR_WORLD_HOST", "api.brandmeister.network")
+PORT = int(os.environ.get("X6100_DMR_WORLD_PORT", "443"))
+PATH = "/lh/socket.io/?EIO=4&transport=websocket"
+USE_TLS = os.environ.get("X6100_DMR_WORLD_TLS", "1") != "0"
+UA = "OpenX6X00-CX8ANM/1.2 (mapa DMR de una radio de radioaficionado; github.com/condoruy/OpenX6X00-CX8ANM)"
+KEEP_S = 300          # las estaciones de los últimos 5 minutos
+MAX_STATIONS = 600
+IDLE_S = 90
+
+
+def log(msg):
+    try:
+        os.makedirs(os.path.dirname(LOG), exist_ok=True)
+        with open(LOG, "a") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S ") + "mapa: " + msg.rstrip() + "\n")
+    except OSError:
+        pass
+
+
+# ---------- el país de un indicativo (cty.dat) ----------
+
+class Cty:
+    def __init__(self):
+        self.prefix, self.exact = {}, {}
+        for path in CTY:
+            try:
+                with open(path, encoding="latin-1") as f:
+                    self._parse(f.read())
+                break
+            except OSError:
+                continue
+        self.maxlen = max((len(p) for p in self.prefix), default=0)
+
+    def _parse(self, text):
+        ent = None
+        for line in text.splitlines():
+            if not line.strip():
+                continue
+            if not line.startswith((" ", "\t")):
+                f = [x.strip() for x in line.split(":")]
+                if len(f) >= 8:
+                    try:
+                        ent = (f[0], float(f[4]), -float(f[5]))      # cty.dat: oeste positivo
+                    except ValueError:
+                        ent = None
+                continue
+            if not ent:
+                continue
+            for tok in line.replace(";", ",").split(","):
+                tok = tok.strip()
+                if not tok:
+                    continue
+                lat, lon = ent[1], ent[2]
+                if "<" in tok:                                # <lat/lon> propio
+                    try:
+                        a, b = tok[tok.index("<") + 1:tok.index(">")].split("/")
+                        lat, lon = float(a), -float(b)
+                    except ValueError:
+                        pass
+                core = tok
+                for ch in "([<{~":
+                    if ch in core:
+                        core = core[:core.index(ch)]
+                if core.startswith("="):
+                    self.exact[core[1:].upper()] = (ent[0], lat, lon)
+                elif core:
+                    self.prefix[core.upper()] = (ent[0], lat, lon)
+
+    def lookup(self, call):
+        call = (call or "").upper().strip()
+        if not call:
+            return None
+        if call in self.exact:
+            return self.exact[call]
+        base = max(call.split("/"), key=len) if "/" in call else call
+        for n in range(min(len(base), self.maxlen), 0, -1):
+            v = self.prefix.get(base[:n])
+            if v:
+                return v
+        return None
+
+
+def jitter(sid, lat, lon):
+    """Un corrimiento fijo por estación (hasta ~2°) para que las de un mismo país no queden encima"""
+    h = hashlib.md5(str(sid).encode()).digest()
+    return lat + (h[0] / 255.0 - 0.5) * 3.0, lon + (h[1] / 255.0 - 0.5) * 4.0
+
+
+# ---------- la ciudad de quien habla (radioid.net + Nominatim) ----------
+
+class Geo:
+    def __init__(self):
+        try:
+            with open(GEO_CACHE) as f:
+                self.db = json.load(f)
+            if not isinstance(self.db, dict):
+                self.db = {}
+        except (OSError, ValueError):
+            self.db = {}
+        self.busy = set()
+        self.lock = threading.Lock()
+
+    def get(self, sid):
+        with self.lock:
+            v = self.db.get(str(sid))
+            if v is None and sid not in self.busy:
+                self.busy.add(sid)
+                threading.Thread(target=self._find, args=(sid,), daemon=True).start()
+        return v
+
+    def _find(self, sid):
+        rec = {}
+        try:
+            req = urllib.request.Request("https://radioid.net/api/dmr/user/?id=%d" % sid,
+                                         headers={"User-Agent": UA, "Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                res = (json.loads(r.read().decode("utf-8", "replace")) or {}).get("results") or []
+            if res:
+                u = res[0]
+                rec = {"call": (u.get("callsign") or "").upper(), "name": u.get("fname") or "",
+                       "city": u.get("city") or "", "state": u.get("state") or "", "country": u.get("country") or ""}
+                q = ", ".join(x for x in (rec["city"], rec["state"], rec["country"]) if x)
+                if q:
+                    time.sleep(1.1)        # Nominatim: no más de un pedido por segundo
+                    url = "https://nominatim.openstreetmap.org/search?" + urllib.parse.urlencode(
+                        {"q": q, "format": "json", "limit": 1})
+                    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
+                    with urllib.request.urlopen(req, timeout=10) as r:
+                        g = json.loads(r.read().decode("utf-8", "replace"))
+                    if g:
+                        rec["lat"], rec["lon"] = float(g[0]["lat"]), float(g[0]["lon"])
+        except Exception as e:
+            log("ubicación de %d: %s" % (sid, e.__class__.__name__))
+            with self.lock:
+                self.busy.discard(sid)
+            return
+        with self.lock:
+            self.db[str(sid)] = rec
+            self.busy.discard(sid)
+            if len(self.db) > 2000:
+                for k in list(self.db)[:len(self.db) - 2000]:
+                    del self.db[k]
+            try:
+                with open(GEO_CACHE + ".tmp", "w") as f:
+                    json.dump(self.db, f)
+                os.replace(GEO_CACHE + ".tmp", GEO_CACHE)
+            except OSError:
+                pass
+
+
+# ---------- websocket + socket.io (Engine.IO 4), lo mínimo para escuchar ----------
+
+class WS:
+    def __init__(self, host, port, path, tls):
+        raw = socket.create_connection((host, port), timeout=15)
+        if tls:
+            raw = ssl.create_default_context().wrap_socket(raw, server_hostname=host)
+        self.s = raw
+        key = base64.b64encode(os.urandom(16)).decode()
+        req = ("GET %s HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n"
+               "Sec-WebSocket-Key: %s\r\nSec-WebSocket-Version: 13\r\nUser-Agent: %s\r\n"
+               "Origin: https://brandmeister.network\r\n\r\n") % (path, host, key, UA)
+        self.s.sendall(req.encode())
+        head = b""
+        while b"\r\n\r\n" not in head:
+            c = self.s.recv(4096)
+            if not c:
+                raise OSError("closed during handshake")
+            head += c
+        head, self.buf = head.split(b"\r\n\r\n", 1)
+        if b" 101 " not in head.split(b"\r\n", 1)[0]:
+            raise OSError("handshake: " + head.split(b"\r\n", 1)[0].decode("latin-1"))
+        self.s.settimeout(60)
+
+    def _read(self, n):
+        while len(self.buf) < n:
+            c = self.s.recv(65536)
+            if not c:
+                raise OSError("closed")
+            self.buf += c
+        out, self.buf = self.buf[:n], self.buf[n:]
+        return out
+
+    def recv(self):
+        """El próximo mensaje de texto (los ping/pong del websocket se contestan acá)"""
+        parts = []
+        while True:
+            b0, b1 = self._read(2)
+            op, fin, n = b0 & 0x0F, b0 & 0x80, b1 & 0x7F
+            if n == 126:
+                n = struct.unpack(">H", self._read(2))[0]
+            elif n == 127:
+                n = struct.unpack(">Q", self._read(8))[0]
+            mask = self._read(4) if b1 & 0x80 else None
+            data = self._read(n)
+            if mask:
+                data = bytes(c ^ mask[i % 4] for i, c in enumerate(data))
+            if op == 0x8:
+                raise OSError("server closed")
+            if op == 0x9:
+                self._send(0xA, data)
+                continue
+            if op in (0x1, 0x0, 0x2):
+                parts.append(data)
+                if fin:
+                    return b"".join(parts).decode("utf-8", "replace")
+
+    def _send(self, op, data):
+        mask = os.urandom(4)
+        n = len(data)
+        head = bytes([0x80 | op])
+        if n < 126:
+            head += bytes([0x80 | n])
+        elif n < 65536:
+            head += bytes([0x80 | 126]) + struct.pack(">H", n)
+        else:
+            head += bytes([0x80 | 127]) + struct.pack(">Q", n)
+        self.s.sendall(head + mask + bytes(c ^ mask[i % 4] for i, c in enumerate(data)))
+
+    def send(self, text):
+        self._send(0x1, text.encode())
+
+    def close(self):
+        try:
+            self._send(0x8, b"")
+            self.s.close()
+        except OSError:
+            pass
+
+
+# ---------- el estado ----------
+
+class World:
+    def __init__(self):
+        self.cty = Cty()
+        self.geo = Geo()
+        self.st = {}            # id -> estación
+        self.lock = threading.Lock()
+        self.online = False
+        self.error = ""
+
+    def event(self, p):
+        try:
+            sid = int(p.get("SourceID") or 0)
+            dst = int(p.get("DestinationID") or 0)
+        except (TypeError, ValueError):
+            return
+        if not sid or not dst:
+            return
+        call = (p.get("SourceCall") or "").strip().upper()
+        c = self.cty.lookup(call)
+        now = time.time()
+        start = float(p.get("Start") or now)
+        stop = float(p.get("Stop") or 0)
+        with self.lock:
+            s = self.st.get(sid)
+            if not s:
+                if not c:
+                    return
+                lat, lon = jitter(sid, c[1], c[2])
+                s = self.st[sid] = {"id": sid, "call": call, "country": c[0], "lat": round(lat, 3),
+                                    "lon": round(lon, 3)}
+            s.update({"name": (p.get("SourceName") or "").strip(), "tg": dst,
+                      "tgname": (p.get("DestinationName") or "").strip(), "start": int(start),
+                      "secs": int((stop or now) - start), "active": not stop and p.get("Event") != "Session-Stop",
+                      "seen": now})
+
+    def snapshot(self):
+        now = time.time()
+        with self.lock:
+            for k in [k for k, s in self.st.items() if now - s["seen"] > KEEP_S]:
+                del self.st[k]
+            for s in self.st.values():      # una sesión sin noticias en 30 s ya terminó
+                if s["active"] and now - s["seen"] > 30:
+                    s["active"] = False
+                if s["active"]:
+                    s["secs"] = int(now - s["start"])
+            st = sorted(self.st.values(), key=lambda s: (not s["active"], -s["seen"]))[:MAX_STATIONS]
+            out = [{k: v for k, v in s.items() if k != "seen"} for s in st]
+        return {"t": int(now), "online": self.online, "error": self.error, "active": sum(s["active"] for s in out),
+                "stations": out, "talker": self.talker()}
+
+    def talker(self):
+        """Quien habla ahora en la app DMR de la radio, con su ciudad si ya se sabe"""
+        try:
+            with open(STATUS, encoding="utf-8") as f:
+                lines = f.read().split("\n")
+        except OSError:
+            return None
+        if len(lines) < 3 or lines[0] != "online" or "\t" not in lines[2]:
+            return None
+        p = lines[2].split("\t")
+        try:
+            sid, tg = int(p[1]), int(p[2]) if len(p) > 2 and p[2].isdigit() else 0
+        except ValueError:
+            return None
+        call, _, name = p[0].partition(" ")
+        t = {"id": sid, "call": call if not call.isdigit() else "", "name": name, "tg": tg, "city": "",
+             "country": "", "exact": False}
+        g = self.geo.get(sid)
+        if g:
+            t["call"] = t["call"] or g.get("call", "")
+            t["name"] = t["name"] or g.get("name", "")
+            t["city"], t["country"] = g.get("city", ""), g.get("country", "")
+            if "lat" in g:
+                t["lat"], t["lon"], t["exact"] = g["lat"], g["lon"], True
+        if "lat" not in t:
+            with self.lock:
+                s = self.st.get(sid)
+            c = (s["lat"], s["lon"], s["country"]) if s else None
+            if not c:
+                cc = self.cty.lookup(t["call"])
+                c = (cc[1], cc[2], cc[0]) if cc else None
+            if c:
+                t["lat"], t["lon"] = c[0], c[1]
+                t["country"] = t["country"] or c[2]
+        return t
+
+
+def write(world):
+    try:
+        with open(OUT + ".tmp", "w") as f:
+            json.dump(world.snapshot(), f, ensure_ascii=False)
+        os.replace(OUT + ".tmp", OUT)
+    except OSError:
+        pass
+
+
+def wanted():
+    try:
+        return time.time() - os.path.getmtime(WANT) < IDLE_S
+    except OSError:
+        return False
+
+
+def listen(world):
+    ws = WS(HOST, PORT, PATH, USE_TLS)
+    try:
+        while True:
+            m = ws.recv()
+            if m.startswith("0"):              # Engine.IO open
+                ws.send("40")                  # socket.io: entrar al espacio "/"
+            elif m == "2":                     # ping de Engine.IO
+                ws.send("3")
+            elif m.startswith("40"):
+                world.online, world.error = True, ""
+                log("conectado a la actividad mundial de BrandMeister")
+            elif m.startswith("42"):
+                try:
+                    ev = json.loads(m[2:])
+                except ValueError:
+                    continue
+                if isinstance(ev, list) and len(ev) >= 2 and ev[0] == "mqtt":
+                    d = ev[1]
+                    p = d.get("payload") if isinstance(d, dict) else None
+                    try:
+                        p = json.loads(p) if isinstance(p, str) else p
+                    except ValueError:
+                        p = None
+                    if isinstance(p, dict):
+                        world.event(p)
+            elif m.startswith("41"):
+                raise OSError("socket.io disconnect")
+            if not wanted():
+                return
+    finally:
+        ws.close()
+        world.online = False
+
+
+def run():
+    try:
+        with open(PIDFILE) as f:
+            old = int(f.read().strip())
+        if old != os.getpid():
+            os.kill(old, 0)
+            return                              # ya hay uno andando
+    except (OSError, ValueError):
+        pass
+    with open(PIDFILE, "w") as f:
+        f.write(str(os.getpid()))
+    world = World()
+    stop = threading.Event()
+
+    def writer():
+        while not stop.is_set():
+            write(world)
+            stop.wait(1)
+    threading.Thread(target=writer, daemon=True).start()
+    tries = 0
+    try:
+        while wanted():
+            try:
+                listen(world)
+                tries = 0
+            except (OSError, ssl.SSLError, ValueError) as e:
+                world.online = False
+                world.error = "no connection to BrandMeister"
+                log("BrandMeister (mapa): %s" % e)
+                tries += 1
+                time.sleep(min(30, 3 * tries))
+    finally:
+        stop.set()
+        write(world)
+        try:
+            os.unlink(PIDFILE)
+        except OSError:
+            pass
+
+
+def ensure():
+    try:
+        with open(WANT, "a"):
+            os.utime(WANT, None)
+    except OSError:
+        pass
+    try:
+        with open(PIDFILE) as f:
+            os.kill(int(f.read().strip()), 0)
+        return
+    except (OSError, ValueError):
+        pass
+    import subprocess
+    subprocess.Popen([sys.executable, os.path.abspath(__file__), "run"], stdin=subprocess.DEVNULL,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
+if __name__ == "__main__":
+    import signal
+    signal.signal(signal.SIGTERM, lambda *a: sys.exit(0))
+    cmd = sys.argv[1] if len(sys.argv) > 1 else ""
+    if cmd == "run":
+        run()
+    elif cmd == "ensure":
+        ensure()
+    else:
+        print("uso: x6100-dmr-world run | ensure")
