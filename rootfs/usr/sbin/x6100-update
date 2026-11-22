@@ -290,13 +290,45 @@ def cmd_check(args):
     return out
 
 
+MB = 1024 * 1024
+
+
+def free_bytes(path):
+    try:
+        st = os.statvfs(path)
+        return st.f_bavail * st.f_frsize
+    except OSError:
+        return 0
+
+
+def clean_work():
+    """CX8ANM: what an interrupted or failed update left in WORK (the staged files, the unpacked tar, a
+    half download): up to 90 MB that made the next try fail with "No space left on device" """
+    shutil.rmtree(os.path.join(WORK, "stage"), ignore_errors=True)
+    for name in ("bundle.tar", "bundle.tar.gz.part", "bundle.tar.gz"):
+        try:
+            os.remove(os.path.join(WORK, name))
+        except OSError:
+            pass
+
+
+def need_space(path, need, where):
+    have = free_bytes(path)
+    if have < need:
+        raise Fail(f"not enough space on {where}: the update needs {need // MB + 1} MB, "
+                   f"{have // MB} MB free. Delete recordings or other big files and try again")
+
+
 def cmd_download(args):
     url = args[0]
     os.makedirs(WORK, exist_ok=True)
+    clean_work()
     dest = os.path.join(WORK, "bundle.tar.gz")
     got = 0
     with http(url, timeout=60) as r, open(dest + ".part", "wb") as f:
         total = int(r.headers.get("Content-Length") or 0)
+        if total:
+            need_space(WORK, total + 4 * MB, "the DATA partition (Files)")
         progress("download", 0, total)
         while True:
             chunk = r.read(65536)
@@ -315,15 +347,9 @@ def cmd_download(args):
 
 # ---- verify and install --------------------------------------------------------------------
 
-def read_manifest(tar):
-    try:
-        mjson = tar.extractfile("manifest.json").read()
-    except (KeyError, AttributeError):
+def read_manifest(mjson, sig):
+    if mjson is None:
         raise Fail("not an update bundle: no manifest")
-    try:
-        sig = tar.extractfile("manifest.sig").read()
-    except (KeyError, AttributeError):
-        sig = None
     if sig is None:
         if not os.path.exists(ALLOW_UNSIGNED):
             raise Fail("the bundle is not signed")
@@ -356,44 +382,96 @@ def read_manifest(tar):
     return m
 
 
+def sha256_file(path):
+    h = hashlib.sha256()
+    try:
+        with open(path, "rb") as f:
+            while True:
+                chunk = f.read(65536)
+                if not chunk:
+                    break
+                h.update(chunk)
+    except OSError:
+        return None
+    return h.hexdigest()
+
+
 def stage(bundle):
-    """The bundle's files into WORK/stage, each checked against the manifest; returns the manifest."""
+    """The bundle's files into WORK/stage, each checked against the manifest; returns the manifest.
+    CX8ANM: the tar is read as it is unpacked (no 38 MB bundle.tar on the side), and a file already on the
+    radio as the manifest wants it is neither staged nor replaced (m["changed"]): an update writes only what
+    changed, and keeps only those files for the rollback. Before anything is written, the room on both
+    partitions is checked, with a message that says how much is missing and where."""
     st = os.path.join(WORK, "stage")
     shutil.rmtree(st, ignore_errors=True)
+    try:
+        os.remove(os.path.join(WORK, "bundle.tar"))
+    except OSError:
+        pass
     os.makedirs(st)
     # Decompressed by the system's gzip: the radio's Python may come without zlib
-    plain = os.path.join(WORK, "bundle.tar")
-    with open(plain, "wb") as f:
-        r = subprocess.run(["gzip", "-dc", bundle], stdout=f, stderr=subprocess.PIPE)
-    if r.returncode != 0:
-        raise Fail("not a gzip file")
-    with tarfile.open(plain, "r:") as tar:
-        m = read_manifest(tar)
-        n = len(m["files"])
-        for i, e in enumerate(m["files"]):
-            progress("verify", i, n)
-            try:
-                src = tar.extractfile("files" + e["path"])
-            except KeyError:
-                src = None
-            if src is None:
-                raise Fail(f"{e['path']} is missing from the bundle")
-            dest = os.path.join(st, e["path"].lstrip("/"))
-            os.makedirs(os.path.dirname(dest), exist_ok=True)
-            h = hashlib.sha256()
-            with open(dest, "wb") as f:
-                while True:
-                    chunk = src.read(65536)
-                    if not chunk:
-                        break
-                    h.update(chunk)
-                    f.write(chunk)
-                f.flush()
-                os.fsync(f.fileno())
-            if h.hexdigest() != e.get("sha256"):
-                raise Fail(f"{e['path']} does not match its checksum")
-            os.chmod(dest, int(str(e.get("mode", "644")), 8))
-    os.remove(plain)
+    proc = subprocess.Popen(["gzip", "-dc", bundle], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    m, mjson, sig, entries, want, staged = None, None, None, {}, set(), set()
+    try:
+        with tarfile.open(fileobj=proc.stdout, mode="r|") as tar:
+            for member in tar:
+                name = member.name.lstrip("./")
+                if name == "manifest.json":
+                    mjson = tar.extractfile(member).read()
+                    continue
+                if name == "manifest.sig":
+                    sig = tar.extractfile(member).read()
+                    continue
+                if not name.startswith("files/") or not member.isfile():
+                    continue
+                if m is None:          # the first file: the manifest has come (it goes first in the bundle)
+                    m = read_manifest(mjson, sig)
+                    entries = {e["path"]: e for e in m["files"]}
+                    progress("verify", 0, len(entries))
+                    want = {p for p, e in entries.items() if sha256_file(p) != e.get("sha256")}
+                    m["changed"] = [e for e in m["files"] if e["path"] in want]
+                    size = sum(int(entries[p].get("size") or 0) for p in want)
+                    biggest = max([int(entries[p].get("size") or 0) for p in want] or [0])
+                    need_space(WORK, size + 4 * MB, "the DATA partition (Files)")
+                    # the root filesystem: the previous copies of the changed files, and one new file at a time,
+                    # less the previous copies of the last update, which go first
+                    prev_now = sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fs in os.walk(PREV) for f in fs
+                                   if os.path.isfile(os.path.join(dp, f)))
+                    old = sum(os.path.getsize(p) for p in want if os.path.isfile(p))
+                    need_space("/", max(0, old + biggest + 4 * MB - prev_now), "the system partition")
+                path = "/" + name[len("files/"):]
+                e = entries.get(path)
+                if e is None or path not in want:
+                    continue
+                progress("verify", len(staged), len(want))
+                dest = os.path.join(st, path.lstrip("/"))
+                os.makedirs(os.path.dirname(dest), exist_ok=True)
+                h = hashlib.sha256()
+                src = tar.extractfile(member)
+                with open(dest, "wb") as f:
+                    while True:
+                        chunk = src.read(65536)
+                        if not chunk:
+                            break
+                        h.update(chunk)
+                        f.write(chunk)
+                    f.flush()
+                    os.fsync(f.fileno())
+                if h.hexdigest() != e.get("sha256"):
+                    raise Fail(f"{path} does not match its checksum")
+                os.chmod(dest, int(str(e.get("mode", "644")), 8))
+                staged.add(path)
+    except tarfile.TarError:
+        raise Fail("not a gzip file" if proc.wait() != 0 else "the bundle is damaged")
+    finally:
+        proc.stdout.close()
+        proc.wait()
+    if m is None:
+        m = read_manifest(mjson, sig)
+        m["changed"] = []
+    missing = sorted(want - staged)
+    if missing:
+        raise Fail(f"{missing[0]} is missing from the bundle")
     return m
 
 
@@ -401,7 +479,8 @@ def apply(m):
     """The staged files into place, one by one, the previous ones kept and the journal ahead of each step."""
     st = os.path.join(WORK, "stage")
     shutil.rmtree(PREV, ignore_errors=True)
-    files = [{"path": e["path"], "prev": os.path.exists(e["path"]), "done": False} for e in m["files"]]
+    files = [{"path": e["path"], "prev": os.path.exists(e["path"]), "done": False}
+             for e in m.get("changed", m["files"])]
     journal = {"version": m["version"], "from": running_version(), "state": "applying", "files": files,
                "started": time.time()}
     save(JOURNAL, journal)
@@ -472,13 +551,22 @@ def cmd_install(args):
     if load(JOURNAL, {}).get("state") == "applying":
         raise Fail("an interrupted install must be rolled back first")
     progress("verify")
-    m = stage(bundle)
+    try:
+        m = stage(bundle)
+    except BaseException:
+        shutil.rmtree(os.path.join(WORK, "stage"), ignore_errors=True)
+        raise
     try:
         note = funnel_off_before(m["version"], "not installed")     # an older version's bundle (#58)
     except Fail:
         shutil.rmtree(os.path.join(WORK, "stage"), ignore_errors=True)
         raise
     apply(m)
+    if os.path.abspath(bundle).startswith(WORK + "/"):    # CX8ANM: the downloaded bundle is not needed any more
+        try:
+            os.remove(bundle)
+        except OSError:
+            pass
     save(LAST, {"result": "installed", "version": m["version"], "when": time.time()})
     progress("done")
     restart_apps()

@@ -1255,7 +1255,7 @@ type %s and Enter on the keyboard	scrivi %s e Invio sulla tastiera
 type %.8s and Enter on the keyboard	scrivi %.8s e Invio sulla tastiera
 type %06u and Enter on the keyboard	scrivi %06u e Invio sulla tastiera
 no DNS (WiFi?)	nessun DNS (WiFi?)
-Based on	Basato su IU1WXY
+Based on	Basato su
 Log QSOs automatically	Annota i QSO in automatico
 QSO not logged: set your callsign in Settings	QSO non annotato: imposta il nominativo in Impostazioni
 QSO logged automatically: %s %s	QSO annotato in automatico: %s %s
@@ -2387,3 +2387,8 @@ zoom	zoom
 Nobody talking	Nessuno parla
 in your talkgroups now	nei tuoi gruppi ora
 the DMR app is disconnected	l'app DMR è disconnessa
+No space in Files: the update needs %d MB, %d MB free. Delete recordings or big files	Spazio insufficiente in File: l'aggiornamento richiede %d MB, %d MB liberi. Cancella registrazioni o file grandi
+No space in the system: the update needs %d MB, %d MB free	Spazio insufficiente nel sistema: l'aggiornamento richiede %d MB, %d MB liberi
+Update failed: no space left. Delete recordings or big files in Files	Aggiornamento non riuscito: spazio esaurito. Cancella registrazioni o file grandi in File
+Files %llu MB, system %llu MB	File %llu MB, sistema %llu MB
+Free space	Spazio libero

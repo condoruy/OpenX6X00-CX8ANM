@@ -1345,7 +1345,7 @@ type %06u and Enter on the keyboard	escriba %06u e Intro en el teclado
 no DNS (WiFi?)	sin DNS (¿WiFi?)
 
 ## Info
-Based on	Basado en IU1WXY
+Based on	Basado en
 
 ## QSO automáticos
 Log QSOs automatically	Guardar QSO solos
@@ -2513,3 +2513,8 @@ zoom	zoom
 Nobody talking	Nadie habla
 in your talkgroups now	en tus grupos ahora
 the DMR app is disconnected	la app DMR está desconectada
+No space in Files: the update needs %d MB, %d MB free. Delete recordings or big files	Falta espacio en Archivos: la actualización necesita %d MB y hay %d MB libres. Borrá grabaciones o archivos grandes
+No space in the system: the update needs %d MB, %d MB free	Falta espacio en el sistema: la actualización necesita %d MB y hay %d MB libres
+Update failed: no space left. Delete recordings or big files in Files	La actualización falló: no queda espacio. Borrá grabaciones o archivos grandes en Archivos
+Files %llu MB, system %llu MB	Archivos %llu MB, sistema %llu MB
+Free space	Espacio libre

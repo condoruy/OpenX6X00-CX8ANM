@@ -27,6 +27,7 @@
 #include <cstring>
 #include <cstdarg>
 #include <functional>
+#include <sys/statvfs.h>   /* CX8ANM: the free space on the Info page */
 
 extern "C" {
 
@@ -4947,7 +4948,20 @@ static void upd_install_done(const char *out, int status, void *user) {
     upd_busy = false;
     upd_timer_stop();
     if (strncmp(out, "ok", 2) == 0) snprintf(s, sizeof(s), "Installed. The radio software restarts now.");
-    else snprintf(s, sizeof(s), "Update failed: %.70s. Nothing changed.", strncmp(out, "error", 5) == 0 ? out + 6 : out);
+    else {
+        const char *why  = strncmp(out, "error", 5) == 0 ? out + 6 : out;
+        int         need = 0, have = 0;
+        /* CX8ANM: the updater says where the room is missing and how much; said short, so it fits the line */
+        if (sscanf(why, "not enough space on the DATA partition (Files): the update needs %d MB, %d MB free", &need, &have) == 2)
+            snprintf(s, sizeof(s), tr("No space in Files: the update needs %d MB, %d MB free. Delete recordings or big files"),
+                     need, have);
+        else if (sscanf(why, "not enough space on the system partition: the update needs %d MB, %d MB free", &need, &have) == 2)
+            snprintf(s, sizeof(s), tr("No space in the system: the update needs %d MB, %d MB free"), need, have);
+        else if (strstr(why, "No space left"))
+            snprintf(s, sizeof(s), "%s", tr("Update failed: no space left. Delete recordings or big files in Files"));
+        else
+            snprintf(s, sizeof(s), "Update failed: %.70s. Nothing changed.", why);
+    }
     upd_latest[0] = 0;
     upd_btn_label("Check");
     if (upd_note) upd_say(s);
@@ -5157,9 +5171,21 @@ static void make_info_page() {
 
     row = card_begin("FIRMWARE");
     row = info_row(row, "Version", strrchr(VERSION, ' ') + 1);
-    row = info_row(row, "Project", "OpenX6X00 by RF.Guru");
-    row = info_row(row, "Source", "github.com/condoruy/OpenX6X00-CX8ANM");
-    row = info_row(row, "Based on", "OpenX6X00 by RF.Guru (github.com/Guru-RF/OpenX6X00)");
+    /* CX8ANM: short values, so they do not run over their label */
+    row = info_row(row, "Project", "OpenX6X00-CX8ANM");
+    row = info_row(row, "Source", "condoruy/OpenX6X00-CX8ANM");
+    row = info_row(row, "Based on", "OpenX6X00 by RF.Guru");
+    /* the room left: an update needs it in Files (the download) and in the system (the files it replaces) */
+    {
+        struct statvfs fd, fr;
+        char           space[96];
+        if (statvfs(BOARD_DATA, &fd) == 0 && statvfs("/", &fr) == 0) {
+            snprintf(space, sizeof(space), tr("Files %llu MB, system %llu MB"),
+                     (unsigned long long)fd.f_bavail * fd.f_frsize / (1024 * 1024),
+                     (unsigned long long)fr.f_bavail * fr.f_frsize / (1024 * 1024));
+            row = info_row(row, "Free space", space);
+        }
+    }
     row = info_row(row, "Baseband", radio_base_ver_str());
 #ifdef BOARD_X6200
     char bias[48];
