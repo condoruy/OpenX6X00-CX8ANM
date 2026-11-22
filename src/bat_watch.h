@@ -46,6 +46,10 @@ typedef struct {
     bool     held;          /* the X6200: on a supply that holds the battery up (bat_watch.c) */
     uint64_t over_since;    /* the X6200: the first of the readings in a row at BOARD_BAT_EXT_MIN and more; 0 none */
     uint8_t  under_reads;   /* the X6200: receive readings in a row under BOARD_BAT_EXT_MIN */
+    bool     has_shown;     /* a % was shown on battery (bat_watch_shown) */
+    uint8_t  shown;         /* the last one */
+    uint64_t ext_since;     /* the first reading of this stretch on external power (bat_watch_ext_cap); 0 none */
+    uint8_t  ext_base;      /* the base's % at its start, the jump of its first BAT_EXT_JUMP_MS taken in */
 } bat_watch_t;
 
 /* One reading; bat_missing: the base found no battery (the X6200's says so), tx: the base transmits. True when low
@@ -74,6 +78,17 @@ uint8_t bat_cap_of_volts(uint8_t vbat);
  * 24 and 9 % in turn at 7.3 and 7.2 V (#160). From the first reading again after external power */
 #define BAT_CAP_UP_READS 150
 uint8_t bat_watch_cap(bat_watch_t *w, uint8_t vbat, uint8_t batcap);
+
+/* CX8ANM: the % shown on external power. The base's jumps 15-20 points up the moment the charger comes in (the
+ * charging voltage) and a pack shown at 1 % on battery came up at 58 %; with the voltage's shown on battery (a base
+ * that has lost count, #49) the two were further apart still. So on external power the % goes on from the last one
+ * shown on battery and follows the base's from where it stood at the start (its jump of the first BAT_EXT_JUMP_MS
+ * taken in), stretched to reach 100 when the base's reaches BAT_EXT_FULL, where the charger stops. With none shown on
+ * battery since the start, the base's. bat_watch_shown: the % shown on battery, each reading */
+#define BAT_EXT_JUMP_MS 30000
+#define BAT_EXT_FULL    97
+void    bat_watch_shown(bat_watch_t *w, uint8_t cap);
+uint8_t bat_watch_ext_cap(bat_watch_t *w, uint8_t batcap, uint64_t now_ms);
 
 #ifdef __cplusplus
 }

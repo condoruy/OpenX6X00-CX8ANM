@@ -251,6 +251,21 @@ int main(void) {
     check(bat_watch_cap(&w, 73, 26) == 26 && bat_watch_cap(&w, 72, 20) == 20 && bat_watch_cap(&w, 73, 19) == 19,
           "a base that counts right: its own %", 0);
 
+    /* CX8ANM: on external power the % goes on from the last one on battery (bat_watch_ext_cap). The user's radio:
+     * 1 % on battery, the base's at 58 % the moment the charger came in */
+    memset(&w, 0, sizeof(w));
+    check(bat_watch_ext_cap(&w, 58, T0) == 58, "none shown on battery yet: the base's", 0);
+    bat_watch_shown(&w, 1);
+    check(bat_watch_ext_cap(&w, 40, T0) == 1, "the charger comes in: 1 %, not the base's", 0);
+    check(bat_watch_ext_cap(&w, 58, T0 + 2000) == 1, "the base's jump in the first 30 s: still 1 %", 0);
+    check(bat_watch_ext_cap(&w, 59, T0 + 60000) == 3, "the base's up 1 point: 3 %", 0);
+    check(bat_watch_ext_cap(&w, 78, T0 + 3600000) == 51, "the base's at 78: 51 %", 0);
+    check(bat_watch_ext_cap(&w, 97, T0 + 9 * 3600000LL) == 100, "the charger stops at 97: 100 %", 0);
+    check(bat_watch_ext_cap(&w, 99, T0 + 9 * 3600000LL) == 100, "and no more", 0);
+    bat_watch_shown(&w, 60);   /* on battery again, then a charger */
+    check(bat_watch_ext_cap(&w, 77, T0 + 10 * 3600000LL) == 60, "a base that counts right: no jump either", 0);
+    check(bat_watch_ext_cap(&w, 70, T0 + 11 * 3600000LL) == 46, "a weak supply: down with the base's", 0);
+
     printf("bat_watch (%s): %d checks, %d failed\n", BOARD_BAT_LOW == 68 ? "X6200" : "X6100", checks, fails);
     return fails != 0;
 }

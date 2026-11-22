@@ -2390,7 +2390,11 @@ static bool radio_tick() {
             }
             bat_pct = cap;   /* the % on the screen (clock.c) */
             if (bat_watch.counts) {
-                clock_update_power(pack->vext * 0.1f, pack->vbat * 0.1f, cap >= 0 ? cap : pack->batcap, pack->charging);
+                /* On external power the base's jumps up (bat_watch_ext_cap): from the last one on battery instead */
+                int shown = cap;
+                if (cap >= 0) bat_watch_shown(&bat_watch, cap);
+                else if (bat_watch.ext && !pack->bat_missing) shown = bat_watch_ext_cap(&bat_watch, pack->batcap, now_time);
+                clock_update_power(pack->vext * 0.1f, pack->vbat * 0.1f, shown >= 0 ? shown : pack->batcap, pack->charging);
                 battery_log(pack);
             }
 

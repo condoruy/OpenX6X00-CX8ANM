@@ -95,3 +95,23 @@ uint8_t bat_watch_cap(bat_watch_t *w, uint8_t vbat, uint8_t batcap) {
     else if (apart <= BAT_CAP_MET && v >= BAT_CAP_STEEP) w->by_volts = false;
     return w->by_volts ? v : batcap;
 }
+
+void bat_watch_shown(bat_watch_t *w, uint8_t cap) {
+    w->has_shown = true;
+    w->shown     = cap;
+    w->ext_since = 0;
+}
+
+uint8_t bat_watch_ext_cap(bat_watch_t *w, uint8_t batcap, uint64_t now_ms) {
+    if (!w->has_shown) return batcap;
+    if (!w->ext_since) {
+        w->ext_since = now_ms ? now_ms : 1;
+        w->ext_base  = batcap;
+    } else if (now_ms - w->ext_since < BAT_EXT_JUMP_MS && batcap > w->ext_base) {
+        w->ext_base = batcap;
+    }
+    if (w->ext_base >= BAT_EXT_FULL) return batcap > w->shown ? batcap : w->shown;
+
+    int v = w->shown + ((int)batcap - w->ext_base) * (100 - w->shown) / (BAT_EXT_FULL - w->ext_base);
+    return v < 0 ? 0 : v > 100 ? 100 : (uint8_t)v;
+}
