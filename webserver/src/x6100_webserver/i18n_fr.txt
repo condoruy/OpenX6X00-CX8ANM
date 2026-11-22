@@ -1454,3 +1454,9 @@ Listening:	Écoute :
 heading	cap
 Aircraft:	Avions :
 EMERGENCY	URGENCE
+the flight services are busy: they are tried again by themselves	les services de vols sont saturés : nouvel essai automatique
+Download or delete files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc).	Téléchargez ou supprimez des fichiers de la partition DATA de la carte SD (journal ADI, captures, enregistrements, etc).
+The settings file cannot be deleted	Le fichier des réglages ne peut pas être supprimé
+Folders cannot be deleted here, only files	Les dossiers ne peuvent pas être supprimés ici, seulement les fichiers
+Could not delete	Impossible de supprimer
+Download or delete files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc). A	Téléchargez ou supprimez des fichiers de la partition DATA de la carte SD (journal ADI, captures, enregistrements, etc). Un

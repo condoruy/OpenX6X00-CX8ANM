@@ -9,6 +9,7 @@ except ImportError:   # images built before python3-zlib was selected
 import functools
 import json
 import os
+import shutil
 import re
 import subprocess
 import urllib.parse
@@ -148,8 +149,61 @@ def file_browser(filepath=''):
     except OSError:
         raise bottle.HTTPError(404, 'Not found')
     folders = {n for n in names if os.path.isdir(os.path.join(target, n))}
+    sizes = {}
+    for n in names:
+        try:
+            sizes[n] = os.path.getsize(os.path.join(target, n))
+        except OSError:
+            sizes[n] = 0
+    try:
+        st = os.statvfs(root)
+        free_mb = st.f_bavail * st.f_frsize // (1024 * 1024)
+    except OSError:
+        free_mb = None
+    rel = os.path.relpath(target, root)
     return bottle.template('files', dirs=[n for n in names if n in folders],
-                           files=[n for n in names if n not in folders], href=urllib.parse.quote)
+                           files=[n for n in names if n not in folders], href=urllib.parse.quote,
+                           sizes=sizes, free_mb=free_mb, rel="" if rel == "." else rel,
+                           deletable=lambda n: file_deletable(rel, n))
+
+
+# CX8ANM: borrar desde la página Archivos (antes había que sacar la tarjeta). Solo archivos de la partición DATA;
+# nunca los ajustes (params.db y sus -wal/-shm/-journal), ni lo que no es un archivo común. Las carpetas no,
+# salvo dentro de update/ (lo que deja una actualización a medias)
+KEEP_FILES = re.compile(r'^params\.db(-wal|-shm|-journal)?$')
+
+
+def file_deletable(rel, name):
+    if rel in ("", ".") and KEEP_FILES.match(name):
+        return False
+    return True
+
+
+@app.delete('/api/files/<filepath:path>')
+def file_delete(filepath):
+    root = os.path.abspath(settings.FILEBROWSER_PATH)
+    target = os.path.abspath(os.path.join(root, filepath.lstrip('/')))
+    if os.path.commonpath([root, target]) != root or target == root or filepath.startswith('/'):
+        raise bottle.HTTPError(403, 'Access denied.')
+    rel_dir, name = os.path.split(os.path.relpath(target, root))
+    if not file_deletable(rel_dir, name):
+        bottle.response.status = 403
+        return {"error": "The settings file cannot be deleted"}
+    try:
+        if os.path.isdir(target) and not os.path.islink(target):
+            if os.path.relpath(target, root).split(os.sep)[0] != "update":
+                bottle.response.status = 403
+                return {"error": "Folders cannot be deleted here, only files"}
+            shutil.rmtree(target)
+        elif os.path.isfile(target) or os.path.islink(target):
+            os.remove(target)
+        else:
+            raise bottle.HTTPError(404, 'Not found')
+        os.sync()
+    except OSError as e:
+        bottle.response.status = 500
+        return {"error": "Could not delete: %s" % e.strerror}
+    return {"ok": True}
 
 
 # Time page: the radio clock (set by hand or by NTP) and its timezone (/etc/localtime)

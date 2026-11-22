@@ -2389,3 +2389,4 @@
 { "Update failed: no space left. Delete recordings or big files in Files", "Échec de la mise à jour : plus de place. Supprimez des enregistrements ou de gros fichiers dans Fichiers" },
 { "Files %llu MB, system %llu MB", "Fichiers %llu Mo, système %llu Mo" },
 { "Free space", "Espace libre" },
+{ "the flight services are busy: they are tried again by themselves", "les services de vols sont saturés : nouvel essai automatique" },

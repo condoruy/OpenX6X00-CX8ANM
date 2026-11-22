@@ -1454,3 +1454,9 @@ Listening:	Höre:
 heading	Kurs
 Aircraft:	Flugzeuge:
 EMERGENCY	NOTFALL
+the flight services are busy: they are tried again by themselves	die Flugdienste sind überlastet: es wird von selbst erneut versucht
+Download or delete files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc).	Dateien der DATA-Partition der SD-Karte herunterladen oder löschen (ADI-Log, Bildschirmfotos, Aufnahmen usw.).
+The settings file cannot be deleted	Die Einstellungsdatei kann nicht gelöscht werden
+Folders cannot be deleted here, only files	Ordner können hier nicht gelöscht werden, nur Dateien
+Could not delete	Konnte nicht gelöscht werden
+Download or delete files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc). A	Dateien der DATA-Partition der SD-Karte herunterladen oder löschen (ADI-Log, Bildschirmfotos, Aufnahmen usw.). Eine

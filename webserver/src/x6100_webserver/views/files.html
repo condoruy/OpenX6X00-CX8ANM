@@ -1,16 +1,40 @@
 % rebase("base.html", title="File browser")
 <h2><svg class="i"><use href="#i-sd"/></svg>Files</h2>
-<p class="sub">Download files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc).
+<p class="sub">Download or delete files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc).
 A <code>params.db</code> downloaded while the radio writes it may come out damaged (the radio's copy is not touched): open it with any SQLite3 tool to check.</p>
 <section class="dp-card">
-<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-folder"/></svg></span><div><h3>{{request.path}}</h3><p>{{len(dirs)}} folders · {{len(files)}} files</p></div></div>
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-folder"/></svg></span><div><h3>{{request.path}}</h3><p>{{len(dirs)}} folders · {{len(files)}} files{{(" · %d MB free" % free_mb) if free_mb is not None else ""}}</p></div></div>
 <div class="dp-body tbl files">
 <a href=".."><svg class="i"><use href="#i-folder"/></svg> ..</a>
 % for name in dirs:  # href(): '#', '?' or '%' in a name would cut the link
-<a href="{{href(name)}}/"><svg class="i"><use href="#i-folder"/></svg> {{name}}</a>
+<div class="f-row"><a href="{{href(name)}}/"><svg class="i"><use href="#i-folder"/></svg> {{name}}</a>
+% if rel.split("/")[0] == "update":
+<button type="button" class="f-del" data-path="{{(rel + "/" if rel else "") + name}}" data-name="{{name}}" title="Delete">✕</button>
+% end
+</div>
 % end
 % for name in files:
-<a href="{{href(name)}}" download><svg class="i"><use href="#i-file"/></svg> {{name}}</a>
+<div class="f-row"><a href="{{href(name)}}" download><svg class="i"><use href="#i-file"/></svg> {{name}}</a>
+<span class="f-size">{{"%.1f MB" % (sizes.get(name, 0) / 1048576) if sizes.get(name, 0) >= 1048576 else "%d KB" % max(1, sizes.get(name, 0) // 1024)}}</span>
+% if deletable(name):
+<button type="button" class="f-del" data-path="{{(rel + "/" if rel else "") + name}}" data-name="{{name}}" title="Delete">✕</button>
+% end
+</div>
 % end
 </div>
 </section>
+<style>
+.f-row{display:flex;align-items:center;gap:10px}
+.f-row a{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.f-size{color:var(--muted,#8da2bd);font-size:13px;white-space:nowrap}
+.f-del{padding:2px 9px;line-height:1.4}
+</style>
+<script>
+$(".f-del").on("click", function() {
+  const b = $(this);
+  if (!confirm("Delete" + " " + b.data("name") + "?")) return;
+  $.ajax({url: "/api/files/" + String(b.data("path")).split("/").map(encodeURIComponent).join("/"), type: "DELETE",
+    success: () => b.closest(".f-row").remove(),
+    error: (x) => alert((x.responseJSON && x.responseJSON.error) || "Could not delete")});
+});
+</script>

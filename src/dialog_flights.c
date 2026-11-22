@@ -516,7 +516,7 @@ static void update_done(void *arg) {
     upd_result_t *r = arg;
     if (r->gen != gen || !dialog.run) return;
     updating = false;
-    snprintf(upd_error, sizeof(upd_error), "%s", r->err);
+    snprintf(upd_error, sizeof(upd_error), "%s", tr(r->err));   /* the fixed messages of x6100-flights are translated */
     if (!r->err[0]) load_file();
     draw();
 }

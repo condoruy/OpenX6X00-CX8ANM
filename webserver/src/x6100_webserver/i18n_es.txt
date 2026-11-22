@@ -1454,3 +1454,9 @@ Listening:	Escuchando:
 heading	rumbo
 Aircraft:	Aviones:
 EMERGENCY	EMERGENCIA
+the flight services are busy: they are tried again by themselves	los servicios de vuelos están saturados: se reintenta solo
+Download or delete files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc).	Descargá o borrá archivos de la partición DATA de la tarjeta SD (log ADI, capturas, grabaciones, etc).
+The settings file cannot be deleted	El archivo de ajustes no se puede borrar
+Folders cannot be deleted here, only files	Acá no se pueden borrar carpetas, solo archivos
+Could not delete	No se pudo borrar
+Download or delete files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc). A	Descargá o borrá archivos de la partición DATA de la tarjeta SD (log ADI, capturas, grabaciones, etc). Un

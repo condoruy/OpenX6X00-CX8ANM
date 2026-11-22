@@ -5,20 +5,26 @@
 #                                     imprime "ok N" o "error <motivo>"
 #
 # Los datos son de redes abiertas de receptores ADS-B de voluntarios, gratis y sin clave para uso
-# personal: airplanes.live y, si no responde, adsb.lol (mismo formato). Solo se ven los aviones que
-# capta algún receptor cercano.
+# personal: airplanes.live, adsb.lol y adsb.fi (mismo formato). Solo se ven los aviones que capta algún
+# receptor cercano. Las tres limitan cuántas veces se les pregunta: una que contesta "429 Too Many Requests"
+# (o 503) descansa lo que pide (Retry-After) o un minuto, cada vez más, y mientras tanto se usan las otras;
+# si ninguna contesta, quedan los aviones de la última vez (hasta 3 minutos) en lugar de un error.
 import json
 import math
 import os
 import sys
 import time
+import urllib.error
 import urllib.request
 
 OUT = os.environ.get("X6100_FLIGHTS_OUT", "/tmp/x6100-flights.json")   # la web usa otro
 SOURCES = [
     ("airplanes.live", "https://api.airplanes.live/v2/point/%.4f/%.4f/%d"),
     ("adsb.lol", "https://api.adsb.lol/v2/point/%.4f/%.4f/%d"),
+    ("adsb.fi", "https://opendata.adsb.fi/api/v2/lat/%.4f/lon/%.4f/dist/%d"),
 ]
+STATE = "/tmp/x6100-flights-state.json"   # el descanso de cada fuente y la última que anduvo
+STALE_S = 180
 UA = "X6100-CX8ANM flights (github.com/condoruy/X6100-CX8ANM)"
 KM_PER_NM = 1.852
 
@@ -34,21 +40,70 @@ def dist_brg(lat1, lon1, lat2, lon2):
     return d, (math.degrees(math.atan2(y, x)) + 360) % 360
 
 
+def load_state():
+    try:
+        with open(STATE) as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def save_state(st):
+    try:
+        with open(STATE + ".tmp", "w") as f:
+            json.dump(st, f)
+        os.replace(STATE + ".tmp", STATE)
+    except OSError:
+        pass
+
+
+class Busy(RuntimeError):
+    """Todas las fuentes descansando: cuántos segundos falta para la primera"""
+    def __init__(self, wait):
+        RuntimeError.__init__(self, "busy")
+        self.wait = wait
+
+
 def fetch(lat, lon, km):
     nm = max(1, min(250, int(math.ceil(km / KM_PER_NM))))
-    last = "sin respuesta"
-    for name, url in SOURCES:
+    st = load_state()
+    rest = st.setdefault("rest", {})        # fuente -> hasta cuándo descansa
+    fails = st.setdefault("fails", {})      # fuente -> cuántos 429 seguidos
+    now = time.time()
+    order = sorted(SOURCES, key=lambda s: s[0] != st.get("good"))   # primero la que anduvo la última vez
+    errors, tried = [], 0
+    for name, url in order:
+        if rest.get(name, 0) > now:
+            continue
+        tried += 1
         try:
             req = urllib.request.Request(url % (lat, lon, nm), headers={"User-Agent": UA, "Accept": "application/json"})
             with urllib.request.urlopen(req, timeout=15) as r:
                 data = json.loads(r.read().decode("utf-8", "replace"))
             ac = data.get("ac", data.get("aircraft"))
             if isinstance(ac, list):
+                st["good"] = name
+                fails.pop(name, None)
+                save_state(st)
                 return name, ac
-            last = "%s: respuesta sin aviones" % name
-        except Exception as e:      # noqa: BLE001 (red, http, json: se prueba el siguiente)
-            last = "%s: %s" % (name, e)
-    raise RuntimeError(last)
+            errors.append("%s: respuesta sin aviones" % name)
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 503):
+                n = fails.get(name, 0) + 1
+                fails[name] = n
+                try:
+                    wait = int(e.headers.get("Retry-After") or 0)
+                except ValueError:
+                    wait = 0
+                rest[name] = now + max(wait, min(600, 60 * 2 ** (n - 1)))
+            errors.append("%s: HTTP %d" % (name, e.code))
+        except Exception as e:      # noqa: BLE001 (red, json: se prueba el siguiente)
+            errors.append("%s: %s" % (name, e))
+    save_state(st)
+    if not tried or all("HTTP 429" in x or "HTTP 503" in x for x in errors):
+        raise Busy(int(max(1, min(rest.values()) - time.time())) if rest else 60)
+    raise RuntimeError("; ".join(errors) or "sin respuesta")
 
 
 def clean(a, lat, lon, km):
@@ -83,8 +138,28 @@ def clean(a, lat, lon, km):
     }
 
 
+def recent(lat, lon, km):
+    """Los aviones de la última vez, si son de esta misma zona y de hace menos de STALE_S"""
+    try:
+        if time.time() - os.path.getmtime(OUT) > STALE_S:
+            return None
+        with open(OUT) as f:
+            d = json.load(f)
+        if abs(d.get("lat", 999) - lat) < 1e-3 and abs(d.get("lon", 999) - lon) < 1e-3 and d.get("km") == km:
+            return d
+    except (OSError, ValueError, TypeError):
+        pass
+    return None
+
+
 def update(lat, lon, km):
-    src, ac = fetch(lat, lon, km)
+    try:
+        src, ac = fetch(lat, lon, km)
+    except Exception:
+        d = recent(lat, lon, km)      # sin respuesta ahora: quedan los de hace un momento, en lugar de un error
+        if d is not None:
+            return len(d.get("ac") or [])
+        raise
     out = [c for c in (clean(a, lat, lon, km) for a in ac if isinstance(a, dict)) if c]
     out.sort(key=lambda c: c["dist_km"])
     doc = {"time": time.strftime("%H:%M:%S"), "src": src, "lat": lat, "lon": lon, "km": km, "ac": out[:200]}
@@ -102,6 +177,9 @@ def main():
             if not (-90 <= lat <= 90 and -180 <= lon <= 180 and 1 <= km <= 500):
                 raise ValueError("posición o radio fuera de rango")
             print("ok %d" % update(lat, lon, km))
+        except Busy:
+            print("error the flight services are busy: they are tried again by themselves")
+            return
         except Exception as e:      # noqa: BLE001
             msg = str(e)
             if "Name or service" in msg or "Temporary failure" in msg or "unreachable" in msg:
