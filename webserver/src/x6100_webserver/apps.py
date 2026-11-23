@@ -4362,6 +4362,41 @@ def flights_atc():
     return {"towers": towers, "msg": msg if not towers else ""}
 
 
+@app.get('/api/flights/atcfor')
+def flights_atcfor():
+    """Seguir vuelo: el control de tránsito aéreo de donde está un avión (x6100-iradio atcfor)"""
+    q = bottle.request.query
+    try:
+        lat, lon = float(q.get("lat")), float(q.get("lon"))
+    except (TypeError, ValueError):
+        return {"towers": [], "msg": "The position is missing"}
+    def num(v):
+        try:
+            return "%.0f" % float(v)
+        except (TypeError, ValueError):
+            return "-"
+    call = re.sub(r"[^A-Z0-9]", "", (q.get("call") or "").upper())[:10]
+    try:
+        r = subprocess.run(["/usr/sbin/x6100-iradio", "atcfor", "%.4f" % lat, "%.4f" % lon, num(q.get("alt")),
+                            num(q.get("vs")), "1" if q.get("ground") == "1" else "0", call],
+                           capture_output=True, text=True, timeout=90)
+        lines = (r.stdout or "").splitlines()
+    except (OSError, subprocess.SubprocessError) as e:
+        return {"towers": [], "msg": str(e)}
+    towers, msg, ap = [], "", None
+    for line in lines:
+        if line.startswith("error "):
+            msg = "" if "no se encontraron" in line else line[6:]
+            continue
+        p = line.split("\t")
+        if line.startswith("@") and len(p) >= 7:
+            ap = {"icao": p[0][1:], "name": p[1], "city": p[2], "phase": p[3], "km": p[4],
+                  "lat": float(p[5]), "lon": float(p[6])}
+        elif len(p) >= 2 and p[1].startswith(("http://", "https://")):
+            towers.append({"name": p[0], "url": p[1], "codec": p[2] if len(p) > 2 else ""})
+    return {"airport": ap, "towers": towers, "msg": msg if not towers else ""}
+
+
 # ---------- GhostNet (src/ghostnet.c, ghostnet_web.py) ----------
 @app.route('/ghostnet')
 def ghostnet_page():

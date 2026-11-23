@@ -2393,3 +2393,14 @@ Update failed: no space left. Delete recordings or big files in Files	Aggiorname
 Files %llu MB, system %llu MB	File %llu MB, sistema %llu MB
 Free space	Spazio libero
 the flight services are busy: they are tried again by themselves	i servizi dei voli sono saturi: si riprova da solo
+# CX8ANM: Vuelos, seguir vuelo
+Follow	Segui
+flight	volo
+Following	Seguendo
+approach	avvicinamento
+departure	partenza
+center	controllo d'area
+Choose a flight in the list first	Scegli prima un volo dall'elenco
+Looking for the air traffic control where the flight is...	Cerco il controllo del traffico aereo dove si trova il volo...
+Follow flight: the air traffic control where the flight is	Segui volo: il controllo del traffico aereo dove si trova il volo
+No air traffic control stream near the flight	Nessun flusso del controllo aereo vicino al volo

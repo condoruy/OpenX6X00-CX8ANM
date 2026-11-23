@@ -11,6 +11,11 @@
  *  en 118-137 MHz se escucha la radio misma. Mientras se escucha, los aviones que con más probabilidad hablan con
  *  esa torre (cerca del aeropuerto, aproximando, despegando o en tierra) se resaltan con su matrícula, y el elegido
  *  tiene su ventana sobre el radar.
+ *
+ *  "Seguir vuelo" (CX8ANM): el radar se centra en el avión elegido y lo acompaña, y cada minuto x6100-iradio atcfor
+ *  busca el control de tránsito aéreo de donde está: la torre si está en tierra o despegando, la aproximación de su
+ *  destino si baja, el control de área de la zona en crucero (el aeropuerto grande más cercano), con la lista de
+ *  aeropuertos de /usr/share/x6100/airports.tsv. Cuando cambia (dos veces seguidas lo mismo), pasa a esas emisoras.
  */
 #include "dialog_flights.h"
 
@@ -94,13 +99,17 @@ static void range_cb(button_data_t *b);
 static void update_cb(button_data_t *b);
 
 static void tower_cb(button_data_t *b);
+static void follow_cb(button_data_t *b);
+static void follow_set(bool on);
+static void follow_search(void);
 
 static button_data_t btn_center = {.type = BTN_TEXT, .label = "Center", .press = center_cb};
 static button_data_t btn_range  = {.type = BTN_TEXT, .label = "Range", .press = range_cb};
 static button_data_t btn_tower  = {.type = BTN_TEXT, .label = "Listen\ntower", .press = tower_cb};
 static button_data_t btn_update = {.type = BTN_TEXT, .label = "Update", .press = update_cb};
+static button_data_t btn_follow = {.type = BTN_TEXT, .label = "Follow\nflight", .press = follow_cb};
 
-static buttons_page_t btn_page = {{&btn_center, &btn_range, &btn_tower, &btn_update}};
+static buttons_page_t btn_page = {{&btn_center, &btn_range, &btn_tower, &btn_follow, &btn_update}};
 
 /* ---------- la torre ---------- */
 
@@ -117,6 +126,22 @@ static volatile bool  play_on, play_alive;
 static volatile pid_t play_pid;
 static bool           play_next_pending;
 static char           tower_state[120];
+
+/* ---------- seguir un vuelo ---------- */
+
+#define FOLLOW_EVERY 4          /* actualizaciones (15 s): el control se busca cada minuto */
+
+static bool   follow_on;
+static char   follow_hex[16], follow_id[16];
+static double follow_lat, follow_lon;      /* donde se vio el avión por última vez: el centro del radar */
+static bool   follow_seen;                 /* en los últimos datos */
+static bool   follow_searching;
+static int    follow_tick, follow_gen;
+static char   follow_key[32];              /* "SUMU approach": lo que suena */
+static char   follow_pending[32];          /* otro, visto una vez: se pasa a él si se ve otra vez */
+static char   follow_icao[8], follow_phase[16];
+static double follow_ap_lat, follow_ap_lon;
+static bool   follow_has_ap;
 
 static dialog_t dialog = {
     .run          = false,
@@ -164,7 +189,10 @@ static const char *ident(cJSON *a) {
 }
 
 static void center_pos(double *lat, double *lon) {
-    if (centers[center_i].lat == 0 && centers[center_i].lon == 0) {
+    if (follow_on) {
+        *lat = follow_lat;
+        *lon = follow_lon;
+    } else if (centers[center_i].lat == 0 && centers[center_i].lon == 0) {
         meteo_position(lat, lon);
     } else {
         *lat = centers[center_i].lat;
@@ -212,6 +240,12 @@ static bool listening(void) {
 static bool likely(cJSON *a) {
     double lat, lon, alt;
     if (!listening() || !numv(a, "lat", &lat) || !numv(a, "lon", &lon)) return false;
+    if (follow_on && follow_has_ap) {   /* el aeropuerto del control que suena */
+        if (dist_km(lat, lon, follow_ap_lat, follow_ap_lon) > (strcmp(follow_phase, "center") ? NEAR_KM * 3 : 400))
+            return false;
+        return strcmp(follow_phase, "center") ? cJSON_IsTrue(obj(a, "ground")) || (numv(a, "alt_m", &alt) && alt < 6000)
+                                              : true;
+    }
     const center_t *ap = &centers[airport_i()];
     if (dist_km(lat, lon, ap->lat, ap->lon) > NEAR_KM) return false;
     return cJSON_IsTrue(obj(a, "ground")) || (numv(a, "alt_m", &alt) && alt < LOW_M);
@@ -460,8 +494,13 @@ static void show_status(void) {
     else if (data)
         snprintf(extra, sizeof(extra), "  -  %d %s  -  %s %s (%s)", n_aircraft(), tr("aircraft"), tr("updated"),
                  strv(data, "time"), strv(data, "src"));
+    char where[48];
+    if (follow_on)
+        snprintf(where, sizeof(where), "%s %s%s", tr("Following"), follow_id, follow_seen ? "" : " (?)");
+    else
+        snprintf(where, sizeof(where), "%s", tr(centers[center_i].name));
     lv_label_set_text_fmt(status_lbl, "#%06x %s# #%06x %s - %d km#%s", theme_hex(TC_text_head), tr("FLIGHTS"),
-                          theme_hex(TC_accent), tr(centers[center_i].name), ranges_km[range_i], extra);
+                          theme_hex(TC_accent), where, ranges_km[range_i], extra);
     /* la torre, en su propia línea abajo a la derecha */
     if (!tower_lbl) return;
     if (radio_airband())
@@ -470,6 +509,10 @@ static void show_status(void) {
     else if (tower_state[0])
         lv_label_set_text_fmt(tower_lbl, "#%06x %s#", theme_hex(tower_state[0] == '!' ? TC_err : TC_accent),
                               tower_state[0] == '!' ? tower_state + 1 : tower_state);
+    else if (follow_on)
+        lv_label_set_text_fmt(tower_lbl, "#%06x %s#", theme_hex(TC_text_dim),
+                              follow_searching ? tr("Looking for the air traffic control where the flight is...")
+                                               : tr("Follow flight: the air traffic control where the flight is"));
     else
         lv_label_set_text_fmt(tower_lbl, "#%06x %s#", theme_hex(TC_text_dim),
                               tr("Listen tower: the air traffic control of this airport, over the internet"));
@@ -512,12 +555,17 @@ typedef struct {
     int    km;
 } upd_args_t;
 
+static void follow_after_update(void);
+
 static void update_done(void *arg) {
     upd_result_t *r = arg;
     if (r->gen != gen || !dialog.run) return;
     updating = false;
     snprintf(upd_error, sizeof(upd_error), "%s", tr(r->err));   /* the fixed messages of x6100-flights are translated */
-    if (!r->err[0]) load_file();
+    if (!r->err[0]) {
+        load_file();
+        follow_after_update();
+    }
     draw();
 }
 
@@ -604,6 +652,9 @@ static void play_ended(void *arg) {
     if (play_next_pending) {
         play_next_pending = false;
         tower_launch();
+    } else if (follow_on && tower_i >= 0 && tower_i + 1 < towers_n) {   /* siguiendo: la emisora siguiente */
+        tower_i++;
+        tower_launch();
     } else if (tower_i >= 0) {    /* se cortó sola: la emisora no anda */
         FILE *f = fopen(IR_STATUS, "r");
         char  st[160] = "";
@@ -689,7 +740,12 @@ static void tower_launch(void) {
     char *url = strdup(towers[tower_i].url);
     if (!url) return;
     play_on = play_alive = true;
-    snprintf(tower_state, sizeof(tower_state), "> %s %d/%d: %s", tr("Tower"), tower_i + 1, towers_n, towers[tower_i].name);
+    if (follow_on && follow_key[0])
+        snprintf(tower_state, sizeof(tower_state), "> %s %s %d/%d: %s", follow_icao, tr(follow_phase), tower_i + 1,
+                 towers_n, towers[tower_i].name);
+    else
+        snprintf(tower_state, sizeof(tower_state), "> %s %d/%d: %s", tr("Tower"), tower_i + 1, towers_n,
+                 towers[tower_i].name);
     if (pthread_create(&t, NULL, play_fn, url) == 0) {
         pthread_detach(t);
     } else {
@@ -776,7 +832,14 @@ static void tower_cb(button_data_t *b) {
             tower_i        = -1;
             tower_state[0] = 0;
             tower_stop();
+            if (follow_on) follow_set(false);
         }
+        draw();
+        return;
+    }
+    if (follow_on) {   /* siguiendo: el control de donde está el avión */
+        follow_key[0] = 0;
+        follow_search();
         draw();
         return;
     }
@@ -797,10 +860,208 @@ static void tower_cb(button_data_t *b) {
     draw();
 }
 
+/* ---------- seguir un vuelo: el control de tránsito aéreo de donde está ---------- */
+
+typedef struct {
+    int     gen;
+    int     n;
+    char    err[120];
+    char    icao[8], phase[16];
+    double  lat, lon;
+    tower_t list[MAX_TOWERS];
+} fl_result_t;
+
+typedef struct {
+    int  gen;
+    char cmd[256];
+} fl_args_t;
+
+static void follow_found(void *arg) {
+    fl_result_t *r = arg;
+    if (r->gen != follow_gen || !dialog.run || !follow_on) return;
+    follow_searching = false;
+    if (!r->n) {   /* lo que suena sigue */
+        if (tower_i < 0)
+            snprintf(tower_state, sizeof(tower_state), "!%s", r->err[0] ? r->err : tr("No air traffic control stream near the flight"));
+        draw();
+        return;
+    }
+    char key[32];
+    snprintf(key, sizeof(key), "%s %s", r->icao, r->phase);
+    if (!strcmp(key, follow_key) && tower_i >= 0) {   /* el mismo: sigue sonando */
+        follow_pending[0] = 0;
+        return;
+    }
+    /* otro: si ya suena uno, solo cuando se ve dos veces seguidas (la fase cambia de ida y vuelta en el límite) */
+    if (tower_i >= 0 && strcmp(key, follow_pending)) {
+        snprintf(follow_pending, sizeof(follow_pending), "%s", key);
+        return;
+    }
+    follow_pending[0] = 0;
+    snprintf(follow_key, sizeof(follow_key), "%s", key);
+    snprintf(follow_icao, sizeof(follow_icao), "%s", r->icao);
+    snprintf(follow_phase, sizeof(follow_phase), "%s", r->phase);
+    follow_ap_lat = r->lat;
+    follow_ap_lon = r->lon;
+    follow_has_ap = true;
+    tower_gen++;   /* una búsqueda de torre en curso ya no sirve */
+    tower_searching = false;
+    towers_n        = r->n;
+    memcpy(towers, r->list, sizeof(towers[0]) * r->n);
+    tower_i = 0;
+    if (play_alive) {
+        play_next_pending = true;
+        tower_stop();
+    } else {
+        tower_launch();
+    }
+    msg_update_text_fmt("%s: %s %s", follow_id, r->icao, tr(r->phase));
+    sort_likely();
+    draw();
+}
+
+static void *follow_search_fn(void *arg) {
+    fl_args_t   in = *(fl_args_t *)arg;
+    fl_result_t r;
+    char        line[1024];
+
+    free(arg);
+    memset(&r, 0, sizeof(r));
+    r.gen  = in.gen;
+    FILE *p = popen(in.cmd, "r");
+    if (p) {
+        while (fgets(line, sizeof(line), p)) {
+            line[strcspn(line, "\n")] = 0;
+            if (!strncmp(line, "error ", 6)) {
+                snprintf(r.err, sizeof(r.err), "%s", line + 6);
+                continue;
+            }
+            if (line[0] == '@') {   /* @OACI nombre ciudad fase km lat lon */
+                char *f[7] = {0};
+                int   k    = 0;
+                for (char *t = line + 1; t && k < 7; k++) {
+                    f[k]    = t;
+                    char *n = strchr(t, '\t');
+                    if (n) *n++ = 0;
+                    t = n;
+                }
+                if (k == 7) {
+                    snprintf(r.icao, sizeof(r.icao), "%s", f[0]);
+                    snprintf(r.phase, sizeof(r.phase), "%s", f[3]);
+                    r.lat = atof(f[5]);
+                    r.lon = atof(f[6]);
+                }
+                continue;
+            }
+            char *tab = strchr(line, '\t');
+            if (!tab || r.n >= MAX_TOWERS || !r.icao[0]) continue;
+            *tab      = 0;
+            char *end = strchr(tab + 1, '\t');
+            if (end) *end = 0;
+            snprintf(r.list[r.n].name, sizeof(r.list[0].name), "%s", line);
+            snprintf(r.list[r.n].url, sizeof(r.list[0].url), "%s", tab + 1);
+            r.n++;
+        }
+        pclose(p);
+    }
+    scheduler_put(follow_found, &r, sizeof(r));
+    return NULL;
+}
+
+/* Busca el control de donde está el avión seguido, con lo último que se sabe de él */
+static void follow_search(void) {
+    cJSON *a = NULL, *it;
+    if (follow_searching || radio_airband()) return;
+    cJSON_ArrayForEach(it, aircraft()) {
+        if (!strcmp(strv(it, "hex"), follow_hex)) a = it;
+    }
+    if (!a) return;
+    double     alt, vs;
+    fl_args_t *x = malloc(sizeof(*x));
+    if (!x) return;
+    char alts[16] = "-", vss[16] = "-", call[16] = "";
+    if (numv(a, "alt_m", &alt)) snprintf(alts, sizeof(alts), "%.0f", alt);
+    if (numv(a, "vs", &vs)) snprintf(vss, sizeof(vss), "%.0f", vs);
+    for (const char *c = strv(a, "call"); *c && strlen(call) < sizeof(call) - 1; c++)   /* solo letras y números */
+        if ((*c >= 'A' && *c <= 'Z') || (*c >= '0' && *c <= '9')) call[strlen(call)] = *c;
+    x->gen = ++follow_gen;
+    snprintf(x->cmd, sizeof(x->cmd), IRADIO " atcfor %.4f %.4f %s %s %d '%s' 2>/dev/null", follow_lat, follow_lon,
+             alts, vss, cJSON_IsTrue(obj(a, "ground")) ? 1 : 0, call);
+    follow_searching = true;
+    pthread_t t;
+    if (pthread_create(&t, NULL, follow_search_fn, x) == 0) {
+        pthread_detach(t);
+    } else {
+        free(x);
+        follow_searching = false;
+    }
+}
+
+/* Después de cada actualización: dónde está el avión, el elegido de la lista, y cada minuto su control */
+static void follow_after_update(void) {
+    if (!follow_on) return;
+    cJSON *it;
+    int    i = 0, found = -1;
+    cJSON_ArrayForEach(it, aircraft()) {
+        if (!strcmp(strv(it, "hex"), follow_hex)) {
+            found = i;
+            numv(it, "lat", &follow_lat);
+            numv(it, "lon", &follow_lon);
+        }
+        i++;
+    }
+    follow_seen = found >= 0;
+    if (!follow_seen) return;   /* fuera de la vista de los receptores: el radar queda donde se lo vio */
+    sel = found;
+    if (!follow_key[0] || ++follow_tick % FOLLOW_EVERY == 0) follow_search();
+}
+
+static void follow_set(bool on) {
+    follow_on = on;
+    btn_follow.mark = on;
+    if (btn_follow.disp_btn) buttons_mark(&btn_follow, on);
+    follow_gen++;
+    follow_searching   = false;
+    follow_key[0]      = 0;
+    follow_pending[0]  = 0;
+    follow_has_ap      = false;
+    follow_tick        = 0;
+}
+
+/* Seguir vuelo: el avión elegido en la lista; otra vez, se deja de seguir (lo que suena sigue) */
+static void follow_cb(button_data_t *b) {
+    (void)b;
+    if (follow_on) {
+        follow_set(false);
+        restart();   /* el radar vuelve al centro elegido */
+        return;
+    }
+    if (radio_airband()) {
+        msg_update_text_fmt("%s %.3f MHz", tr("Listening on the radio"), cparam_i_get(cfg_fg_freq) / 1e6);
+        return;
+    }
+    cJSON *a = cJSON_GetArrayItem(aircraft(), sel);
+    double lat, lon;
+    if (!a || !strv(a, "hex")[0] || !numv(a, "lat", &lat) || !numv(a, "lon", &lon)) {
+        msg_update_text_fmt("%s", tr("Choose a flight in the list first"));
+        return;
+    }
+    follow_set(true);
+    snprintf(follow_hex, sizeof(follow_hex), "%s", strv(a, "hex"));
+    snprintf(follow_id, sizeof(follow_id), "%s", ident(a));
+    follow_lat  = lat;
+    follow_lon  = lon;
+    follow_seen = true;
+    follow_search();
+    start_update();   /* el radar, centrado en él */
+    draw();
+}
+
 /* ---------- botones y teclas ---------- */
 
 static void center_cb(button_data_t *b) {
     (void)b;
+    if (follow_on) follow_set(false);
     center_i = (center_i + 1) % N_CENTERS;
     if (tower_i >= 0 || tower_searching) {   /* otro aeropuerto: su torre es otra */
         tower_gen++;
@@ -908,6 +1169,10 @@ static void construct_cb(lv_obj_t *parent) {
 static void destruct_cb(void) {
     gen++;
     tower_gen++;
+    follow_on       = false;   /* al volver a entrar, sin seguir */
+    btn_follow.mark = false;
+    follow_gen++;
+    follow_searching = false;
     tower_searching   = false;
     tower_i           = -1;
     tower_state[0]    = 0;

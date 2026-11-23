@@ -6,6 +6,9 @@
 #        nombre<TAB>url<TAB>códec<TAB>kbps<TAB>país   ("error <motivo>" si no hay red)
 #   x6100-iradio atc <OACI> [palabras del nombre]
 #        las emisoras de torre de un aeropuerto (para la app Vuelos), con el mismo formato
+#   x6100-iradio atcfor LAT LON ALT_M VS SUELO [VUELO]
+#        el control de tránsito aéreo de donde está un vuelo ("Seguir vuelo"): una línea @ con el aeropuerto
+#        y la fase, y sus emisoras
 #   x6100-iradio play <url>
 #        audio PCM s16 mono 44100 Hz por la salida estándar (la GUI lo manda al parlante);
 #        el estado en STATUS: tres líneas, estado ("connecting", "playing", "error ..."),
@@ -195,14 +198,11 @@ def own_atc():
     return out
 
 
-def cmd_atc(args):
-    """Las emisoras de torre (control de tránsito aéreo) de un aeropuerto, para la app Vuelos:
-    x6100-iradio atc SUMU Carrasco Montevideo  (el código OACI y palabras del nombre o la ciudad).
-    Primero las cargadas por el usuario que lo nombran, después las del directorio que dicen el código o el nombre."""
-    if not args:
-        raise Fail("falta el aeropuerto")
-    icao = args[0].upper()[:4]
-    words = [w for w in args[1:] if len(w) >= 4]
+def atc_rows(icao, words):
+    """Las emisoras de torre de un aeropuerto: las cargadas por el usuario que lo nombran, después las del directorio
+    que dicen el código o el nombre"""
+    icao = icao.upper()[:4]
+    words = [w for w in words if len(w) >= 4]
     keys = [icao] + words
     def match(s):
         text = (clean(s.get("name")) + " " + clean(s.get("tags"))).upper()
@@ -219,8 +219,187 @@ def cmd_atc(args):
             found += api("/json/stations/search", dict(COMMON, tag=q.lower(), limit="20"))
         except Fail:
             pass
-    rows += [s for s in found if is_atc(s) and match(s)]
-    print_list(rows)
+    return rows + [s for s in found if is_atc(s) and match(s)]
+
+
+def cmd_atc(args):
+    """Las emisoras de torre (control de tránsito aéreo) de un aeropuerto, para la app Vuelos:
+    x6100-iradio atc SUMU Carrasco Montevideo  (el código OACI y palabras del nombre o la ciudad)."""
+    if not args:
+        raise Fail("falta el aeropuerto")
+    print_list(atc_rows(args[0], args[1:]))
+
+
+# ---------- seguir un vuelo: el control de tránsito aéreo de donde está ----------
+AIRPORTS = os.environ.get("X6100_AIRPORTS", "/usr/share/x6100/airports.tsv")
+ROUTE_CACHE = "/tmp/x6100-routes.json"
+ATC_CACHE = "/tmp/x6100-atcfor.json"
+ATC_CACHE_S = 1800
+# Las emisoras de cada fase, por las palabras de su nombre: la primera lista va primero
+PHASE_WORDS = {
+    "ground": ["gnd", "ground", "del", "delivery", "twr", "tower", "torre"],
+    "tower": ["twr", "tower", "torre", "gnd", "ground"],
+    "approach": ["app", "approach", "aproximaci", "dep", "departure", "final", "radar"],
+    "departure": ["dep", "departure", "app", "approach", "aproximaci", "radar"],
+    "center": ["ctr", "center", "centre", "acc", "control", "area", "radar"],
+}
+
+
+def airports():
+    out = []
+    try:
+        with open(AIRPORTS, encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("#"):
+                    continue
+                p = line.rstrip("\n").split("\t")
+                if len(p) >= 7:
+                    out.append({"icao": p[0], "lat": float(p[1]), "lon": float(p[2]), "large": p[3] == "L",
+                                "cc": p[4], "name": p[5], "city": p[6]})
+    except (OSError, ValueError):
+        pass
+    return out
+
+
+def km(lat1, lon1, lat2, lon2):
+    import math
+    p = math.pi / 180
+    a = math.sin((lat2 - lat1) * p / 2) ** 2 + math.cos(lat1 * p) * math.cos(lat2 * p) * math.sin((lon2 - lon1) * p / 2) ** 2
+    return 12742 * math.asin(min(1, math.sqrt(a)))
+
+
+def load_json(path):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def save_json(path, d):
+    try:
+        with open(path + ".tmp", "w") as f:
+            json.dump(d, f)
+        os.replace(path + ".tmp", path)
+    except OSError:
+        pass
+
+
+def route(call):
+    """(origen, destino) OACI del número de vuelo, de adsbdb.com (abierto); guardado por un día"""
+    call = re.sub(r"[^A-Z0-9]", "", (call or "").upper())
+    if len(call) < 4:
+        return None, None
+    cache = load_json(ROUTE_CACHE)
+    c = cache.get(call)
+    if c and time.time() - c.get("t", 0) < 86400:
+        return c.get("o"), c.get("d")
+    o = d = None
+    try:
+        with opener("https://api.adsbdb.com/v0/callsign/" + call, timeout=6) as r:
+            fr = (json.load(r).get("response") or {}).get("flightroute") or {}
+            o = (fr.get("origin") or {}).get("icao_code")
+            d = (fr.get("destination") or {}).get("icao_code")
+    except Exception:
+        pass
+    cache[call] = {"t": time.time(), "o": o, "d": d}
+    if len(cache) > 300:
+        cache = dict(sorted(cache.items(), key=lambda kv: -kv[1].get("t", 0))[:200])
+    save_json(ROUTE_CACHE, cache)
+    return o, d
+
+
+def plan(lat, lon, alt, vs, ground, call):
+    """Los aeropuertos a probar, en orden, con la fase de cada uno: [(aeropuerto, fase, km)]"""
+    aps = airports()
+    if not aps:
+        raise Fail("falta la lista de aeropuertos")
+    near = sorted(((km(lat, lon, a["lat"], a["lon"]), a) for a in aps), key=lambda x: x[0])
+    by = {a["icao"]: a for a in aps}
+    o, d = route(call)
+    out = []
+    def add(a, phase):
+        if a and all(a["icao"] != x[0]["icao"] for x in out):
+            out.append((a, phase, km(lat, lon, a["lat"], a["lon"])))
+    if ground or (alt is not None and alt < 300):
+        for dist, a in near[:3]:
+            if dist <= 15:
+                add(a, "ground" if ground else "tower")
+    descending, climbing = vs is not None and vs <= -120, vs is not None and vs >= 120
+    if alt is not None and alt < 1500:
+        for dist, a in near[:4]:
+            if dist <= 40:
+                add(a, "tower")
+    if alt is not None and alt < 6000:
+        if descending and d in by and km(lat, lon, by[d]["lat"], by[d]["lon"]) <= 250:
+            add(by[d], "approach")
+        if climbing and o in by and km(lat, lon, by[o]["lat"], by[o]["lon"]) <= 150:
+            add(by[o], "departure")
+        for dist, a in near[:8]:
+            if dist <= 120 and (a["large"] or dist <= 50):
+                add(a, "departure" if climbing else "approach")
+    # en crucero, o si nada cerca tiene emisora: el control de área de la zona, por el aeropuerto grande más cercano
+    for dist, a in near[:12]:
+        if a["large"] and dist <= 350:
+            add(a, "center")
+    if descending and d in by:
+        add(by[d], "approach")
+    return out[:5]
+
+
+def rank(rows, phase):
+    words = PHASE_WORDS.get(phase, [])
+    def score(s):
+        text = (clean(s.get("name")) + " " + clean(s.get("tags"))).lower()
+        for i, w in enumerate(words):
+            if re.search(r"\b" + re.escape(w), text):
+                return i
+        return len(words)
+    return sorted(rows, key=score)
+
+
+def cmd_atcfor(args):
+    """El control de tránsito aéreo de donde está un vuelo, para "Seguir vuelo" de la app Vuelos y la web:
+    x6100-iradio atcfor LAT LON ALT_M VS_M_MIN SUELO(0/1) [NUMERO_DE_VUELO]
+    Primero una línea "@OACI<TAB>nombre<TAB>ciudad<TAB>fase<TAB>km<TAB>lat<TAB>lon" y después las emisoras, como atc.
+    Prueba hasta 5 aeropuertos (la torre de donde está, la aproximación de su destino, el control de área de la
+    zona) y se queda con el primero que tiene emisoras; lo encontrado se recuerda media hora"""
+    if len(args) < 5:
+        raise Fail("faltan datos del vuelo")
+    num = lambda v: None if v in ("", "-", "null", "None") else float(v)
+    lat, lon, alt, vs = float(args[0]), float(args[1]), num(args[2]), num(args[3])
+    ground = args[4] == "1"
+    call = args[5] if len(args) > 5 else ""
+    cache = load_json(ATC_CACHE)
+    now = time.time()
+    tried = []
+    steps = plan(lat, lon, alt, vs, ground, call)
+    if not steps:
+        raise Fail("el vuelo está lejos de todo aeropuerto con vuelos regulares")
+    for a, phase, dist in steps:
+        key = a["icao"] + " " + phase
+        c = cache.get(key)
+        if c and now - c.get("t", 0) < ATC_CACHE_S:
+            rows = c["rows"]
+        else:
+            words = [w for w in re.split(r"[^\w]+", a["city"] + " " + a["name"]) if len(w) >= 5][:2]
+            try:
+                rows = rank(atc_rows(a["icao"], words), phase)
+            except Fail:
+                rows = []
+            rows = [{"name": clean(s.get("name")), "url": s.get("url_resolved") or s.get("url") or "",
+                     "codec": clean(s.get("codec")), "bitrate": s.get("bitrate") or "",
+                     "countrycode": clean(s.get("countrycode")), "hls": s.get("hls") or 0} for s in rows]
+            cache[key] = {"t": now, "rows": rows}
+        tried.append(a["icao"])
+        if rows:
+            save_json(ATC_CACHE, cache)
+            print("\t".join(["@" + a["icao"], a["name"], a["city"], phase, "%.0f" % dist,
+                              "%.4f" % a["lat"], "%.4f" % a["lon"]]))
+            print_list(rows)
+            return
+    save_json(ATC_CACHE, cache)
+    print("error no hay emisoras de control para " + " ".join(tried))
 
 
 def cmd_search(args):
@@ -387,10 +566,10 @@ def cmd_play(args):
 
 
 def main(argv):
-    cmds = {"country": cmd_country, "top": cmd_top, "search": cmd_search, "air": cmd_air, "atc": cmd_atc,
+    cmds = {"country": cmd_country, "top": cmd_top, "search": cmd_search, "air": cmd_air, "atc": cmd_atc, "atcfor": cmd_atcfor,
             "play": cmd_play}
     if len(argv) < 2 or argv[1] not in cmds:
-        print("uso: x6100-iradio country CC | top | air [CC] | atc OACI [nombre] | search TEXTO | play URL", file=sys.stderr)
+        print("uso: x6100-iradio country CC | top | air [CC] | atc OACI [nombre] | atcfor LAT LON ALT VS SUELO [VUELO] | search TEXTO | play URL", file=sys.stderr)
         return 2
     try:
         return cmds[argv[1]](argv[2:]) or 0

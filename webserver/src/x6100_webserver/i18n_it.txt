@@ -1551,3 +1551,16 @@ Could not read the logs	Impossibile leggere i registri
 No such discharge	Scarica inesistente
 points apart	punti
 The base's % stood still	Il % della base fermo
+# CX8ANM: Vuelos, seguir vuelo
+Follow flight	Segui volo
+: choose a flight in the list and the map goes with it, and every minute the radio looks for the air traffic control where it is (the tower on the ground or taking off, the approach of where it is going when it descends, the area control when cruising) and plays it.	: scegli un volo nell'elenco e la mappa lo segue; ogni minuto la radio cerca il controllo del traffico aereo dove si trova (la torre a terra o al decollo, l'avvicinamento della destinazione in discesa, il controllo d'area in crociera) e lo riproduce.
+Stop following	Smetti di seguire
+Flight out of sight of the receivers	Volo fuori dalla vista dei ricevitori
+Looking for the air traffic control where the flight is…	Cerco il controllo del traffico aereo dove si trova il volo…
+No air traffic control stream near the flight	Nessun flusso del controllo aereo vicino al volo
+Choose a flight in the list first	Scegli prima un volo dall'elenco
+Ground	Terra
+Tower	Torre
+Approach	Avvicinamento
+Departure	Partenza
+Area control	Controllo d'area

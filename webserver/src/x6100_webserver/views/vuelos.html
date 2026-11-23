@@ -18,6 +18,7 @@
 </style>
 <h2><svg class="i"><use href="#i-globe"/></svg>Flights</h2>
 <p class="sub">The aircraft over the chosen area, as on Flightradar: the same data as <b>APP → Flights</b> on the radio. It comes from open networks of volunteers’ ADS-B receivers (airplanes.live, adsb.lol): only the aircraft some nearby receiver picks up are seen. It updates every 15 seconds. <b>Tap the map</b> to centre it there.</p>
+<p class="sub"><b>Follow flight</b>: choose a flight in the list and the map goes with it, and every minute the radio looks for the air traffic control where it is (the tower on the ground or taking off, the approach of where it is going when it descends, the area control when cruising) and plays it.</p>
 <p class="sub"><b>Listen tower</b> plays the air traffic control of the airport here in the browser, over the internet. While it plays, the aircraft most likely talking to that tower (near the airport and low: approaching, departing or on the ground) are highlighted in blue with their registration.</p>
 
 <section class="dp-card">
@@ -30,6 +31,7 @@
 </div>
 <div class="fl-tower">
   <button id="fl-tw">Listen tower</button>
+  <button id="fl-follow">Follow flight</button>
   <select id="fl-tw-list" style="display:none"></select>
   <audio id="fl-audio" controls preload="none" style="display:none"></audio>
   <span class="status" id="fl-tw-status"></span>
@@ -50,7 +52,8 @@ const CENTERS = [
   ["SUSO Salto", -31.4385, -57.9853], ["SABE Aeroparque", -34.5592, -58.4156], ["SAEZ Ezeiza", -34.8222, -58.5358],
   ["SBPA Porto Alegre", -29.9939, -51.1714], ["Chosen on the map", null, null]
 ];
-const fl = {lat: -34.8384, lon: -56.0308, home: null, sel: null, markers: {}, circle: null, timer: null, busy: false};
+const fl = {lat: -34.8384, lon: -56.0308, home: null, sel: null, markers: {}, circle: null, timer: null, busy: false,
+            follow: null, ap: null, key: "", pending: "", tick: 0, searching: false};
 const sel = document.getElementById("fl-center");
 CENTERS.forEach((c, i) => { const o = document.createElement("option"); o.value = i; o.textContent = c[0]; sel.appendChild(o); });
 
@@ -90,6 +93,10 @@ function distKm(a1, o1, a2, o2) {
 function listening() { const au = document.getElementById("fl-audio"); return au.src && !au.paused; }
 function likely(a) {
   if (!listening()) return false;
+  if (fl.follow && fl.ap) {
+    const d = distKm(a.lat, a.lon, fl.ap.lat, fl.ap.lon);
+    return fl.ap.phase === "center" ? d <= 400 : d <= 90 && (a.ground || (a.alt_m != null && a.alt_m < 6000));
+  }
   const ap = airport();
   return ap && distKm(a.lat, a.lon, ap[1], ap[2]) <= 30 && (a.ground || (a.alt_m != null && a.alt_m < 3000));
 }
@@ -133,18 +140,19 @@ function update() {
   fl.busy = true;
   flStatus("Searching…");
   $.ajax({url: "/api/flights", data: {lat: fl.lat.toFixed(4), lon: fl.lon.toFixed(4), km: km()}, dataType: "json", timeout: 45000,
-    success: (d) => { render(d); flStatus("Aircraft: " + d.ac.length + " · " + d.time + " (" + d.src + ")"); },
+    success: (d) => { render(d); flStatus("Aircraft: " + d.ac.length + " · " + d.time + " (" + d.src + ")"); followAfter(d); },
     error: (x) => flStatus(x.responseJSON ? x.responseJSON.msg : "No data (is there internet?)", true),
     complete: () => { fl.busy = false; }});
 }
 sel.addEventListener("change", () => {
+  if (fl.follow) followOff();
   const c = CENTERS[sel.value];
   if (c[1] != null) setCenter(c[1], c[2], true);
   else if (sel.value == 0 && fl.home) setCenter(fl.home[0], fl.home[1], true);
 });
 $("#fl-km").on("change", () => setCenter(fl.lat, fl.lon, true));
 $("#fl-upd").on("click", update);
-map.on("click", (e) => { sel.value = CENTERS.length - 1; setCenter(e.latlng.lat, e.latlng.lng, false); });
+map.on("click", (e) => { if (fl.follow) followOff(); sel.value = CENTERS.length - 1; setCenter(e.latlng.lat, e.latlng.lng, false); });
 $.get("/api/flights/home", {}, (h) => {
   if (h.lat != null) { fl.home = [h.lat, h.lon]; CENTERS[0][0] = "My locator (" + h.qth + ")"; sel.options[0].textContent = CENTERS[0][0]; setCenter(h.lat, h.lon, true); }
   else { sel.value = 1; setCenter(CENTERS[1][1], CENTERS[1][2], true); }
@@ -177,5 +185,56 @@ $("#fl-tw").on("click", function() {
 $("#fl-tw-list").on("change", function() { twPlay(this.value); });
 au.addEventListener("playing", () => { twStatus("Listening: " + $("#fl-tw-list option:selected").text()); if (flLast) render(flLast); });
 au.addEventListener("pause", () => { if (flLast) render(flLast); });
-au.addEventListener("error", () => twStatus("This stream does not play in the browser: choose another", true));
+au.addEventListener("error", () => {
+  const ls = document.getElementById("fl-tw-list");
+  if (fl.follow && ls.selectedIndex + 1 < ls.options.length) { ls.selectedIndex++; twPlay(ls.value); return; }   /* following: the next one */
+  twStatus("This stream does not play in the browser: choose another", true);
+});
+
+/* ---- follow a flight: the air traffic control where it is ---- */
+const PHASES = {ground: "Ground", tower: "Tower", approach: "Approach", departure: "Departure", center: "Area control"};
+function followBtn() { $("#fl-follow").toggleClass("primary", !!fl.follow).text(fl.follow ? "Stop following" + " " + fl.follow.id : "Follow flight"); }
+function followOff() { fl.follow = null; fl.ap = null; fl.key = fl.pending = ""; followBtn(); if (flLast) render(flLast); }
+function followSearch(a) {
+  if (fl.searching) return;
+  fl.searching = true;
+  if (!fl.key) twStatus("Looking for the air traffic control where the flight is…");
+  $.ajax({url: "/api/flights/atcfor", dataType: "json", timeout: 95000,
+    data: {lat: a.lat, lon: a.lon, alt: a.alt_m, vs: a.vs, ground: a.ground ? 1 : 0, call: a.call || ""},
+    success: (r) => {
+      if (!fl.follow) return;
+      if (!r.towers.length) { if (!listening()) twStatus(r.msg || "No air traffic control stream near the flight", true); return; }
+      const key = r.airport.icao + " " + r.airport.phase;
+      if (key === fl.key && listening()) { fl.pending = ""; return; }
+      if (listening() && key !== fl.pending) { fl.pending = key; return; }   /* seen twice in a row before changing */
+      fl.pending = ""; fl.key = key; fl.ap = r.airport;
+      const ls = $("#fl-tw-list").empty();
+      r.towers.forEach((t) => ls.append($("<option>").val(t.url).text(r.airport.icao + " " + PHASES[r.airport.phase] + ": " + t.name)));
+      ls.show();
+      twPlay(r.towers[0].url);
+      if (flLast) render(flLast);
+    },
+    error: () => { if (!listening()) twStatus("No answer from the radio", true); },
+    complete: () => { fl.searching = false; }});
+}
+function followAfter(d) {
+  if (!fl.follow) return;
+  const a = d.ac.find((x) => x.hex === fl.follow.hex);
+  if (!a) { flStatus("Flight out of sight of the receivers" + ": " + fl.follow.id, true); return; }
+  fl.sel = a.hex;
+  fl.lat = a.lat; fl.lon = a.lon;   /* the next query, around it */
+  home.setLatLng([a.lat, a.lon]);
+  if (fl.circle) fl.circle.setLatLng([a.lat, a.lon]);
+  map.panTo([a.lat, a.lon]);
+  if (!fl.key || ++fl.tick % 4 === 0) followSearch(a);
+}
+$("#fl-follow").on("click", function() {
+  if (fl.follow) { followOff(); return; }
+  const a = flLast && flLast.ac.find((x) => x.hex === fl.sel);
+  if (!a) { twStatus("Choose a flight in the list first", true); return; }
+  fl.follow = {hex: a.hex, id: ident(a)}; fl.tick = 0; fl.key = fl.pending = "";
+  followBtn();
+  followAfter(flLast);
+  update();
+});
 </script>

@@ -1551,3 +1551,16 @@ Could not read the logs	Die Protokolle konnten nicht gelesen werden
 No such discharge	Keine solche Entladung
 points apart	Punkte
 The base's % stood still	Das % der Basis stand still
+# CX8ANM: Vuelos, seguir vuelo
+Follow flight	Flug folgen
+: choose a flight in the list and the map goes with it, and every minute the radio looks for the air traffic control where it is (the tower on the ground or taking off, the approach of where it is going when it descends, the area control when cruising) and plays it.	: wählen Sie einen Flug in der Liste, die Karte folgt ihm, und jede Minute sucht das Funkgerät die Flugsicherung, wo er ist (der Turm am Boden oder beim Start, der Anflug seines Ziels beim Sinken, die Bezirkskontrolle im Reiseflug) und spielt sie ab.
+Stop following	Nicht mehr folgen
+Flight out of sight of the receivers	Flug außer Sicht der Empfänger
+Looking for the air traffic control where the flight is…	Suche die Flugsicherung, wo der Flug ist…
+No air traffic control stream near the flight	Kein Flugsicherungs-Stream in der Nähe des Flugs
+Choose a flight in the list first	Wählen Sie zuerst einen Flug aus der Liste
+Ground	Boden
+Tower	Turm
+Approach	Anflug
+Departure	Abflug
+Area control	Bezirkskontrolle
