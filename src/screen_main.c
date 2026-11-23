@@ -1998,6 +1998,7 @@ static void power_off_cb(lv_timer_t *t) {
     msg_update_text_fmt("Power off");
     radio_set_charger(true);
     cluster_client_stop();
+    radio_poweroff_why("low battery");
     radio_poweroff();
 }
 

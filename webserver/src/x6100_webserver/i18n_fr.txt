@@ -1460,3 +1460,94 @@ The settings file cannot be deleted	Le fichier des réglages ne peut pas être s
 Folders cannot be deleted here, only files	Les dossiers ne peuvent pas être supprimés ici, seulement les fichiers
 Could not delete	Impossible de supprimer
 Download or delete files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc). A	Téléchargez ou supprimez des fichiers de la partition DATA de la carte SD (journal ADI, captures, enregistrements, etc). Un
+# CX8ANM: Battery page
+Each discharge on battery, from the radio's logs: how long it lasted, what drew on the pack and how the	Chaque décharge sur batterie, d'après les journaux de la radio : combien de temps elle a duré, ce qui a consommé la batterie et comment le
+% of our firmware	% de notre firmware
+compares with the	se compare au
+% of the radio's base	% de la carte de base de la radio
+. The base measures the voltage but no current, so what each thing drew is an	. La carte de base mesure la tension mais pas le courant : ce que chaque élément a consommé est donc une
+estimate	estimation
+Battery test	Test de batterie
+To measure the pack, once	Pour mesurer la batterie, une fois
+Charge the battery	Chargez la batterie
+full with the radio off	complètement, radio éteinte
+, until the charger stops.	, jusqu'à l'arrêt du chargeur.
+Unplug the supply and switch the radio on. Use it as usual: receive, WiFi, Bluetooth, whatever you do every day.	Débranchez l'alimentation et allumez la radio. Utilisez-la comme d'habitude : réception, WiFi, Bluetooth, ce que vous faites chaque jour.
+Leave it on until it	Laissez-la allumée jusqu'à ce qu'elle
+switches itself off	s'éteigne d'elle-même
+for lack of battery. Do not plug the supply in between.	faute de batterie. Ne branchez pas l'alimentation entre-temps.
+Plug the supply in, switch on and open this page: the discharge appears at the top.	Branchez l'alimentation, allumez et ouvrez cette page : la décharge apparaît en haut.
+Download the report	Télécharger le rapport
+to send it.	pour l'envoyer.
+Discharges	Décharges
+Newest first; click one to see it	La plus récente d'abord ; cliquez sur une pour la voir
+Start	Début
+From → to	De → à
+Ended	Fin
+Health	Santé
+No discharge on battery in the logs yet. Do the battery test above.	Aucune décharge sur batterie dans les journaux pour l'instant. Faites le test de batterie ci-dessus.
+Our % against the base's	Notre % face à celui de la carte de base
+Our firmware's %	% de notre firmware
+The base's %	% de la carte de base
+Voltage (right scale)	Tension (échelle de droite)
+Our % taken from the voltage	Notre % tiré de la tension
+Diagnosis	Diagnostic
+What the logs say about this discharge	Ce que disent les journaux de cette décharge
+What drew on the battery	Ce qui a consommé la batterie
+Estimate from the radio's load model	Estimation d'après le modèle de charge de la radio
+Programs that used the CPU	Programmes qui ont utilisé le processeur
+still on battery	toujours sur batterie
+switched off: low battery	éteinte : batterie faible
+switched off with the key	éteinte avec la touche
+the power went (the base's cut)	l'alimentation a été coupée (coupure de la carte de base)
+no power-off seen	aucune extinction enregistrée
+Receiver, screen and base	Récepteur, écran et carte de base
+Transmitting	Émission
+Bluetooth	Bluetooth
+BT headphones	Casque BT
+Screen brightness	Luminosité de l'écran
+CPU (programs)	Processeur (programmes)
+The battery lasted {v}% of what the radio's model expects for this use: the pack is worn and holds much less charge than a new one. Replacing the cells (2S 18650) is the fix.	La batterie a duré {v}% de ce que le modèle de la radio prévoit pour cet usage : elle est usée et stocke beaucoup moins qu'une neuve. La solution est de remplacer les cellules (2S 18650).
+The battery lasted {v}% of what the radio's model expects for this use: the pack has lost some capacity.	La batterie a duré {v}% de ce que le modèle de la radio prévoit pour cet usage : elle a perdu un peu de capacité.
+The battery lasted {v}% of what the radio's model expects for this use: the pack is fine.	La batterie a duré {v}% de ce que le modèle de la radio prévoit pour cet usage : elle est en bon état.
+The voltage fell under 7.4 V after only {v} min: a sign of cells with high internal resistance (aged or cold).	La tension est passée sous 7,4 V après seulement {v} min : signe de cellules à forte résistance interne (vieillies ou froides).
+WiFi was on {v}% of the time. Turning it off when you do not use it saves a little.	Le WiFi était allumé {v}% du temps. L'éteindre quand vous ne l'utilisez pas économise un peu.
+Bluetooth was on {v}% of the time with no headphones: turning it off saves a little.	Le Bluetooth était allumé {v}% du temps sans casque : l'éteindre économise un peu.
+The screen brightness was {v} on average: lowering it saves battery.	La luminosité de l'écran était de {v} en moyenne : la baisser économise la batterie.
+The CPU was busy {v}% of the time on average: the programs below kept it working (internet radio, DMR, decoders…).	Le processeur était occupé {v}% du temps en moyenne : les programmes ci-dessous le faisaient travailler (radio Internet, DMR, décodeurs…).
+{v} minutes of transmission: TX draws much more than receive.	{v} minutes d'émission : l'émission consomme bien plus que la réception.
+Our % and the base's were up to {v} points apart.	Notre % et celui de la carte de base ont différé jusqu'à {v} points.
+The base's % stood still for {v} min while the voltage fell: the base lost count of the charge.	Le % de la carte de base est resté figé {v} min pendant que la tension baissait : la carte a perdu le compte de la charge.
+Our % went down more evenly to the power-off than the base's (error {o} against {b} points).	Notre % a baissé plus régulièrement jusqu'à l'extinction que celui de la carte de base (erreur {o} contre {b} points).
+The base's % went down more evenly to the power-off than ours (error {b} against {o} points).	Le % de la carte de base a baissé plus régulièrement jusqu'à l'extinction que le nôtre (erreur {b} contre {o} points).
+Our % and the base's went down alike (error {o} and {b} points).	Notre % et celui de la carte de base ont baissé de façon semblable (erreur {o} et {b} points).
+The radio did not switch itself off in order: the power went at {v} V (the base's own cut).	La radio ne s'est pas éteinte proprement : l'alimentation a été coupée à {v} V (coupure propre de la carte de base).
+No record of CPU and programs for this discharge: it began before this version.	Aucun relevé du processeur et des programmes pour cette décharge : elle a commencé avant cette version.
+No reading of the battery yet.	Pas encore de mesure de la batterie.
+On the supply, charging	Sur l'alimentation, en charge
+On the supply	Sur l'alimentation
+On battery	Sur batterie
+Voltage	Tension
+Supply	Alimentation
+At the start	Au début
+At the end	À la fin
+Furthest apart	Écart maximal
+Our % from the voltage	Notre % d'après la tension
+of the time	du temps
+Error against an even fall to 0	Erreur par rapport à une baisse régulière jusqu'à 0
+This discharge is older than this version: only the base's % was logged.	Cette décharge est antérieure à cette version : seul le % de la carte de base a été enregistré.
+Nothing to note.	Rien à signaler.
+Lasted	Durée
+Expected for this use	Attendu pour cet usage
+A full pack, this use	Batterie pleine, cet usage
+WiFi on	WiFi allumé
+Bluetooth on	Bluetooth allumé
+CPU busy	Processeur occupé
+Temperature	Température
+Sound playing	Son en lecture
+No record of programs for this discharge.	Aucun relevé des programmes pour cette décharge.
+Reading the logs…	Lecture des journaux…
+Could not read the logs	Impossible de lire les journaux
+No such discharge	Décharge introuvable
+points apart	points
+The base's % stood still	Le % de la carte de base figé

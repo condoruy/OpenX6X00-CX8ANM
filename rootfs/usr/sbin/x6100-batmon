@@ -1,0 +1,171 @@
+#!/usr/bin/env python3
+# CX8ANM: what the radio does, minute by minute, for the battery page of the web (battery_web.py).
+#
+# The base gives the battery's voltage and its own %, no current: the GUI logs those (/mnt/battery_log.csv).
+# This adds what draws on the pack besides the receiver, once a minute into /mnt/battery_usage.csv:
+#   time, cpu_pct (all of the CPU busy), load1, temp_c (the SoC), mem_free_mb, wifi_dbm (empty: WiFi not joined),
+#   bt_conn (a Bluetooth device connected), audio (a sound card playing: BT headphones, internet radio...),
+#   procs: the programs that took the most CPU in the minute, "name:pct;name:pct..."
+# A line "start" when it starts and "stop" when it is stopped (the radio powered off in order). After a power-off
+# with no "stop" the power went at once. Past 1 MB the file goes to battery_usage.csv.1.
+#
+#   x6100-batmon run     the loop (S96batmon starts it)
+#   x6100-batmon once    one line now, printed, for a test
+import glob
+import os
+import signal
+import sys
+import time
+
+DATA = os.environ.get("X6100_DATA", "/mnt")
+OUT = os.path.join(DATA, "battery_usage.csv")
+HEADER = "time,cpu_pct,load1,temp_c,mem_free_mb,wifi_dbm,bt_conn,audio,procs\n"
+PERIOD = 60
+
+
+def read(path, default=""):
+    try:
+        with open(path) as f:
+            return f.read()
+    except OSError:
+        return default
+
+
+def cpu_total():
+    f = read("/proc/stat").split("\n", 1)[0].split()
+    if len(f) < 5 or f[0] != "cpu":
+        return 0, 0
+    v = [int(x) for x in f[1:]]
+    idle = v[3] + (v[4] if len(v) > 4 else 0)
+    return sum(v), idle
+
+
+def procs():
+    """{name: CPU ticks so far} of the programs running, by name (several of one name added)"""
+    out = {}
+    for d in glob.glob("/proc/[0-9]*/stat"):
+        s = read(d)
+        if not s:
+            continue
+        try:
+            name = s[s.index("(") + 1:s.rindex(")")]
+            f = s[s.rindex(")") + 2:].split()
+            ticks = int(f[11]) + int(f[12])
+        except (ValueError, IndexError):
+            continue
+        if name in ("python3", "python", "sh"):          # the helpers are scripts: their name, not python's
+            cmd = read(d[:-4] + "cmdline").split("\0")
+            for c in cmd[1:3]:
+                if c and not c.startswith("-"):
+                    name = os.path.basename(c)
+                    break
+        out[name] = out.get(name, 0) + ticks
+    return out
+
+
+def temp_c():
+    vals = []
+    for z in glob.glob("/sys/class/thermal/thermal_zone*/temp"):
+        try:
+            vals.append(int(read(z).strip()) / 1000.0)
+        except ValueError:
+            pass
+    return "%.0f" % max(vals) if vals else ""
+
+
+def mem_free_mb():
+    for line in read("/proc/meminfo").splitlines():
+        if line.startswith("MemAvailable:"):
+            return str(int(line.split()[1]) // 1024)
+    return ""
+
+
+def wifi_dbm():
+    for line in read("/proc/net/wireless").splitlines()[2:]:
+        f = line.split()
+        if len(f) >= 4:
+            try:
+                return "%.0f" % float(f[3].rstrip("."))
+            except ValueError:
+                pass
+    return ""
+
+
+def bt_conn():
+    # a connected device shows as an ACL link under the adapter
+    for c in glob.glob("/sys/class/bluetooth/hci0:*"):
+        return "1"
+    return "1" if os.path.exists("/tmp/btaudio-hp") else "0"
+
+
+def audio():
+    for s in glob.glob("/proc/asound/card*/pcm*p/sub*/status"):
+        if "RUNNING" in read(s):
+            return "1"
+    return "0"
+
+
+def write(line):
+    try:
+        fresh = not os.path.exists(OUT)
+        if not fresh and os.path.getsize(OUT) > 1024 * 1024:
+            os.replace(OUT, OUT + ".1")
+            fresh = True
+        with open(OUT, "a") as f:
+            if fresh:
+                f.write(HEADER)
+            f.write(line)
+            f.flush()
+            os.fsync(f.fileno())
+    except OSError:
+        pass
+
+
+class Sampler:
+    def __init__(self):
+        self.t, self.idle = cpu_total()
+        self.p = procs()
+
+    def line(self):
+        t, idle = cpu_total()
+        p = procs()
+        dt = max(t - self.t, 1)
+        busy = 100.0 * (dt - (idle - self.idle)) / dt
+        # ticks of all the CPUs in the interval: dt; a program's share of the whole
+        top = sorted(((v - self.p.get(k, 0), k) for k, v in p.items()), reverse=True)
+        tops = ";".join("%s:%.1f" % (k.replace(",", " ").replace(";", " ").replace(":", " "), 100.0 * d / dt)
+                        for d, k in top[:6] if d > 0)
+        self.t, self.idle, self.p = t, idle, p
+        load = read("/proc/loadavg").split()
+        return "%d,%.1f,%s,%s,%s,%s,%s,%s,%s\n" % (time.time(), busy, load[0] if load else "", temp_c(),
+                                                   mem_free_mb(), wifi_dbm(), bt_conn(), audio(), tops)
+
+
+def run():
+    stop = []
+    signal.signal(signal.SIGTERM, lambda *a: stop.append(1))
+    signal.signal(signal.SIGINT, lambda *a: stop.append(1))
+    write("%d,start\n" % time.time())
+    s = Sampler()
+    while not stop:
+        end = time.time() + PERIOD
+        while not stop and time.time() < end:
+            time.sleep(1)
+        if stop:
+            break
+        write(s.line())
+    write("%d,stop\n" % time.time())
+
+
+def main():
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "run"
+    if cmd == "once":
+        s = Sampler()
+        time.sleep(2)
+        sys.stdout.write(HEADER + s.line())
+    else:
+        run()
+
+
+if __name__ == "__main__":
+    main()

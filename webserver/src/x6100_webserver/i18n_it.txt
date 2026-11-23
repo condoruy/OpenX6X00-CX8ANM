@@ -1460,3 +1460,94 @@ The settings file cannot be deleted	Il file delle impostazioni non si può cance
 Folders cannot be deleted here, only files	Qui non si possono cancellare cartelle, solo file
 Could not delete	Impossibile cancellare
 Download or delete files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc). A	Scarica o cancella file della partizione DATA della scheda SD (log ADI, schermate, registrazioni, ecc). Un
+# CX8ANM: Battery page
+Each discharge on battery, from the radio's logs: how long it lasted, what drew on the pack and how the	Ogni scarica a batteria, dai registri della radio: quanto è durata, cosa ha consumato la batteria e come il
+% of our firmware	% del nostro firmware
+compares with the	si confronta con il
+% of the radio's base	% della scheda base della radio
+. The base measures the voltage but no current, so what each thing drew is an	. La base misura la tensione ma non la corrente, quindi ciò che ha consumato ogni parte è una
+estimate	stima
+Battery test	Test della batteria
+To measure the pack, once	Per misurare la batteria, una volta
+Charge the battery	Carica la batteria
+full with the radio off	completamente a radio spenta
+, until the charger stops.	, finché il caricatore si ferma.
+Unplug the supply and switch the radio on. Use it as usual: receive, WiFi, Bluetooth, whatever you do every day.	Scollega l'alimentatore e accendi la radio. Usala come sempre: ricezione, WiFi, Bluetooth, quello che fai ogni giorno.
+Leave it on until it	Lasciala accesa finché
+switches itself off	si spegne da sola
+for lack of battery. Do not plug the supply in between.	per batteria scarica. Non collegare l'alimentatore nel frattempo.
+Plug the supply in, switch on and open this page: the discharge appears at the top.	Collega l'alimentatore, accendi e apri questa pagina: la scarica appare in cima.
+Download the report	Scarica il rapporto
+to send it.	per inviarlo.
+Discharges	Scariche
+Newest first; click one to see it	La più recente prima; clicca su una per vederla
+Start	Inizio
+From → to	Da → a
+Ended	Fine
+Health	Salute
+No discharge on battery in the logs yet. Do the battery test above.	Ancora nessuna scarica a batteria nei registri. Fai il test della batteria qui sopra.
+Our % against the base's	Il nostro % contro quello della base
+Our firmware's %	% del nostro firmware
+The base's %	% della base
+Voltage (right scale)	Tensione (scala destra)
+Our % taken from the voltage	Il nostro % dalla tensione
+Diagnosis	Diagnosi
+What the logs say about this discharge	Cosa dicono i registri di questa scarica
+What drew on the battery	Cosa ha consumato la batteria
+Estimate from the radio's load model	Stima dal modello di carico della radio
+Programs that used the CPU	Programmi che hanno usato la CPU
+still on battery	ancora a batteria
+switched off: low battery	spenta: batteria scarica
+switched off with the key	spenta con il tasto
+the power went (the base's cut)	l'alimentazione è venuta meno (taglio della base)
+no power-off seen	nessuno spegnimento registrato
+Receiver, screen and base	Ricevitore, schermo e base
+Transmitting	Trasmissione
+Bluetooth	Bluetooth
+BT headphones	Cuffie BT
+Screen brightness	Luminosità dello schermo
+CPU (programs)	CPU (programmi)
+The battery lasted {v}% of what the radio's model expects for this use: the pack is worn and holds much less charge than a new one. Replacing the cells (2S 18650) is the fix.	La batteria è durata il {v}% di quanto il modello della radio prevede per questo uso: è usurata e tiene molta meno carica di una nuova. La soluzione è sostituire le celle (2S 18650).
+The battery lasted {v}% of what the radio's model expects for this use: the pack has lost some capacity.	La batteria è durata il {v}% di quanto il modello della radio prevede per questo uso: ha perso un po' di capacità.
+The battery lasted {v}% of what the radio's model expects for this use: the pack is fine.	La batteria è durata il {v}% di quanto il modello della radio prevede per questo uso: è in buono stato.
+The voltage fell under 7.4 V after only {v} min: a sign of cells with high internal resistance (aged or cold).	La tensione è scesa sotto 7,4 V dopo solo {v} min: segno di celle con alta resistenza interna (invecchiate o fredde).
+WiFi was on {v}% of the time. Turning it off when you do not use it saves a little.	Il WiFi era acceso il {v}% del tempo. Spegnerlo quando non lo usi fa risparmiare un po'.
+Bluetooth was on {v}% of the time with no headphones: turning it off saves a little.	Il Bluetooth era acceso il {v}% del tempo senza cuffie: spegnerlo fa risparmiare un po'.
+The screen brightness was {v} on average: lowering it saves battery.	La luminosità dello schermo era {v} in media: abbassarla fa risparmiare batteria.
+The CPU was busy {v}% of the time on average: the programs below kept it working (internet radio, DMR, decoders…).	La CPU è stata occupata in media il {v}% del tempo: i programmi qui sotto la tenevano al lavoro (radio Internet, DMR, decoder…).
+{v} minutes of transmission: TX draws much more than receive.	{v} minuti di trasmissione: trasmettere consuma molto più che ricevere.
+Our % and the base's were up to {v} points apart.	Il nostro % e quello della base sono arrivati a differire di {v} punti.
+The base's % stood still for {v} min while the voltage fell: the base lost count of the charge.	Il % della base è rimasto fermo {v} min mentre la tensione scendeva: la base ha perso il conto della carica.
+Our % went down more evenly to the power-off than the base's (error {o} against {b} points).	Il nostro % è sceso in modo più regolare fino allo spegnimento rispetto a quello della base (errore {o} contro {b} punti).
+The base's % went down more evenly to the power-off than ours (error {b} against {o} points).	Il % della base è sceso in modo più regolare fino allo spegnimento rispetto al nostro (errore {b} contro {o} punti).
+Our % and the base's went down alike (error {o} and {b} points).	Il nostro % e quello della base sono scesi in modo simile (errore {o} e {b} punti).
+The radio did not switch itself off in order: the power went at {v} V (the base's own cut).	La radio non si è spenta in modo ordinato: l'alimentazione è venuta meno a {v} V (taglio proprio della base).
+No record of CPU and programs for this discharge: it began before this version.	Nessuna registrazione di CPU e programmi per questa scarica: è iniziata prima di questa versione.
+No reading of the battery yet.	Ancora nessuna lettura della batteria.
+On the supply, charging	All'alimentatore, in carica
+On the supply	All'alimentatore
+On battery	A batteria
+Voltage	Tensione
+Supply	Alimentatore
+At the start	All'inizio
+At the end	Alla fine
+Furthest apart	Massima differenza
+Our % from the voltage	Il nostro % dalla tensione
+of the time	del tempo
+Error against an even fall to 0	Errore rispetto a una discesa regolare a 0
+This discharge is older than this version: only the base's % was logged.	Questa scarica è precedente a questa versione: è stato registrato solo il % della base.
+Nothing to note.	Niente da segnalare.
+Lasted	Durata
+Expected for this use	Atteso per questo uso
+A full pack, this use	Batteria piena, questo uso
+WiFi on	WiFi acceso
+Bluetooth on	Bluetooth acceso
+CPU busy	CPU occupata
+Temperature	Temperatura
+Sound playing	Audio in riproduzione
+No record of programs for this discharge.	Nessuna registrazione dei programmi per questa scarica.
+Reading the logs…	Lettura dei registri…
+Could not read the logs	Impossibile leggere i registri
+No such discharge	Scarica inesistente
+points apart	punti
+The base's % stood still	Il % della base fermo

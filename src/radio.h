@@ -120,6 +120,8 @@ bool radio_start_swrscan(int32_t from);
 void radio_stop_swrscan();
 
 void radio_poweroff();
+/* CX8ANM: why the next radio_poweroff, for the battery page (battery_usage.csv): "low battery", else the key */
+void radio_poweroff_why(const char *why);
 /* PTT from the GUI. False: a key down refused where the radio may not transmit (the screen says why, #121), or while
  * the base sends no data (#152) */
 bool radio_set_ptt(bool tx);

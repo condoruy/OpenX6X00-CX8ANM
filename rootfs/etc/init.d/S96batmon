@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# CX8ANM: x6100-batmon, what the radio does minute by minute (CPU, programs, WiFi, Bluetooth, audio), for the
+# battery page of the web: with the GUI's battery log it shows what drew on the pack in a discharge.
+#
+
+PIDFILE=/var/run/x6100-batmon.pid
+
+case "$1" in
+  start)
+    printf "Battery monitor: "
+    start-stop-daemon -S -b -q -m -p "$PIDFILE" -x /usr/sbin/x6100-batmon -- run && echo "OK"
+    ;;
+  stop)
+    # TERM: it writes its "stop" line, the sign of a power-off in order
+    start-stop-daemon -K -q -s TERM -p "$PIDFILE"
+    sleep 1
+    rm -f "$PIDFILE"
+    ;;
+  restart)
+    "$0" stop
+    "$0" start
+    ;;
+esac
+
+exit 0

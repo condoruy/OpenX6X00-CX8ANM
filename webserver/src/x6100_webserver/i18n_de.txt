@@ -1460,3 +1460,94 @@ The settings file cannot be deleted	Die Einstellungsdatei kann nicht gelöscht w
 Folders cannot be deleted here, only files	Ordner können hier nicht gelöscht werden, nur Dateien
 Could not delete	Konnte nicht gelöscht werden
 Download or delete files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc). A	Dateien der DATA-Partition der SD-Karte herunterladen oder löschen (ADI-Log, Bildschirmfotos, Aufnahmen usw.). Eine
+# CX8ANM: Battery page
+Each discharge on battery, from the radio's logs: how long it lasted, what drew on the pack and how the	Jede Entladung im Akkubetrieb aus den Protokollen des Funkgeräts: wie lange sie dauerte, was den Akku belastete und wie sich der
+% of our firmware	% unserer Firmware
+compares with the	zum
+% of the radio's base	% der Basisplatine des Funkgeräts verhält
+. The base measures the voltage but no current, so what each thing drew is an	. Die Basis misst die Spannung, aber keinen Strom; was jedes Teil verbrauchte, ist daher eine
+estimate	Schätzung
+Battery test	Akkutest
+To measure the pack, once	Um den Akku einmal zu messen
+Charge the battery	Laden Sie den Akku
+full with the radio off	voll bei ausgeschaltetem Funkgerät
+, until the charger stops.	, bis das Ladegerät stoppt.
+Unplug the supply and switch the radio on. Use it as usual: receive, WiFi, Bluetooth, whatever you do every day.	Trennen Sie das Netzteil und schalten Sie das Funkgerät ein. Benutzen Sie es wie gewohnt: Empfang, WiFi, Bluetooth, was Sie täglich tun.
+Leave it on until it	Lassen Sie es eingeschaltet, bis es sich
+switches itself off	selbst ausschaltet
+for lack of battery. Do not plug the supply in between.	weil der Akku leer ist. Schließen Sie das Netzteil zwischendurch nicht an.
+Plug the supply in, switch on and open this page: the discharge appears at the top.	Schließen Sie das Netzteil an, schalten Sie ein und öffnen Sie diese Seite: die Entladung erscheint oben.
+Download the report	Bericht herunterladen
+to send it.	um ihn zu senden.
+Discharges	Entladungen
+Newest first; click one to see it	Neueste zuerst; klicken Sie eine an, um sie zu sehen
+Start	Beginn
+From → to	Von → bis
+Ended	Ende
+Health	Zustand
+No discharge on battery in the logs yet. Do the battery test above.	Noch keine Entladung im Akkubetrieb in den Protokollen. Machen Sie den Akkutest oben.
+Our % against the base's	Unser % gegen das der Basis
+Our firmware's %	% unserer Firmware
+The base's %	% der Basis
+Voltage (right scale)	Spannung (rechte Skala)
+Our % taken from the voltage	Unser % aus der Spannung
+Diagnosis	Diagnose
+What the logs say about this discharge	Was die Protokolle über diese Entladung sagen
+What drew on the battery	Was den Akku belastete
+Estimate from the radio's load model	Schätzung aus dem Lastmodell des Funkgeräts
+Programs that used the CPU	Programme, die die CPU nutzten
+still on battery	noch im Akkubetrieb
+switched off: low battery	ausgeschaltet: Akku schwach
+switched off with the key	mit der Taste ausgeschaltet
+the power went (the base's cut)	die Stromversorgung fiel aus (Abschaltung der Basis)
+no power-off seen	kein Ausschalten erfasst
+Receiver, screen and base	Empfänger, Bildschirm und Basis
+Transmitting	Senden
+Bluetooth	Bluetooth
+BT headphones	BT-Kopfhörer
+Screen brightness	Bildschirmhelligkeit
+CPU (programs)	CPU (Programme)
+The battery lasted {v}% of what the radio's model expects for this use: the pack is worn and holds much less charge than a new one. Replacing the cells (2S 18650) is the fix.	Der Akku hielt {v}% dessen, was das Modell des Funkgeräts für diese Nutzung erwartet: er ist verschlissen und speichert viel weniger als ein neuer. Abhilfe: die Zellen (2S 18650) ersetzen.
+The battery lasted {v}% of what the radio's model expects for this use: the pack has lost some capacity.	Der Akku hielt {v}% dessen, was das Modell des Funkgeräts für diese Nutzung erwartet: er hat etwas Kapazität verloren.
+The battery lasted {v}% of what the radio's model expects for this use: the pack is fine.	Der Akku hielt {v}% dessen, was das Modell des Funkgeräts für diese Nutzung erwartet: er ist in Ordnung.
+The voltage fell under 7.4 V after only {v} min: a sign of cells with high internal resistance (aged or cold).	Die Spannung fiel schon nach {v} min unter 7,4 V: ein Zeichen für Zellen mit hohem Innenwiderstand (gealtert oder kalt).
+WiFi was on {v}% of the time. Turning it off when you do not use it saves a little.	WiFi war {v}% der Zeit an. Es auszuschalten, wenn Sie es nicht nutzen, spart etwas.
+Bluetooth was on {v}% of the time with no headphones: turning it off saves a little.	Bluetooth war {v}% der Zeit ohne Kopfhörer an: es auszuschalten spart etwas.
+The screen brightness was {v} on average: lowering it saves battery.	Die Bildschirmhelligkeit lag im Schnitt bei {v}: sie zu senken spart Akku.
+The CPU was busy {v}% of the time on average: the programs below kept it working (internet radio, DMR, decoders…).	Die CPU war im Schnitt {v}% der Zeit beschäftigt: die Programme unten hielten sie am Arbeiten (Internetradio, DMR, Decoder…).
+{v} minutes of transmission: TX draws much more than receive.	{v} Minuten Senden: Senden braucht viel mehr als Empfang.
+Our % and the base's were up to {v} points apart.	Unser % und das der Basis lagen bis zu {v} Punkte auseinander.
+The base's % stood still for {v} min while the voltage fell: the base lost count of the charge.	Das % der Basis stand {v} min still, während die Spannung fiel: die Basis hat die Ladung falsch gezählt.
+Our % went down more evenly to the power-off than the base's (error {o} against {b} points).	Unser % fiel gleichmäßiger bis zum Ausschalten als das der Basis (Fehler {o} gegen {b} Punkte).
+The base's % went down more evenly to the power-off than ours (error {b} against {o} points).	Das % der Basis fiel gleichmäßiger bis zum Ausschalten als unseres (Fehler {b} gegen {o} Punkte).
+Our % and the base's went down alike (error {o} and {b} points).	Unser % und das der Basis fielen ähnlich (Fehler {o} und {b} Punkte).
+The radio did not switch itself off in order: the power went at {v} V (the base's own cut).	Das Funkgerät schaltete nicht geordnet ab: die Spannung fiel bei {v} V aus (Abschaltung der Basis selbst).
+No record of CPU and programs for this discharge: it began before this version.	Keine Aufzeichnung von CPU und Programmen für diese Entladung: sie begann vor dieser Version.
+No reading of the battery yet.	Noch keine Messung des Akkus.
+On the supply, charging	Am Netzteil, lädt
+On the supply	Am Netzteil
+On battery	Im Akkubetrieb
+Voltage	Spannung
+Supply	Netzteil
+At the start	Zu Beginn
+At the end	Am Ende
+Furthest apart	Größter Abstand
+Our % from the voltage	Unser % aus der Spannung
+of the time	der Zeit
+Error against an even fall to 0	Fehler gegen einen gleichmäßigen Abfall auf 0
+This discharge is older than this version: only the base's % was logged.	Diese Entladung ist älter als diese Version: nur das % der Basis wurde aufgezeichnet.
+Nothing to note.	Nichts zu bemerken.
+Lasted	Dauer
+Expected for this use	Erwartet für diese Nutzung
+A full pack, this use	Voller Akku, diese Nutzung
+WiFi on	WiFi an
+Bluetooth on	Bluetooth an
+CPU busy	CPU belegt
+Temperature	Temperatur
+Sound playing	Ton läuft
+No record of programs for this discharge.	Keine Aufzeichnung von Programmen für diese Entladung.
+Reading the logs…	Protokolle werden gelesen…
+Could not read the logs	Die Protokolle konnten nicht gelesen werden
+No such discharge	Keine solche Entladung
+points apart	Punkte
+The base's % stood still	Das % der Basis stand still

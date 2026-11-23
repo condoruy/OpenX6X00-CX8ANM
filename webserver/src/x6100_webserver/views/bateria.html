@@ -1,0 +1,203 @@
+% rebase('base.html', title='Battery')
+<h2><svg class="i"><use href="#i-pulse"/></svg>Battery</h2>
+<p class="sub">Each discharge on battery, from the radio's logs: how long it lasted, what drew on the pack and how the <b>% of our firmware</b> compares with the <b>% of the radio's base</b>. The base measures the voltage but no current, so what each thing drew is an <b>estimate</b>.</p>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-list"/></svg></span><div><h3>Battery test</h3><p>To measure the pack, once</p></div></div>
+<div class="dp-body">
+<ol class="sub" style="margin-top: 0">
+<li>Charge the battery <b>full with the radio off</b>, until the charger stops.</li>
+<li>Unplug the supply and switch the radio on. Use it as usual: receive, WiFi, Bluetooth, whatever you do every day.</li>
+<li>Leave it on until it <b>switches itself off</b> for lack of battery. Do not plug the supply in between.</li>
+<li>Plug the supply in, switch on and open this page: the discharge appears at the top. <b>Download the report</b> to send it.</li>
+</ol>
+<div class="actions"><a id="b-report" href="/bateria/informe.txt" download style="text-decoration:none"><button type="button" class="primary">Download the report</button></a> <button type="button" id="b-reload">Update</button> <span class="status" id="b-status"></span></div>
+</div>
+</section>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-pulse"/></svg></span><div><h3>Now</h3><p id="b-now-sub"></p></div></div>
+<div class="dp-body" id="b-now"><p class="sub" style="margin:0">Loading…</p></div>
+</section>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-clock"/></svg></span><div><h3>Discharges</h3><p>Newest first; click one to see it</p></div></div>
+<div class="dp-body" style="overflow-x:auto"><table class="b-table" id="b-runs"><thead><tr><th>Start</th><th>On</th><th>From → to</th><th>Ended</th><th>Health</th></tr></thead><tbody></tbody></table>
+<p class="sub" id="b-none" style="display:none;margin:0">No discharge on battery in the logs yet. Do the battery test above.</p></div>
+</section>
+
+<div id="b-detail" style="display:none">
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-pulse"/></svg></span><div><h3>Our % against the base's</h3><p id="b-d-title"></p></div></div>
+<div class="dp-body">
+<svg id="b-chart" viewBox="0 0 800 280" style="width:100%;height:auto;background:#0b1422;border-radius:8px"></svg>
+<p class="sub" style="margin:6px 0 0"><span style="color:#4fc3f7">■</span> Our firmware's % &nbsp; <span style="color:#ffb74d">■</span> The base's % &nbsp; <span style="color:#81c784">■</span> Voltage (right scale) &nbsp; <span style="color:#e57373">▮</span> Our % taken from the voltage</p>
+<div id="b-cmp" style="margin-top:10px"></div>
+</div>
+</section>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-bell"/></svg></span><div><h3>Diagnosis</h3><p>What the logs say about this discharge</p></div></div>
+<div class="dp-body"><ul id="b-find" class="sub" style="margin:0;padding-left:1.2em"></ul></div>
+</section>
+
+<section class="dp-card">
+<div class="dp-head"><span class="dp-ico"><svg class="i"><use href="#i-cpu"/></svg></span><div><h3>What drew on the battery</h3><p>Estimate from the radio's load model</p></div></div>
+<div class="dp-body">
+<div id="b-parts"></div>
+<div id="b-on" style="margin-top:12px"></div>
+<h4 style="margin:14px 0 6px">Programs that used the CPU</h4>
+<div id="b-procs" class="sub"></div>
+</div>
+</section>
+</div>
+
+<style>
+.b-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.b-table th, .b-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #1a283c; white-space: nowrap; }
+#b-runs tbody tr { cursor: pointer; }
+#b-runs tbody tr:hover, #b-runs tbody tr.sel { background: #13233a; }
+.b-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 14px; }
+.b-bar span:first-child { width: 14em; flex: none; }
+.b-bar .b-fill { height: 12px; background: #4fc3f7; border-radius: 3px; }
+.b-cmp-t th, .b-cmp-t td { white-space: normal; }
+.b-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(12em, 1fr)); gap: 6px 14px; font-size: 14px; }
+.b-kv div b { display: block; font-size: 18px; }
+.b-good { color: #81c784; } .b-warn { color: #ffb74d; } .b-bad { color: #e57373; }
+@media (max-width: 600px) { .b-bar span:first-child { width: 9em; } }
+</style>
+
+<script>
+const ENDS = {running: "still on battery", lowbat: "switched off: low battery", keyoff: "switched off with the key",
+              cut: "the power went (the base's cut)", unknown: "no power-off seen"};
+const PARTS = {rx: "Receiver, screen and base", tx: "Transmitting", wifi: "WiFi", bt: "Bluetooth", hp: "BT headphones",
+               bl: "Screen brightness", cpu: "CPU (programs)"};
+const FIND = {
+  worn: ["b-bad", "The battery lasted {v}% of what the radio's model expects for this use: the pack is worn and holds much less charge than a new one. Replacing the cells (2S 18650) is the fix."],
+  tired: ["b-warn", "The battery lasted {v}% of what the radio's model expects for this use: the pack has lost some capacity."],
+  healthy: ["b-good", "The battery lasted {v}% of what the radio's model expects for this use: the pack is fine."],
+  sag: ["b-warn", "The voltage fell under 7.4 V after only {v} min: a sign of cells with high internal resistance (aged or cold)."],
+  wifi: ["", "WiFi was on {v}% of the time. Turning it off when you do not use it saves a little."],
+  bt_idle: ["", "Bluetooth was on {v}% of the time with no headphones: turning it off saves a little."],
+  bright: ["", "The screen brightness was {v} on average: lowering it saves battery."],
+  cpu: ["b-warn", "The CPU was busy {v}% of the time on average: the programs below kept it working (internet radio, DMR, decoders…)."],
+  tx: ["", "{v} minutes of transmission: TX draws much more than receive."],
+  apart: ["b-warn", "Our % and the base's were up to {v} points apart."],
+  stuck: ["b-warn", "The base's % stood still for {v} min while the voltage fell: the base lost count of the charge."],
+  better_ours: ["b-good", "Our % went down more evenly to the power-off than the base's (error {o} against {b} points)."],
+  better_base: ["b-warn", "The base's % went down more evenly to the power-off than ours (error {b} against {o} points)."],
+  both_alike: ["", "Our % and the base's went down alike (error {o} and {b} points)."],
+  cut: ["b-warn", "The radio did not switch itself off in order: the power went at {v} V (the base's own cut)."],
+  no_usage: ["", "No record of CPU and programs for this discharge: it began before this version."]
+};
+let RUNS = [];
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])); }
+function hm(min) { min = Math.round(min || 0); return Math.floor(min / 60) + " h " + String(min % 60).padStart(2, "0") + " min"; }
+function dt(t) { const d = new Date(t * 1000); return d.toLocaleDateString() + " " + d.toTimeString().slice(0, 5); }
+function bStatus(s, bad) { $("#b-status").text(s).toggleClass("error", !!bad); }
+
+function renderNow(n) {
+  if (!n) { $("#b-now").html('<p class="sub" style="margin:0">' + esc("No reading of the battery yet.") + '</p>'); return; }
+  const ext = n.ext >= 3;
+  $("#b-now-sub").text(ext ? (n.chg ? "On the supply, charging" : "On the supply") : "On battery");
+  $("#b-now").html('<div class="b-kv">' +
+    '<div>' + esc("Voltage") + '<b>' + n.v.toFixed(1) + ' V</b></div>' +
+    '<div>' + esc("Our firmware's %") + '<b>' + (n.ours != null ? n.ours + " %" : "–") + '</b></div>' +
+    '<div>' + esc("The base's %") + '<b>' + n.base + ' %</b></div>' +
+    (ext ? '<div>' + esc("Supply") + '<b>' + n.ext.toFixed(1) + ' V</b></div>' : '') + '</div>');
+}
+
+function renderList() {
+  const tb = $("#b-runs tbody").empty();
+  $("#b-none").toggle(!RUNS.length);
+  RUNS.forEach(function(r, i) {
+    const h = r.health != null ? '<span class="' + (r.health < 60 ? "b-bad" : r.health < 80 ? "b-warn" : "b-good") + '">' + r.health + ' %</span>' : "–";
+    $('<tr>').html('<td>' + esc(dt(r.start)) + '</td><td>' + hm(r.on_min) + '</td><td>' + r.first.ours + ' % → ' + r.last.ours + ' % · ' +
+      r.first.v.toFixed(1) + ' → ' + r.last.v.toFixed(1) + ' V</td><td>' + esc(ENDS[r.end_how] || r.end_how) + (r.complete ? " ✔" : "") + '</td><td>' + h + '</td>')
+      .on("click", function() { show(i); }).appendTo(tb);
+  });
+}
+
+function chart(r) {
+  const svg = document.getElementById("b-chart"), W = 800, H = 280, L = 42, R = 46, T = 12, B = 30;
+  const pts = r.points || [];
+  let el = 0, xs = [];
+  pts.forEach(function(p, i) { if (i) { const d = p.t - pts[i - 1].t; el += d <= 180 ? d : 60; } xs.push(el); });
+  const tot = Math.max(el, 60);
+  const x = s => L + (W - L - R) * s / tot, yp = v => T + (H - T - B) * (1 - v / 100), yv = v => T + (H - T - B) * (1 - (v - 6) / 2.6);
+  let g = "";
+  for (let p = 0; p <= 100; p += 25) g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yp(p) + '" y2="' + yp(p) + '" stroke="#1a283c"/><text x="' + (L - 6) + '" y="' + (yp(p) + 4) + '" fill="#8aa" font-size="11" text-anchor="end">' + p + '%</text>';
+  for (let v = 6; v <= 8.6; v += 0.5) g += '<text x="' + (W - R + 6) + '" y="' + (yv(v) + 4) + '" fill="#81c784" font-size="11">' + v.toFixed(1) + 'V</text>';
+  const hours = tot / 3600, step = hours > 8 ? 2 : hours > 3 ? 1 : 0.5;
+  for (let h = 0; h <= hours; h += step) g += '<text x="' + x(h * 3600) + '" y="' + (H - 10) + '" fill="#8aa" font-size="11" text-anchor="middle">' + h + 'h</text>';
+  pts.forEach(function(p, i) { if (p.by_volts) g += '<rect x="' + x(xs[i]) + '" y="' + (H - B) + '" width="' + Math.max(1, (W - L - R) * 60 / tot) + '" height="4" fill="#e57373"/>'; });
+  function line(f, color, w) {
+    const d = pts.map((p, i) => f(p) == null ? null : (x(xs[i]).toFixed(1) + "," + f(p).toFixed(1))).filter(Boolean);
+    return d.length ? '<polyline fill="none" stroke="' + color + '" stroke-width="' + w + '" points="' + d.join(" ") + '"/>' : "";
+  }
+  g += line(p => yv(Math.max(6, Math.min(8.6, p.v))), "#81c784", 1.5);
+  g += line(p => yp(p.base), "#ffb74d", 2);
+  g += line(p => p.ours == null ? null : yp(p.ours), "#4fc3f7", 2.5);
+  svg.innerHTML = g;
+}
+
+function fmtFind(f) {
+  const d = FIND[f.code]; if (!d) return "";
+  let s = d[1];
+  if (typeof f.val === "object") s = s.replace("{o}", f.val.ours).replace("{b}", f.val.base);
+  else s = s.replace("{v}", f.val);
+  return '<li class="' + d[0] + '">' + esc(s) + '</li>';
+}
+
+function detail(r) {
+  $("#b-detail").show();
+  $("#b-d-title").text(dt(r.start) + " · " + hm(r.on_min) + " · " + (ENDS[r.end_how] || r.end_how));
+  chart(r);
+  const c = r.cmp;
+  const row = (k, o, b) => '<tr><td>' + esc(k) + '</td><td><b>' + o + '</b></td><td><b>' + b + '</b></td></tr>';
+  $("#b-cmp").html('<table class="b-table b-cmp-t" style="max-width:36em"><thead><tr><th></th><th>' + esc("Our firmware's %") + '</th><th>' + esc("The base's %") + '</th></tr></thead><tbody>' +
+    row("At the start", r.first.ours + ' %', r.first.base + ' %') +
+    row("At the end", r.last.ours + ' %', r.last.base + ' %') +
+    (c.rms && c.rms.ours != null ? row("Error against an even fall to 0", c.rms.ours, c.rms.base) : '') +
+    '</tbody></table><div class="b-kv" style="margin-top:10px">' +
+    '<div>' + esc("Furthest apart") + '<b>' + (c.max_diff != null ? c.max_diff + " " + esc("points apart") : "–") + '</b></div>' +
+    '<div>' + esc("Our % from the voltage") + '<b>' + c.by_volts + ' % ' + esc("of the time") + '</b></div>' +
+    (c.base_stuck_min ? '<div>' + esc("The base's % stood still") + '<b>' + c.base_stuck_min + ' min</b></div>' : '') +
+    '</div>' + (c.have_ours ? '' : '<p class="sub">' + esc("This discharge is older than this version: only the base's % was logged.") + '</p>'));
+  $("#b-find").html(r.findings.map(fmtFind).join("") || '<li>' + esc("Nothing to note.") + '</li>');
+  $("#b-parts").html(r.parts.map(p => '<div class="b-bar"><span>' + esc(PARTS[p.name] || p.name) + '</span><span class="b-fill" style="width:' + Math.max(2, p.share * 3) + 'px"></span><span>' + p.share + ' %</span></div>').join(""));
+  const o = r.on;
+  $("#b-on").html('<div class="b-kv">' +
+    '<div>' + esc("Lasted") + '<b>' + hm(r.on_min) + '</b></div>' +
+    '<div>' + esc("Expected for this use") + '<b>' + (r.expected_min ? hm(r.expected_min) : "–") + '</b></div>' +
+    '<div>' + esc("A full pack, this use") + '<b>' + (r.full_expected_min ? hm(r.full_expected_min) : "–") + '</b></div>' +
+    '<div>' + esc("WiFi on") + '<b>' + o.wifi + ' %</b></div>' +
+    '<div>' + esc("Bluetooth on") + '<b>' + o.bt + ' %</b></div>' +
+    '<div>' + esc("Brightness") + '<b>' + o.bl + '</b></div>' +
+    '<div>' + esc("Transmitting") + '<b>' + o.tx_min + ' min' + (o.tx_min ? ' · ' + o.tx_w + ' W' : '') + '</b></div>' +
+    '<div>' + esc("CPU busy") + '<b>' + (o.cpu != null ? o.cpu + ' %' : '–') + '</b></div>' +
+    '<div>' + esc("Temperature") + '<b>' + (o.temp_avg != null ? o.temp_avg + ' °C (max ' + o.temp_max + ')' : '–') + '</b></div>' +
+    '<div>' + esc("Sound playing") + '<b>' + (o.audio != null ? o.audio + ' %' : '–') + '</b></div>' +
+    '</div>');
+  $("#b-procs").html(r.procs.length ? r.procs.map(p => esc(p.name) + ' <b>' + p.cpu_min + '</b> min').join(" · ") : esc("No record of programs for this discharge."));
+}
+
+function show(i) {
+  $("#b-runs tbody tr").removeClass("sel").eq(i).addClass("sel");
+  if (RUNS[i].points) { detail(RUNS[i]); return; }
+  $.get("/api/battery/run/" + i, {}, function(r) { RUNS[i] = r; detail(r); });
+}
+
+function load() {
+  bStatus("Reading the logs…");
+  $.get("/api/battery", {}, function(r) {
+    RUNS = r.runs || [];
+    renderNow(r.now);
+    renderList();
+    if (RUNS.length) show(0);
+    bStatus("");
+  }).fail(function() { bStatus("Could not read the logs", true); });
+}
+$("#b-reload").on("click", load);
+load();
+</script>

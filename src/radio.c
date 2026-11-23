@@ -949,7 +949,19 @@ static void save_log(void) {
     fclose(in);
 }
 
+static const char *poweroff_why;
+
+void radio_poweroff_why(const char *why) {
+    poweroff_why = why;
+}
+
 void radio_poweroff() {
+    /* CX8ANM: the end of a discharge, in order, for the battery page of the web (x6100-batmon's file) */
+    FILE *u = fopen(BOARD_DATA "/battery_usage.csv", "a");
+    if (u) {
+        fprintf(u, "%ld,poweroff,%s,%.1f\n", (long)time(NULL), poweroff_why ? poweroff_why : "key", pack_vbat * 0.1f);
+        fclose(u);
+    }
     save_log();
     screen_rec_shutdown();
     settings_window_poweroff();     /* a Measure under way: PRE, ATT and the RF gain back before they are saved */
@@ -1961,7 +1973,9 @@ static void recover_processing_audio_inputs() {
  * every 0.4 s: TX seconds and watts add up in between */
 #define BATTERY_LOG     BOARD_DATA "/battery_log.csv"
 #define BATTERY_MODEL   BOARD_DATA "/battery_model.json"
-#define BATTERY_HEADER  "time,vbat,batcap,vext,charging,tx,backlight,cpu_mhz,tx_s,tx_w,wifi,bt,hp\n"
+/* CX8ANM: shown, the % on the screen (bat_watch_cap on battery, bat_watch_ext_cap on a supply), and by_volts, 1 when it is
+ * the voltage's: for the battery page of the web (battery_web.py), ours against the base's */
+#define BATTERY_HEADER  "time,vbat,batcap,vext,charging,tx,backlight,cpu_mhz,tx_s,tx_w,wifi,bt,hp,shown,by_volts\n"
 
 /* GUI thread: arg = { % , minutes left or -1 }. Short texts: longer ones scroll */
 static void battery_warn_cb(void *arg) {
@@ -1998,6 +2012,9 @@ static void battery_model_load(void) {
     fprintf(stderr, "battery: model and log read at %llu ms, in %llu ms\n", (unsigned long long)(now_time - start_time),
             (unsigned long long)(get_time() - t0));
 }
+
+static int  bat_shown_pct = -1;   /* the % on the screen, for the log */
+static bool bat_by_volts;         /* and it is the voltage's */
 
 static void battery_log(const hw_pack_t *p) {
     static time_t   last;
@@ -2079,8 +2096,9 @@ static void battery_log(const hw_pack_t *p) {
     if (fresh) {
         fputs(BATTERY_HEADER, f);
     }
-    fprintf(f, "%ld,%.1f,%u,%.1f,%u,%u,%d,%u,%.0f,%.1f,%u,%u,%u\n", (long) t, s.vbat, p->batcap, s.vext,
-            p->charging, s.tx_s > 0, s.bl, mhz, s.tx_s, s.tx_w, s.wifi, s.bt, s.hp);
+    fprintf(f, "%ld,%.1f,%u,%.1f,%u,%u,%d,%u,%.0f,%.1f,%u,%u,%u,%d,%u\n", (long) t, s.vbat, p->batcap, s.vext,
+            p->charging, s.tx_s > 0, s.bl, mhz, s.tx_s, s.tx_w, s.wifi, s.bt, s.hp, bat_shown_pct,
+            bat_by_volts);
     fclose(f);
 }
 
@@ -2394,7 +2412,9 @@ static bool radio_tick() {
                 int shown = cap;
                 if (cap >= 0) bat_watch_shown(&bat_watch, cap);
                 else if (bat_watch.ext && !pack->bat_missing) shown = bat_watch_ext_cap(&bat_watch, pack->batcap, now_time);
-                clock_update_power(pack->vext * 0.1f, pack->vbat * 0.1f, shown >= 0 ? shown : pack->batcap, pack->charging);
+                bat_shown_pct = shown >= 0 ? shown : pack->batcap;
+                bat_by_volts  = cap >= 0 && bat_watch.by_volts;
+                clock_update_power(pack->vext * 0.1f, pack->vbat * 0.1f, bat_shown_pct, pack->charging);
                 battery_log(pack);
             }
 

@@ -4950,3 +4950,4 @@ def dmr_heard():
 
 # The Bands, Digital modes, Time and Files pages, static files: config_pages.py adds their routes to app
 from . import config_pages   # noqa: E402,F401  (last: it imports app and api_error from here)
+from . import battery_web    # noqa: E402,F401  (CX8ANM: the Battery page)

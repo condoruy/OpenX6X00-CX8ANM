@@ -1460,3 +1460,94 @@ The settings file cannot be deleted	El archivo de ajustes no se puede borrar
 Folders cannot be deleted here, only files	Acá no se pueden borrar carpetas, solo archivos
 Could not delete	No se pudo borrar
 Download or delete files from the DATA partition of the SD card (ADI log, screenshots, recordings, etc). A	Descargá o borrá archivos de la partición DATA de la tarjeta SD (log ADI, capturas, grabaciones, etc). Un
+# CX8ANM: Battery page
+Each discharge on battery, from the radio's logs: how long it lasted, what drew on the pack and how the	Cada descarga con batería, a partir de los registros de la radio: cuánto duró, qué consumió la batería y cómo se compara el
+% of our firmware	% de nuestro firmware
+compares with the	con el
+% of the radio's base	% de la placa base de la radio
+. The base measures the voltage but no current, so what each thing drew is an	. La placa base mide el voltaje pero no la corriente, así que lo que consumió cada cosa es una
+estimate	estimación
+Battery test	Prueba de batería
+To measure the pack, once	Para medir la batería, una vez
+Charge the battery	Cargá la batería
+full with the radio off	completa con la radio apagada
+, until the charger stops.	, hasta que el cargador se detenga.
+Unplug the supply and switch the radio on. Use it as usual: receive, WiFi, Bluetooth, whatever you do every day.	Desenchufá la fuente y prendé la radio. Usala como siempre: recepción, WiFi, Bluetooth, lo que hagas a diario.
+Leave it on until it	Dejala prendida hasta que
+switches itself off	se apague sola
+for lack of battery. Do not plug the supply in between.	por falta de batería. No conectes la fuente en el medio.
+Plug the supply in, switch on and open this page: the discharge appears at the top.	Conectá la fuente, prendela y abrí esta página: la descarga aparece arriba de todo.
+Download the report	Descargar el informe
+to send it.	para enviarlo.
+Discharges	Descargas
+Newest first; click one to see it	La más reciente primero; tocá una para verla
+Start	Inicio
+From → to	De → a
+Ended	Terminó
+Health	Salud
+No discharge on battery in the logs yet. Do the battery test above.	Todavía no hay descargas con batería en los registros. Hacé la prueba de batería de arriba.
+Our % against the base's	Nuestro % contra el de la placa base
+Our firmware's %	% de nuestro firmware
+The base's %	% de la placa base
+Voltage (right scale)	Voltaje (escala derecha)
+Our % taken from the voltage	Nuestro % tomado del voltaje
+Diagnosis	Diagnóstico
+What the logs say about this discharge	Lo que dicen los registros de esta descarga
+What drew on the battery	Qué consumió la batería
+Estimate from the radio's load model	Estimación según el modelo de consumo de la radio
+Programs that used the CPU	Programas que usaron el procesador
+still on battery	todavía con batería
+switched off: low battery	se apagó: batería baja
+switched off with the key	se apagó con la tecla
+the power went (the base's cut)	se cortó la energía (corte de la placa base)
+no power-off seen	no se registró el apagado
+Receiver, screen and base	Receptor, pantalla y placa base
+Transmitting	Transmisión
+Bluetooth	Bluetooth
+BT headphones	Auriculares BT
+Screen brightness	Brillo de pantalla
+CPU (programs)	Procesador (programas)
+The battery lasted {v}% of what the radio's model expects for this use: the pack is worn and holds much less charge than a new one. Replacing the cells (2S 18650) is the fix.	La batería duró el {v}% de lo que el modelo de la radio espera para este uso: está gastada y guarda mucha menos carga que una nueva. La solución es cambiar las celdas (2S 18650).
+The battery lasted {v}% of what the radio's model expects for this use: the pack has lost some capacity.	La batería duró el {v}% de lo que el modelo de la radio espera para este uso: perdió algo de capacidad.
+The battery lasted {v}% of what the radio's model expects for this use: the pack is fine.	La batería duró el {v}% de lo que el modelo de la radio espera para este uso: está bien.
+The voltage fell under 7.4 V after only {v} min: a sign of cells with high internal resistance (aged or cold).	El voltaje bajó de 7,4 V a los {v} min: señal de celdas con resistencia interna alta (viejas o frías).
+WiFi was on {v}% of the time. Turning it off when you do not use it saves a little.	El WiFi estuvo prendido el {v}% del tiempo. Apagarlo cuando no lo usás ahorra un poco.
+Bluetooth was on {v}% of the time with no headphones: turning it off saves a little.	El Bluetooth estuvo prendido el {v}% del tiempo sin auriculares: apagarlo ahorra un poco.
+The screen brightness was {v} on average: lowering it saves battery.	El brillo de la pantalla fue {v} en promedio: bajarlo ahorra batería.
+The CPU was busy {v}% of the time on average: the programs below kept it working (internet radio, DMR, decoders…).	El procesador estuvo ocupado el {v}% del tiempo en promedio: lo mantuvieron trabajando los programas de abajo (radio por Internet, DMR, decodificadores…).
+{v} minutes of transmission: TX draws much more than receive.	{v} minutos de transmisión: transmitir consume mucho más que recibir.
+Our % and the base's were up to {v} points apart.	Nuestro % y el de la placa base llegaron a diferir {v} puntos.
+The base's % stood still for {v} min while the voltage fell: the base lost count of the charge.	El % de la placa base quedó quieto {v} min mientras el voltaje bajaba: la placa perdió la cuenta de la carga.
+Our % went down more evenly to the power-off than the base's (error {o} against {b} points).	Nuestro % bajó más parejo hasta el apagado que el de la placa base (error de {o} contra {b} puntos).
+The base's % went down more evenly to the power-off than ours (error {b} against {o} points).	El % de la placa base bajó más parejo hasta el apagado que el nuestro (error de {b} contra {o} puntos).
+Our % and the base's went down alike (error {o} and {b} points).	Nuestro % y el de la placa base bajaron parecido (error de {o} y {b} puntos).
+The radio did not switch itself off in order: the power went at {v} V (the base's own cut).	La radio no se apagó ordenadamente: la energía se cortó a {v} V (el corte propio de la placa base).
+No record of CPU and programs for this discharge: it began before this version.	No hay registro de procesador y programas para esta descarga: empezó antes de esta versión.
+No reading of the battery yet.	Todavía no hay lecturas de la batería.
+On the supply, charging	Con la fuente, cargando
+On the supply	Con la fuente
+On battery	Con batería
+Voltage	Voltaje
+Supply	Fuente
+At the start	Al inicio
+At the end	Al final
+Furthest apart	Mayor diferencia
+Our % from the voltage	Nuestro % por voltaje
+of the time	del tiempo
+Error against an even fall to 0	Error contra una bajada pareja a 0
+This discharge is older than this version: only the base's % was logged.	Esta descarga es anterior a esta versión: solo se registró el % de la placa base.
+Nothing to note.	Nada para destacar.
+Lasted	Duró
+Expected for this use	Esperado para este uso
+A full pack, this use	Batería llena, este uso
+WiFi on	WiFi prendido
+Bluetooth on	Bluetooth prendido
+CPU busy	Procesador ocupado
+Temperature	Temperatura
+Sound playing	Sonido reproduciéndose
+No record of programs for this discharge.	No hay registro de programas para esta descarga.
+Reading the logs…	Leyendo los registros…
+Could not read the logs	No se pudieron leer los registros
+No such discharge	No existe esa descarga
+points apart	puntos
+The base's % stood still	El % de la placa base quieto
