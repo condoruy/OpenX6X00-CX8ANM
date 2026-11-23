@@ -91,9 +91,17 @@ uint8_t bat_watch_cap(bat_watch_t *w, uint8_t vbat, uint8_t batcap) {
      * 0 % and "connect power" every minute for the 35 to 42 minutes the pack still had. Switched on at 7.3 or
      * 7.2 V, the two were never 25 apart and it said that from the first reading: a base at 0 % there has lost
      * count */
-    if (apart > BAT_CAP_APART || (batcap == 0 && v >= BAT_CAP_AT_ZERO)) w->by_volts = true;
+    /* CX8ANM: only when the voltage's is the higher. A worn pack sags under load: at once 0.7 V under the 8.3 V it
+     * rests at, 7.2 V after 17 min of the 66 it lasted, and the voltage's said 0 % 39 min before the end, the
+     * base's 70 % (the battery page's report). There the base's, held under BAT_CAP_END_V's caps near the end */
+    if ((v > batcap && apart > BAT_CAP_APART) || (batcap == 0 && v >= BAT_CAP_AT_ZERO)) w->by_volts = true;
     else if (apart <= BAT_CAP_MET && v >= BAT_CAP_STEEP) w->by_volts = false;
-    return w->by_volts ? v : batcap;
+    else if (v < batcap) w->by_volts = false;
+    if (w->by_volts) return v;
+    uint8_t cap = batcap;
+    if (vbat <= BAT_CAP_END_V && cap > BAT_CAP_END_MAX) cap = BAT_CAP_END_MAX;
+    if (vbat <= BAT_CAP_LAST_V && cap > BAT_CAP_LAST_MAX) cap = BAT_CAP_LAST_MAX;
+    return cap;
 }
 
 void bat_watch_shown(bat_watch_t *w, uint8_t cap) {

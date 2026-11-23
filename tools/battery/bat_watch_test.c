@@ -251,6 +251,17 @@ int main(void) {
     check(bat_watch_cap(&w, 73, 26) == 26 && bat_watch_cap(&w, 72, 20) == 20 && bat_watch_cap(&w, 73, 19) == 19,
           "a base that counts right: its own %", 0);
 
+    /* CX8ANM: a worn pack (the battery page's report, 2026-11-23): the base's 99 % at 7.6 V, under load, is shown, not
+     * the voltage's 65 %; near the end, capped */
+    memset(&w, 0, sizeof(w));
+    check(bat_watch_cap(&w, 76, 99) == 99, "worn pack, 7.6 V, base 99: 99 %", 0);
+    check(bat_watch_cap(&w, 72, 88) == 88, "7.2 V, base 88: 88 %, not 9", 0);
+    check(bat_watch_cap(&w, 69, 70) == 70, "6.9 V, base 70: 70 %, not 1", 0);
+    check(bat_watch_cap(&w, 65, 34) == 10, "6.5 V, base 34: 10 %", 0);
+    check(bat_watch_cap(&w, 63, 20) == 3, "6.3 V, base 20: 3 %", 0);
+    memset(&w, 0, sizeof(w));
+    check(bat_watch_cap(&w, 82, 2) == 98, "#49 still: 8.2 V, base 2: the voltage's 98", 0);
+
     /* CX8ANM: on external power the % goes on from the last one on battery (bat_watch_ext_cap). The user's radio:
      * 1 % on battery, the base's at 58 % the moment the charger came in */
     memset(&w, 0, sizeof(w));

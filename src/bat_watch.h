@@ -72,6 +72,13 @@ uint8_t bat_cap_of_volts(uint8_t vbat);
 #define BAT_CAP_MET     10
 #define BAT_CAP_STEEP   25
 #define BAT_CAP_AT_ZERO 9
+/* CX8ANM: the voltage's only when it is the higher (a base that lost count down, #49); a base higher than the voltage
+ * is a worn pack's sag under load and is shown, but no more than BAT_CAP_END_MAX % from BAT_CAP_END_V down and
+ * BAT_CAP_LAST_MAX % from BAT_CAP_LAST_V down: the worn pack went from 6.5 V to the base's cut at 6.1 V in 18 min */
+#define BAT_CAP_END_V    65
+#define BAT_CAP_END_MAX  10
+#define BAT_CAP_LAST_V   63
+#define BAT_CAP_LAST_MAX 3
 
 /* The voltage's % follows a voltage down at once, back up 0.1 V only after BAT_CAP_UP_READS readings in a row over
  * it (about 1 min), 0.2 V or more at once: on a 0.1 V step the readings go back and forth, and the % with them,
